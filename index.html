@@ -62,23 +62,6 @@
             min-height: 100vh;
         }
 
-        /* App-like smooth transitions */
-        .page-view {
-            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
-        }
-        
-        .page-view.hidden-view {
-            display: none !important;
-            opacity: 0;
-            transform: scale(0.98);
-        }
-
-        .page-view.active-view {
-            display: block;
-            opacity: 1;
-            transform: scale(1);
-        }
-
         /* Custom Mobile Sliders */
         input[type=range] {
             -webkit-appearance: none;
@@ -134,7 +117,7 @@
     <!-- ========================================== -->
     <!-- VIEW 1: LOGIN PAGE (Admin System)           -->
     <!-- ========================================== -->
-    <section id="loginView" class="page-view active-view min-h-screen flex items-center justify-center p-4">
+    <section id="loginView" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center p-4 transition-all duration-300">
         <div class="w-full max-w-md space-y-6">
             <!-- App Header Title -->
             <div class="text-center space-y-2">
@@ -195,8 +178,8 @@
     <!-- ========================================== -->
     <!-- VIEW 2: MAIN HOME DASHBOARD (ArunHub Style) -->
     <!-- ========================================== -->
-    <div id="mainAppWrapper" class="hidden-view min-h-screen flex flex-col justify-between">
-        <main id="homeView" class="page-view max-w-lg mx-auto w-full px-4 py-5 space-y-4">
+    <div id="mainAppWrapper" class="hidden min-h-screen flex-col justify-between">
+        <main id="homeView" class="max-w-lg mx-auto w-full px-4 py-5 space-y-4">
             
             <!-- 1. Top Greeting Card (Orange ArunHub style) -->
             <div class="orange-gradient-card rounded-3xl p-5 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
@@ -205,8 +188,9 @@
                 
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250" 
-                            alt="Profile" class="w-12 h-12 rounded-2xl object-cover border-2 border-white/40 shadow-sm">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                            น
+                        </div>
                         <div>
                             <p class="text-[11px] text-orange-100 font-light">ยินดีต้อนรับสู่ NanaphanHub</p>
                             <h2 class="text-base font-bold leading-tight">สวัสดี ร้านนานาภัณฑ์</h2>
@@ -290,7 +274,7 @@
         <!-- ========================================== -->
         <!-- VIEW 3: WATERMARK TOOL MODULE              -->
         <!-- ========================================== -->
-        <section id="watermarkView" class="page-view hidden-view max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
+        <section id="watermarkView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
             
             <!-- Module Navigation Bar -->
             <div class="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
@@ -304,14 +288,14 @@
                     <h1 class="text-xs font-bold text-slate-800">ระบบใส่ลายน้ำอัตโนมัติ</h1>
                 </div>
 
-                <button id="resetBtn" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 active:scale-95">
+                <button id="resetBtn" onclick="resetWatermarkSettings()" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 active:scale-95">
                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> รีเซ็ต
                 </button>
             </div>
 
             <!-- Segmented Control for Mobile Screens -->
             <div class="lg:hidden mb-4 p-1 rounded-2xl bg-slate-200/80 border border-slate-300/60 flex items-center gap-1">
-                <button id="tabPreview" class="tab-btn active flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all">
+                <button id="tabPreview" class="tab-btn active flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all bg-white shadow-xs">
                     <i data-lucide="image" class="w-3.5 h-3.5"></i> ดูตัวอย่างรูปภาพ
                 </button>
                 <button id="tabControls" class="tab-btn flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all">
@@ -322,7 +306,7 @@
             <!-- Responsive Main Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-                <!-- CONTROLS CONTAINER (Styled exactly like requested screenshot) -->
+                <!-- CONTROLS CONTAINER -->
                 <div id="controlsContainer" class="hidden lg:block lg:col-span-5 space-y-4">
                     <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-4">
                         
@@ -455,11 +439,11 @@
 
                         <!-- Action Bar Buttons -->
                         <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                            <button id="clearBtn" disabled class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
+                            <button id="clearBtn" disabled onclick="clearImage()" class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i> ลบรูป
                             </button>
 
-                            <button id="downloadBtn" disabled class="flex-1 py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+                            <button id="downloadBtn" disabled onclick="downloadImage()" class="flex-1 py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
                                 <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปภาพสินค้า
                             </button>
                         </div>
@@ -636,34 +620,37 @@
         }
 
         function showLogin() {
-            document.getElementById('loginView').classList.remove('hidden-view');
-            document.getElementById('loginView').classList.add('active-view');
-            document.getElementById('mainAppWrapper').classList.add('hidden-view');
-            document.getElementById('mainAppWrapper').classList.remove('active-view');
+            const loginView = document.getElementById('loginView');
+            const mainAppWrapper = document.getElementById('mainAppWrapper');
+            
+            loginView.classList.remove('hidden');
+            mainAppWrapper.classList.add('hidden');
+            mainAppWrapper.classList.remove('flex');
         }
 
         function showMainApp() {
-            document.getElementById('loginView').classList.add('hidden-view');
-            document.getElementById('loginView').classList.remove('active-view');
-            document.getElementById('mainAppWrapper').classList.remove('hidden-view');
-            document.getElementById('mainAppWrapper').classList.add('active-view');
+            const loginView = document.getElementById('loginView');
+            const mainAppWrapper = document.getElementById('mainAppWrapper');
+            
+            loginView.classList.add('hidden');
+            mainAppWrapper.classList.remove('hidden');
+            mainAppWrapper.classList.add('flex');
             switchView('homeView');
         }
 
         // VIEW ROUTER SWITCHER
         function switchView(viewId) {
-            const views = document.querySelectorAll('#mainAppWrapper .page-view');
-            views.forEach(v => {
-                v.classList.add('hidden-view');
-                v.classList.remove('active-view');
-            });
+            const homeView = document.getElementById('homeView');
+            const watermarkView = document.getElementById('watermarkView');
 
-            const target = document.getElementById(viewId);
-            if (target) {
-                target.classList.remove('hidden-view');
-                target.classList.add('active-view');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (viewId === 'homeView') {
+                homeView.classList.remove('hidden');
+                watermarkView.classList.add('hidden');
+            } else if (viewId === 'watermarkView') {
+                homeView.classList.add('hidden');
+                watermarkView.classList.remove('hidden');
             }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // DYNAMIC GRID MODULES RENDERER
@@ -742,19 +729,20 @@
             patternTileBtn.addEventListener('click', () => {
                 state.pattern = 'tile';
                 patternTileBtn.classList.add('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                patternTileBtn.classList.remove('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
                 patternCenterBtn.classList.remove('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                patternCenterBtn.classList.add('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
                 renderWatermark();
             });
 
             patternCenterBtn.addEventListener('click', () => {
                 state.pattern = 'center';
                 patternCenterBtn.classList.add('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                patternCenterBtn.classList.remove('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
                 patternTileBtn.classList.remove('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                patternTileBtn.classList.add('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
                 renderWatermark();
             });
-
-            document.getElementById('downloadBtn').addEventListener('click', downloadImage);
-            document.getElementById('clearBtn').addEventListener('click', clearImage);
 
             // Tab switcher for mobile preview/controls
             const tabPreview = document.getElementById('tabPreview');
@@ -766,11 +754,13 @@
                     tabPreview.classList.add('active', 'bg-white', 'shadow-xs');
                     tabControls.classList.remove('active', 'bg-white', 'shadow-xs');
                     controlsContainer.classList.add('hidden');
+                    controlsContainer.classList.remove('block');
                 });
                 tabControls.addEventListener('click', () => {
                     tabControls.classList.add('active', 'bg-white', 'shadow-xs');
                     tabPreview.classList.remove('active', 'bg-white', 'shadow-xs');
                     controlsContainer.classList.remove('hidden');
+                    controlsContainer.classList.add('block');
                 });
             }
         }
@@ -782,6 +772,25 @@
             document.getElementById('opacityVal').innerText = pct + '%';
             renderWatermark();
             showToast(`ปรับความจางเป็น ${pct}% แล้ว`);
+        }
+
+        function resetWatermarkSettings() {
+            state.opacity = 0.16;
+            state.scale = 0.96;
+            state.density = 2;
+            state.pattern = 'tile';
+            state.antiTamper = true;
+            
+            document.getElementById('opacitySlider').value = 16;
+            document.getElementById('opacityVal').innerText = '16%';
+            document.getElementById('scaleSlider').value = 96;
+            document.getElementById('scaleVal').innerText = '96%';
+            document.getElementById('densitySlider').value = 2;
+            document.getElementById('densityVal').innerText = 'ปานกลาง';
+            document.getElementById('antiTamperToggle').checked = true;
+            
+            renderWatermark();
+            showToast('รีเซ็ตค่าลายน้ำเรียบร้อยแล้ว');
         }
 
         function handleImageFile(file) {
