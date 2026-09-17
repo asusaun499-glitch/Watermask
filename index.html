@@ -47,6 +47,10 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Leaflet CSS & JS for Realtime Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         * {
             font-family: 'Kanit', sans-serif;
@@ -248,7 +252,7 @@
                     <span class="px-3 py-1 rounded-full bg-white text-slate-600 text-xs font-bold border border-slate-200 shadow-2xs">
                         เมนูทั้งหมด
                     </span>
-                    <span class="text-[11px] text-slate-400">1 หมวดหมู่พร้อมใช้งาน</span>
+                    <span id="activeModuleCount" class="text-[11px] text-slate-400">2 หมวดหมู่พร้อมใช้งาน</span>
                 </div>
 
                 <!-- Grid of Module Icons -->
@@ -454,6 +458,80 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- VIEW 4: REALTIME LIVE TRACKING MODULE       -->
+        <!-- ========================================== -->
+        <section id="trackingView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
+            <div class="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
+                <button onclick="switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>กลับหน้าหลัก</span>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h1 class="text-xs font-bold text-slate-800">เช็คตำแหน่งผู้ใช้งาน (Live Map)</h1>
+                </div>
+
+                <div id="onlineCountBadge" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full border border-emerald-200">
+                    ออนไลน์: 0 คน
+                </div>
+            </div>
+
+            <!-- Grid Controls & Map -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                
+                <!-- Controls & User Profile -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-4">
+                        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
+                            <i data-lucide="user-cog" class="w-4 h-4 text-brand-500"></i> ตั้งชื่อแสดงบนแผนที่
+                        </h2>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-700">ชื่อของคุณ / ชื่อเล่น</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="userNameInput" placeholder="เช่น แอดมินขอนแก่น" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <button onclick="saveUserName()" class="px-4 py-2.5 rounded-2xl orange-gradient-card text-white text-xs font-bold shadow-sm">
+                                    บันทึก
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-2xl bg-orange-50 border border-orange-100 text-[11px] text-orange-800 space-y-1">
+                            <p class="font-bold flex items-center gap-1">
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-brand-500"></i> สถานะการแชร์ตำแหน่ง
+                            </p>
+                            <p id="trackingStatusText" class="text-[10px] text-slate-600">กำลังขออนุญาตเข้าถึง GPS...</p>
+                        </div>
+
+                        <button onclick="toggleTracking()" id="trackingToggleBtn" class="w-full py-3 rounded-2xl bg-slate-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-brand-400"></i> เปิด/ปิด การแชร์ตำแหน่ง
+                        </button>
+                    </div>
+
+                    <!-- Online Users List -->
+                    <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-3">
+                        <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i> รายชื่อผู้ใช้งานในระบบ
+                        </h3>
+                        <div id="onlineUsersList" class="space-y-2 max-h-56 overflow-y-auto no-scrollbar">
+                            <p class="text-[11px] text-slate-400 text-center py-4">กำลังโหลดรายชื่อผู้ใช้ออนไลน์...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaflet Map Container -->
+                <div class="lg:col-span-8">
+                    <div class="glass-card rounded-3xl p-3 shadow-lg border border-slate-200">
+                        <div id="map" class="w-full h-[480px] rounded-2xl shadow-inner z-10 bg-slate-100"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </div>
 
     <!-- ========================================== -->
@@ -531,9 +609,21 @@
     <!-- ========================================== -->
     <!-- JAVASCRIPT APP CORE LOGIC                  -->
     <!-- ========================================== -->
-    <script>
-        
-        // Modules Configuration Array (Easily add more modules in future!)
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphanhub-portal-khonkaen';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
+
+        let db, auth, currentUser = null;
+        let map = null;
+        let markers = {};
+        let watchId = null;
+        let isTrackingActive = false;
+
+        // Modules Configuration Array
         const APP_MODULES = [
             {
                 id: 'watermark',
@@ -544,6 +634,19 @@
                 iconBg: 'bg-brand-500 text-white',
                 active: true,
                 action: () => switchView('watermarkView')
+            },
+            {
+                id: 'tracking',
+                title: 'เช็คตำแหน่งผู้ใช้',
+                badge: 'Realtime',
+                badgeColor: 'bg-emerald-500 text-white',
+                icon: 'map-pin',
+                iconBg: 'bg-emerald-100 text-emerald-600',
+                active: true,
+                action: () => {
+                    switchView('trackingView');
+                    initMapIfNeeded();
+                }
             },
             {
                 id: 'price_tag',
@@ -584,39 +687,203 @@
                 iconBg: 'bg-orange-100 text-brand-600',
                 active: false,
                 action: () => showToast('โมดูล "ผลงานของฉัน" กำลังพัฒนา')
-            },
-            {
-                id: 'settings',
-                title: 'ตั้งค่าร้านค้า',
-                badge: 'เร็วๆ นี้',
-                badgeColor: 'bg-slate-200 text-slate-600',
-                icon: 'settings-2',
-                iconBg: 'bg-orange-100 text-brand-600',
-                active: false,
-                action: () => showToast('โมดูล "ตั้งค่าร้านค้า" กำลังพัฒนา')
             }
         ];
 
-        // Watermark Generator Internal State
-        const state = {
-            image: null,
-            fileName: 'nanaphan-product.png',
-            watermarkText: 'ร้านนานาภัณฑ์ จ.ขอนแก่น',
-            pattern: 'tile', // 'tile' or 'center'
-            opacity: 0.16,
-            scale: 0.96,
-            density: 2,
-            antiTamper: true
-        };
+        window.APP_MODULES = APP_MODULES;
 
-        // Initialize App on DOM Loaded
+        // Initialize Firebase Authentication & Firestore
+        async function initFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                currentUser = auth.currentUser;
+                console.log("Firebase initialized successfully, UID:", currentUser?.uid);
+                setupRealtimeTrackingListeners();
+            } catch (err) {
+                console.error("Firebase init error:", err);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
             lucide.createIcons();
             renderModulesGrid();
             checkAuthSession();
             setupWatermarkControls();
+
+            // Load saved username
+            const savedName = localStorage.getItem('nanaphan_map_name') || 'ร้านนานาภัณฑ์ (ขอนแก่น)';
+            document.getElementById('userNameInput').value = savedName;
         });
 
+        window.saveUserName = function() {
+            const name = document.getElementById('userNameInput').value.trim() || 'ผู้ใช้งาน';
+            localStorage.setItem('nanaphan_map_name', name);
+            showToast('บันทึกชื่อบนแผนที่เรียบร้อย');
+            if (isTrackingActive && currentUser) {
+                updateLocationToFirebase();
+            }
+        };
+
+        window.toggleTracking = function() {
+            isTrackingActive = !isTrackingActive;
+            const btn = document.getElementById('trackingToggleBtn');
+            const statusText = document.getElementById('trackingStatusText');
+
+            if (isTrackingActive) {
+                btn.classList.remove('bg-slate-800');
+                btn.classList.add('orange-gradient-card');
+                btn.innerHTML = `<i data-lucide="radio" class="w-4 h-4 text-white animate-pulse"></i> กำลังแชร์ตำแหน่งเรียลไทม์...`;
+                statusText.innerText = 'เปิดการแชร์ตำแหน่งเรียลไทม์แล้ว';
+                startGeolocationWatch();
+                showToast('เริ่มแชร์ตำแหน่งเรียลไทม์');
+            } else {
+                btn.classList.add('bg-slate-800');
+                btn.classList.remove('orange-gradient-card');
+                btn.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-brand-400"></i> เปิด/ปิด การแชร์ตำแหน่ง`;
+                statusText.innerText = 'หยุดแชร์ตำแหน่งแล้ว';
+                stopGeolocationWatch();
+                showToast('หยุดแชร์ตำแหน่งแล้ว');
+            }
+            lucide.createIcons();
+        };
+
+        function startGeolocationWatch() {
+            if (!navigator.geolocation) {
+                showToast('เบราว์เซอร์ไม่รองรับระบบระบุตำแหน่ง GPS');
+                return;
+            }
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    window.currentLat = position.coords.latitude;
+                    window.currentLng = position.coords.longitude;
+                    updateLocationToFirebase();
+                    if (map && window.currentLat && window.currentLng) {
+                        map.setView([window.currentLat, window.currentLng], 15);
+                    }
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    showToast('ไม่สามารถเข้าถึงพิกัด GPS ได้ กรุณาเปิดสิทธิ์ตำแหน่ง');
+                },
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+            );
+        }
+
+        function stopGeolocationWatch() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (currentUser && db) {
+                const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
+                deleteDoc(userLocRef).catch(err => console.error(err));
+            }
+        }
+
+        async function updateLocationToFirebase() {
+            if (!currentUser || !window.currentLat || !window.currentLng || !db) return;
+            const name = localStorage.getItem('nanaphan_map_name') || 'ร้านนานาภัณฑ์ (ขอนแก่น)';
+            try {
+                const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
+                await setDoc(userLocRef, {
+                    uid: currentUser.uid,
+                    name: name,
+                    lat: window.currentLat,
+                    lng: window.currentLng,
+                    updatedAt: serverTimestamp()
+                });
+            } catch (err) {
+                console.error("Error updating location:", err);
+            }
+        }
+
+        function initMapIfNeeded() {
+            if (map) {
+                setTimeout(() => { map.invalidateSize(); }, 200);
+                return;
+            }
+
+            // Default center: Khon Kaen City Center (16.4322, 102.8236)
+            map = L.map('map').setView([16.4322, 102.8236], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        }
+
+        function setupRealtimeTrackingListeners() {
+            if (!db) return;
+            const locationsCol = collection(db, 'artifacts', appId, 'public', 'data', 'user_locations');
+
+            onSnapshot(locationsCol, (snapshot) => {
+                const usersListEl = document.getElementById('onlineUsersList');
+                let usersHtml = '';
+                let count = 0;
+
+                // Clear previous markers
+                Object.values(markers).forEach(m => map && map.removeLayer(m));
+                markers = {};
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    count++;
+                    const isMe = currentUser && data.uid === currentUser.uid;
+
+                    // Render marker on Leaflet map
+                    if (map && data.lat && data.lng) {
+                        const customIcon = L.divIcon({
+                            className: 'custom-map-pin',
+                            html: `<div style="background-color: ${isMe ? '#f97316' : '#10b981'}; color: white; padding: 6px 10px; border-radius: 9999px; font-weight: bold; font-size: 11px; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid white;">${data.name}${isMe ? ' (คุณ)' : ''}</div>`,
+                            iconSize: [100, 30],
+                            iconAnchor: [50, 15]
+                        });
+
+                        const marker = L.marker([data.lat, data.lng], { icon: customIcon }).addTo(map);
+                        marker.bindPopup(`<b>${data.name}</b><br>พิกัด: ${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`);
+                        markers[data.uid] = marker;
+                    }
+
+                    // Render list item
+                    usersHtml += `
+                        <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full ${isMe ? 'bg-brand-500' : 'bg-emerald-500'} animate-pulse"></span>
+                                <span class="font-bold text-slate-800">${data.name} ${isMe ? '(คุณ)' : ''}</span>
+                            </div>
+                            <span class="text-[10px] font-mono text-slate-400">พิกัดจริง</span>
+                        </div>
+                    `;
+                });
+
+                if (count === 0) {
+                    usersHtml = `<p class="text-[11px] text-slate-400 text-center py-4">ยังไม่มีใครเปิดแชร์ตำแหน่งในขณะนี้</p>`;
+                }
+
+                if (usersListEl) usersListEl.innerHTML = usersHtml;
+                const countBadge = document.getElementById('onlineCountBadge');
+                if (countBadge) countBadge.innerText = `ออนไลน์: ${count} คน`;
+
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+            });
+        }
+
+    </script>
+    <script>
+        
         // AUTHENTICATION SYSTEM (Saved Session via LocalStorage)
         function checkAuthSession() {
             const session = localStorage.getItem('nanaphan_session');
@@ -687,7 +954,7 @@
             if (!grid) return;
 
             grid.innerHTML = APP_MODULES.map(mod => `
-                <div onclick="APP_MODULES.find(m => m.id === '${mod.id}').action()" 
+                <div onclick="window.APP_MODULES.find(m => m.id === '${mod.id}').action()" 
                     class="glass-card rounded-3xl p-3.5 flex flex-col items-center justify-between text-center relative border border-slate-200/80 shadow-xs cursor-pointer active:scale-95 hover:shadow-md transition-all h-28">
                     
                     ${mod.badge ? `
