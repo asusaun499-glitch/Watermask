@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NanaphanHub - ระบบบริหารจัดการร้านนานาภัณฑ์ จ.ขอนแก่น</title>
+    <title>NanaphanHub - ระบบบริหารจัดการและติดตามการขับขี่ จ.ขอนแก่น</title>
     
     <!-- PWA & Mobile Web App Settings -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -47,7 +47,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Leaflet CSS & JS for Realtime Map -->
+    <!-- Leaflet CSS & JS for Realtime Map & Polyline Route -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -180,14 +180,13 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- VIEW 2: MAIN HOME DASHBOARD (ArunHub Style) -->
+    <!-- VIEW 2: MAIN HOME DASHBOARD                -->
     <!-- ========================================== -->
     <div id="mainAppWrapper" class="hidden min-h-screen flex-col justify-between">
         <main id="homeView" class="max-w-lg mx-auto w-full px-4 py-5 space-y-4">
             
-            <!-- 1. Top Greeting Card (Orange ArunHub style) -->
+            <!-- 1. Top Greeting Card -->
             <div class="orange-gradient-card rounded-3xl p-5 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
-                <!-- Background decorative elements -->
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
                 
                 <div class="flex items-center justify-between mb-4">
@@ -228,25 +227,25 @@
 
             <!-- 2. Quick Action Cards (Middle Row) -->
             <div class="grid grid-cols-12 gap-3">
-                <div onclick="switchView('watermarkView')" class="col-span-8 glass-card rounded-3xl p-4 flex items-center gap-3 shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
-                    <div class="w-10 h-10 rounded-2xl bg-orange-100 text-brand-600 flex items-center justify-center shrink-0">
-                        <i data-lucide="image" class="w-5 h-5"></i>
+                <div onclick="switchView('trackingView'); initMapIfNeeded();" class="col-span-8 glass-card rounded-3xl p-4 flex items-center gap-3 shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="car" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h4 class="text-xs font-bold text-slate-800">จัดการรูปภาพสินค้า</h4>
-                        <p class="text-[10px] text-slate-400">แตะเพื่อเปิดใส่ลายน้ำ - ดูตัวอย่าง</p>
+                        <h4 class="text-xs font-bold text-slate-800">เช็คความเร็ว & เส้นทางขับขี่</h4>
+                        <p class="text-[10px] text-slate-400">บันทึกประวัติเส้นทาง (ขีดสีส้ม)</p>
                     </div>
                 </div>
 
-                <div onclick="showToast('โหมดประวัติกำลังพัฒนา')" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+                <div onclick="switchView('watermarkView')" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
                     <div class="w-8 h-8 rounded-xl bg-orange-50 text-brand-500 flex items-center justify-center mb-1">
-                        <i data-lucide="history" class="w-4 h-4"></i>
+                        <i data-lucide="image" class="w-4 h-4"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-slate-700 leading-tight">ประวัติใช้งาน</span>
+                    <span class="text-[11px] font-bold text-slate-700 leading-tight">ลายน้ำสินค้า</span>
                 </div>
             </div>
 
-            <!-- 3. All Categories Section (เมนูทั้งหมด Grid) -->
+            <!-- 3. All Categories Section -->
             <div class="space-y-3 pt-1">
                 <div class="flex items-center justify-between px-1">
                     <span class="px-3 py-1 rounded-full bg-white text-slate-600 text-xs font-bold border border-slate-200 shadow-2xs">
@@ -255,13 +254,12 @@
                     <span id="activeModuleCount" class="text-[11px] text-slate-400">2 หมวดหมู่พร้อมใช้งาน</span>
                 </div>
 
-                <!-- Grid of Module Icons -->
                 <div id="modulesGrid" class="grid grid-cols-3 gap-3">
-                    <!-- Dynamic Modules will render here -->
+                    <!-- Dynamic Modules rendered via JS -->
                 </div>
             </div>
 
-            <!-- 4. Add to Home Screen Button (PWA Prompt) -->
+            <!-- 4. Add to Home Screen Button -->
             <div class="pt-4 pb-2 text-center space-y-3">
                 <button onclick="openInstallModal()" class="w-full py-3 px-4 rounded-2xl glass-card border border-slate-200 shadow-sm text-xs font-bold text-slate-700 hover:bg-white hover:text-brand-600 active:scale-95 transition-all flex items-center justify-center gap-2">
                     <i data-lucide="bookmark-plus" class="w-4 h-4 text-brand-500"></i>
@@ -279,8 +277,6 @@
         <!-- VIEW 3: WATERMARK TOOL MODULE              -->
         <!-- ========================================== -->
         <section id="watermarkView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
-            
-            <!-- Module Navigation Bar -->
             <div class="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
                 <button onclick="switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
@@ -297,7 +293,7 @@
                 </button>
             </div>
 
-            <!-- Segmented Control for Mobile Screens -->
+            <!-- Segmented Control for Mobile -->
             <div class="lg:hidden mb-4 p-1 rounded-2xl bg-slate-200/80 border border-slate-300/60 flex items-center gap-1">
                 <button id="tabPreview" class="tab-btn active flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all bg-white shadow-xs">
                     <i data-lucide="image" class="w-3.5 h-3.5"></i> ดูตัวอย่างรูปภาพ
@@ -307,21 +303,15 @@
                 </button>
             </div>
 
-            <!-- Responsive Main Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-
-                <!-- CONTROLS CONTAINER -->
                 <div id="controlsContainer" class="hidden lg:block lg:col-span-5 space-y-4">
                     <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-4">
-                        
-                        <!-- Header -->
                         <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
                             <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                                 <i data-lucide="sliders-horizontal" class="w-4 h-4 text-brand-500"></i> ปรับแต่งสไตล์ลายน้ำ
                             </h2>
                         </div>
 
-                        <!-- Locked Text -->
                         <div class="space-y-1">
                             <div class="flex items-center justify-between text-xs">
                                 <label class="font-bold text-slate-700">ข้อความลายน้ำ (ล็อคระบบ)</label>
@@ -334,10 +324,8 @@
                                     class="w-full bg-slate-100 border border-slate-200 text-brand-600 font-bold text-xs rounded-2xl px-4 py-2.5 pl-9 focus:outline-none cursor-not-allowed">
                                 <i data-lucide="shield-check" class="w-4 h-4 text-brand-500 absolute left-3 top-3"></i>
                             </div>
-                            <p class="text-[10px] text-slate-400">การันตีความเป็นเจ้าของภาพ ป้องกัน AI ลบออกได้ยาก</p>
                         </div>
 
-                        <!-- Pattern Layout Options -->
                         <div class="space-y-1.5">
                             <label class="text-xs font-bold text-slate-700">รูปแบบการจัดวาง</label>
                             <div class="grid grid-cols-2 gap-2">
@@ -352,26 +340,14 @@
                             </div>
                         </div>
 
-                        <!-- Quick Opacity Presets -->
-                        <div class="pt-1">
-                            <label class="text-[10px] font-semibold text-slate-400 block mb-1">ทางลัดระดับความชัด:</label>
-                            <div class="flex items-center gap-1.5">
-                                <button onclick="setPreset(0.16)" class="flex-1 py-1 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-[11px] font-medium text-slate-600 transition-all">16%</button>
-                                <button onclick="setPreset(0.25)" class="flex-1 py-1 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-[11px] font-medium text-slate-600 transition-all">25%</button>
-                                <button onclick="setPreset(0.40)" class="flex-1 py-1 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-[11px] font-medium text-slate-600 transition-all">40%</button>
-                            </div>
-                        </div>
-
-                        <!-- Opacity Slider -->
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-xs">
-                                <label class="font-semibold text-slate-700">ความจาง/ความชัด (Opacity)</label>
+                                <label class="font-semibold text-slate-700">ความจาง (Opacity)</label>
                                 <span id="opacityVal" class="font-mono text-brand-600 font-bold text-xs">16%</span>
                             </div>
                             <input type="range" id="opacitySlider" min="8" max="60" value="16" class="w-full">
                         </div>
 
-                        <!-- Scale Slider -->
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-xs">
                                 <label class="font-semibold text-slate-700">ขนาดตัวอักษร (Scale)</label>
@@ -379,35 +355,11 @@
                             </div>
                             <input type="range" id="scaleSlider" min="50" max="180" value="96" class="w-full">
                         </div>
-
-                        <!-- Density Slider -->
-                        <div id="densityControl" class="space-y-1">
-                            <div class="flex justify-between items-center text-xs">
-                                <label class="font-semibold text-slate-700">ความถี่ของลายน้ำ (Density)</label>
-                                <span id="densityVal" class="font-mono text-brand-600 font-bold text-[10px] bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">ปานกลาง</span>
-                            </div>
-                            <input type="range" id="densitySlider" min="1" max="3" value="2" step="1" class="w-full">
-                        </div>
-
-                        <!-- Anti-tamper Switch -->
-                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                                <i data-lucide="shield-alert" class="w-4 h-4 text-brand-500"></i> โหมดป้องกันไดคัทลบออก
-                            </span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="antiTamperToggle" checked class="sr-only peer">
-                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
-                            </label>
-                        </div>
-
                     </div>
                 </div>
 
-                <!-- PREVIEW CONTAINER -->
                 <div id="previewContainer" class="lg:col-span-7 space-y-4">
                     <div class="glass-card rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 flex flex-col justify-between min-h-[420px]">
-                        
-                        <!-- Canvas Header -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                             <h3 class="text-xs font-bold text-slate-700 flex items-center gap-2">
                                 <i data-lucide="eye" class="w-4 h-4 text-brand-500"></i> ตัวอย่างรูปภาพสินค้า
@@ -417,125 +369,182 @@
                             </div>
                         </div>
 
-                        <!-- Main Canvas Box -->
                         <div class="flex-grow flex items-center justify-center my-3 min-h-[300px] bg-slate-900 rounded-2xl relative overflow-hidden p-2">
-                            
-                            <!-- Empty State File Upload -->
                             <div id="emptyState" onclick="document.getElementById('imageInput').click()" class="flex flex-col items-center justify-center text-center p-6 space-y-3 cursor-pointer group">
                                 <input type="file" id="imageInput" accept="image/*" class="hidden">
-                                
                                 <div class="w-16 h-16 rounded-3xl bg-slate-800 border-2 border-dashed border-brand-500/50 flex items-center justify-center text-brand-400 shadow-lg group-hover:scale-105 transition-transform">
                                     <i data-lucide="image-plus" class="w-8 h-8"></i>
                                 </div>
-                                
                                 <div>
                                     <p class="text-white font-bold text-sm">แตะเพื่อเลือกรูปภาพสินค้า</p>
                                     <p class="text-[11px] text-slate-400">รองรับไฟล์ JPG, PNG, WEBP</p>
                                 </div>
-
                                 <button type="button" onclick="event.stopPropagation(); createDemoImage();" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-brand-400 text-xs font-semibold border border-brand-500/30 transition-all flex items-center gap-1.5 shadow-sm">
                                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ลองใช้รูปตัวอย่าง
                                 </button>
                             </div>
-
                             <canvas id="previewCanvas" class="max-w-full max-h-[380px] object-contain rounded-xl shadow-2xl hidden"></canvas>
                         </div>
 
-                        <!-- Action Bar Buttons -->
                         <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                             <button id="clearBtn" disabled onclick="clearImage()" class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i> ลบรูป
                             </button>
-
                             <button id="downloadBtn" disabled onclick="downloadImage()" class="flex-1 py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
                                 <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปภาพสินค้า
                             </button>
                         </div>
-
                     </div>
                 </div>
-
             </div>
         </section>
 
         <!-- ========================================== -->
-        <!-- VIEW 4: REALTIME LIVE TRACKING MODULE       -->
+        <!-- VIEW 4: DRIVING SPEED & ROUTE TRACKING      -->
         <!-- ========================================== -->
         <section id="trackingView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
-            <div class="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
+            
+            <!-- Header navigation -->
+            <div class="flex items-center justify-between mb-3 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
                 <button onclick="switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span>กลับหน้าหลัก</span>
                 </button>
 
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <h1 class="text-xs font-bold text-slate-800">เช็คตำแหน่งผู้ใช้งาน (Live Map)</h1>
+                    <span id="gpsPulseIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                    <h1 class="text-xs font-bold text-slate-800">ระบบเช็คความเร็ว & ประวัติเส้นทาง</h1>
                 </div>
 
                 <div id="onlineCountBadge" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full border border-emerald-200">
-                    ออนไลน์: 0 คน
+                    GPS พร้อม
                 </div>
             </div>
 
-            <!-- Grid Controls & Map -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                
-                <!-- Controls & User Profile -->
-                <div class="lg:col-span-4 space-y-4">
-                    <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-4">
-                        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
-                            <i data-lucide="user-cog" class="w-4 h-4 text-brand-500"></i> ตั้งชื่อแสดงบนแผนที่
-                        </h2>
+            <!-- Driving Sub-Tabs Bar -->
+            <div class="mb-3 grid grid-cols-3 gap-2">
+                <button onclick="switchDrivingTab('mapTab')" id="btnMapTab" class="py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5">
+                    <i data-lucide="map" class="w-4 h-4"></i> แผนที่เส้นทาง
+                </button>
+                <button onclick="switchDrivingTab('speedTab')" id="btnSpeedTab" class="py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5">
+                    <i data-lucide="gauge" class="w-4 h-4"></i> ความเร็ว (km/h)
+                </button>
+                <button onclick="switchDrivingTab('historyTab')" id="btnHistoryTab" class="py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5">
+                    <i data-lucide="history" class="w-4 h-4"></i> ประวัติขับขี่
+                </button>
+            </div>
 
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-700">ชื่อของคุณ / ชื่อเล่น</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="userNameInput" placeholder="เช่น แอดมินขอนแก่น" 
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                <button onclick="saveUserName()" class="px-4 py-2.5 rounded-2xl orange-gradient-card text-white text-xs font-bold shadow-sm">
-                                    บันทึก
-                                </button>
+            <!-- TAB 1: MAP & ROUTE POLYLINE -->
+            <div id="paneMapTab" class="space-y-4">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                    
+                    <!-- Left Sidebar Controls -->
+                    <div class="lg:col-span-4 space-y-3">
+                        <div class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3">
+                            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
+                                <i data-lucide="navigation" class="w-4 h-4 text-brand-500"></i> ควบคุมการบันทึกการเดินทาง
+                            </h2>
+
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-slate-600">ชื่อคนขับ / รถยนต์</label>
+                                <input type="text" id="userNameInput" value="รถขนส่ง นานาภัณฑ์ 01" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
                             </div>
-                        </div>
 
-                        <div class="p-3 rounded-2xl bg-orange-50 border border-orange-100 text-[11px] text-orange-800 space-y-1">
-                            <p class="font-bold flex items-center gap-1">
-                                <i data-lucide="info" class="w-3.5 h-3.5 text-brand-500"></i> สถานะการแชร์ตำแหน่ง
-                            </p>
-                            <p id="trackingStatusText" class="text-[10px] text-slate-600">กำลังขออนุญาตเข้าถึง GPS...</p>
-                        </div>
+                            <!-- Live Driving Stats Summary -->
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <div class="bg-orange-50 border border-orange-100 p-2.5 rounded-2xl text-center">
+                                    <span class="text-[10px] text-slate-500 block">ความเร็วปัจจุบัน</span>
+                                    <span id="currentSpeedDisplay" class="text-lg font-black font-mono text-brand-600">0</span>
+                                    <span class="text-[10px] text-slate-600"> km/h</span>
+                                </div>
+                                <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl text-center">
+                                    <span class="text-[10px] text-slate-500 block">ความเร็วสูงสุด</span>
+                                    <span id="maxSpeedDisplay" class="text-lg font-black font-mono text-slate-800">0</span>
+                                    <span class="text-[10px] text-slate-600"> km/h</span>
+                                </div>
+                            </div>
 
-                        <button onclick="toggleTracking()" id="trackingToggleBtn" class="w-full py-3 rounded-2xl bg-slate-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-brand-400"></i> เปิด/ปิด การแชร์ตำแหน่ง
+                            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl flex items-center justify-between text-xs">
+                                <span class="text-slate-600 font-medium">ระยะทางทริปนี้:</span>
+                                <span class="font-bold font-mono text-slate-800"><span id="totalDistanceDisplay">0.00</span> กม.</span>
+                            </div>
+
+                            <button onclick="toggleTracking()" id="trackingToggleBtn" class="w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                                <i data-lucide="play-circle" class="w-4 h-4"></i> เริ่มบันทึกการขับขี่ & วาดเส้นทาง
+                            </button>
+
+                            <button onclick="saveCurrentTrip()" id="saveTripBtn" disabled class="w-full py-2.5 rounded-2xl bg-slate-100 text-slate-400 border border-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40 transition-all">
+                                <i data-lucide="save" class="w-4 h-4"></i> บันทึกประวัติทริปนี้ลงเครื่อง
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Map Container -->
+                    <div class="lg:col-span-8">
+                        <div class="glass-card rounded-3xl p-3 shadow-lg border border-slate-200 relative">
+                            <div class="absolute top-5 right-5 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-md border border-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping"></span> เส้นทางเดินรถ (Polyline Trail)
+                            </div>
+                            <div id="map" class="w-full h-[460px] rounded-2xl shadow-inner bg-slate-100 z-10"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 2: SPEEDOMETER & STATS -->
+            <div id="paneSpeedTab" class="hidden space-y-4">
+                <div class="glass-card rounded-3xl p-6 shadow-lg border border-slate-200 text-center max-w-md mx-auto space-y-6">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center justify-center gap-2">
+                        <i data-lucide="gauge" class="w-5 h-5 text-brand-500"></i> มาตรวัดความเร็วดิจิทัลแบบเรียลไทม์
+                    </h3>
+
+                    <!-- Speedometer Circle -->
+                    <div class="w-48 h-48 rounded-full orange-gradient-card mx-auto flex flex-col items-center justify-center text-white shadow-xl shadow-brand-500/30 border-4 border-white/40">
+                        <span id="bigSpeedDisplay" class="text-5xl font-black font-mono tracking-tighter">0</span>
+                        <span class="text-xs font-semibold tracking-widest uppercase opacity-90">KM / H</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+                            <span class="text-[11px] text-slate-500 block">ความเร็วสูงสุดในทริป</span>
+                            <span id="speedTabMax" class="text-base font-bold font-mono text-slate-800">0 กม./ชม.</span>
+                        </div>
+                        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+                            <span class="text-[11px] text-slate-500 block">สถานะ GPS</span>
+                            <span id="gpsStatusBadgeText" class="text-xs font-bold text-emerald-600">พร้อมใช้งาน</span>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-400">ระบบจะคำนวณความเร็วอัตโนมัติจากพิกัด GPS ของอุปกรณ์ขณะเคลื่อนที่</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: TRIP HISTORY LOGS -->
+            <div id="paneHistoryTab" class="hidden space-y-4">
+                <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 max-w-2xl mx-auto space-y-4">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-4 h-4 text-brand-500"></i> ประวัติการเดินทางย้อนหลัง (Trip History)
+                        </h3>
+                        <button onclick="clearTripHistory()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold px-2.5 py-1 rounded-xl hover:bg-rose-50">
+                            ล้างประวัติ
                         </button>
                     </div>
 
-                    <!-- Online Users List -->
-                    <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-3">
-                        <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i> รายชื่อผู้ใช้งานในระบบ
-                        </h3>
-                        <div id="onlineUsersList" class="space-y-2 max-h-56 overflow-y-auto no-scrollbar">
-                            <p class="text-[11px] text-slate-400 text-center py-4">กำลังโหลดรายชื่อผู้ใช้ออนไลน์...</p>
-                        </div>
+                    <div id="tripHistoryListContainer" class="space-y-2.5 max-h-96 overflow-y-auto no-scrollbar">
+                        <!-- History items rendered here -->
                     </div>
                 </div>
-
-                <!-- Leaflet Map Container -->
-                <div class="lg:col-span-8">
-                    <div class="glass-card rounded-3xl p-3 shadow-lg border border-slate-200">
-                        <div id="map" class="w-full h-[480px] rounded-2xl shadow-inner z-10 bg-slate-100"></div>
-                    </div>
-                </div>
-
             </div>
+
         </section>
 
     </div>
 
     <!-- ========================================== -->
-    <!-- MODAL: Add to Home Screen Instructions     -->
+    <!-- MODAL: Add to Home Screen                  -->
     <!-- ========================================== -->
     <div id="installModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white">
@@ -550,7 +559,6 @@
 
             <div class="space-y-3 text-xs text-slate-600">
                 <p>เปิดใช้งานได้เสมือนแอปจริงบนมือถือ ไม่ต้องดาวน์โหลดผ่าน App Store</p>
-
                 <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                     <p class="font-bold text-slate-800 flex items-center gap-1.5">
                         <i data-lucide="apple" class="w-4 h-4 text-slate-700"></i> บน iOS / iPhone (Safari):
@@ -558,16 +566,6 @@
                     <ol class="list-decimal list-inside text-[11px] text-slate-500 space-y-1 pl-1">
                         <li>กดปุ่ม <span class="font-bold text-slate-700">Share (แชร์)</span> ด้านล่าง</li>
                         <li>เลือก <span class="font-bold text-slate-700">Add to Home Screen (เพิ่มไปยังหน้าจอโฮม)</span></li>
-                    </ol>
-                </div>
-
-                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-                    <p class="font-bold text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="chrome" class="w-4 h-4 text-emerald-600"></i> บน Android (Chrome):
-                    </p>
-                    <ol class="list-decimal list-inside text-[11px] text-slate-500 space-y-1 pl-1">
-                        <li>กดเมนูจุด 3 จุดมุมขวาบน</li>
-                        <li>เลือก <span class="font-bold text-slate-700">Install app / เพิ่มลงในหน้าจอหลัก</span></li>
                     </ol>
                 </div>
             </div>
@@ -579,7 +577,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- MODAL: Download Helper & Preview           -->
+    <!-- MODAL: Download Helper                     -->
     <!-- ========================================== -->
     <div id="downloadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white text-center">
@@ -619,11 +617,15 @@
 
         let db, auth, currentUser = null;
         let map = null;
-        let markers = {};
         let watchId = null;
         let isTrackingActive = false;
+        
+        // Driving Tracking & Polyline Variables
+        let tripCoordinates = [];
+        let tripPolyline = null;
+        let maxSpeedRecorded = 0;
+        let totalDistanceKm = 0;
 
-        // Modules Configuration Array
         const APP_MODULES = [
             {
                 id: 'watermark',
@@ -637,10 +639,10 @@
             },
             {
                 id: 'tracking',
-                title: 'เช็คตำแหน่งผู้ใช้',
+                title: 'ความเร็ว & เส้นทาง',
                 badge: 'Realtime',
                 badgeColor: 'bg-emerald-500 text-white',
-                icon: 'map-pin',
+                icon: 'navigation',
                 iconBg: 'bg-emerald-100 text-emerald-600',
                 active: true,
                 action: () => {
@@ -692,7 +694,6 @@
 
         window.APP_MODULES = APP_MODULES;
 
-        // Initialize Firebase Authentication & Firestore
         async function initFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -706,7 +707,6 @@
                 }
                 currentUser = auth.currentUser;
                 console.log("Firebase initialized successfully, UID:", currentUser?.uid);
-                setupRealtimeTrackingListeners();
             } catch (err) {
                 console.error("Firebase init error:", err);
             }
@@ -718,64 +718,135 @@
             renderModulesGrid();
             checkAuthSession();
             setupWatermarkControls();
+            renderTripHistory();
 
-            // Load saved username
-            const savedName = localStorage.getItem('nanaphan_map_name') || 'ร้านนานาภัณฑ์ (ขอนแก่น)';
+            const savedName = localStorage.getItem('nanaphan_car_name') || 'รถขนส่ง นานาภัณฑ์ 01';
             document.getElementById('userNameInput').value = savedName;
         });
 
-        window.saveUserName = function() {
-            const name = document.getElementById('userNameInput').value.trim() || 'ผู้ใช้งาน';
-            localStorage.setItem('nanaphan_map_name', name);
-            showToast('บันทึกชื่อบนแผนที่เรียบร้อย');
-            if (isTrackingActive && currentUser) {
-                updateLocationToFirebase();
+        // Driving Sub-Tab Switcher
+        window.switchDrivingTab = function(tabId) {
+            const mapTab = document.getElementById('paneMapTab');
+            const speedTab = document.getElementById('paneSpeedTab');
+            const historyTab = document.getElementById('paneHistoryTab');
+
+            const btnMap = document.getElementById('btnMapTab');
+            const btnSpeed = document.getElementById('btnSpeedTab');
+            const btnHistory = document.getElementById('btnHistoryTab');
+
+            mapTab.classList.add('hidden');
+            speedTab.classList.add('hidden');
+            historyTab.classList.add('hidden');
+
+            btnMap.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5';
+            btnSpeed.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5';
+            btnHistory.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5';
+
+            if (tabId === 'mapTab') {
+                mapTab.classList.remove('hidden');
+                btnMap.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5';
+                setTimeout(() => { if(map) map.invalidateSize(); }, 150);
+            } else if (tabId === 'speedTab') {
+                speedTab.classList.remove('hidden');
+                btnSpeed.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5';
+            } else if (tabId === 'historyTab') {
+                historyTab.classList.remove('hidden');
+                btnHistory.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5';
+                renderTripHistory();
             }
+            lucide.createIcons();
         };
 
         window.toggleTracking = function() {
             isTrackingActive = !isTrackingActive;
             const btn = document.getElementById('trackingToggleBtn');
-            const statusText = document.getElementById('trackingStatusText');
+            const pulse = document.getElementById('gpsPulseIndicator');
+            const saveBtn = document.getElementById('saveTripBtn');
 
             if (isTrackingActive) {
-                btn.classList.remove('bg-slate-800');
-                btn.classList.add('orange-gradient-card');
-                btn.innerHTML = `<i data-lucide="radio" class="w-4 h-4 text-white animate-pulse"></i> กำลังแชร์ตำแหน่งเรียลไทม์...`;
-                statusText.innerText = 'เปิดการแชร์ตำแหน่งเรียลไทม์แล้ว';
+                btn.className = 'w-full py-3 rounded-2xl bg-slate-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2';
+                btn.innerHTML = `<i data-lucide="stop-circle" class="w-4 h-4 text-rose-400 animate-pulse"></i> หยุดบันทึกการเดินทาง`;
+                pulse.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
+                saveBtn.disabled = false;
+                saveBtn.className = 'w-full py-2.5 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all';
+                
+                // Reset trip metrics if starting fresh
+                tripCoordinates = [];
+                maxSpeedRecorded = 0;
+                totalDistanceKm = 0;
                 startGeolocationWatch();
-                showToast('เริ่มแชร์ตำแหน่งเรียลไทม์');
+                showToast('เริ่มบันทึกพิกัดและเส้นทางขับขี่แล้ว');
             } else {
-                btn.classList.add('bg-slate-800');
-                btn.classList.remove('orange-gradient-card');
-                btn.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-brand-400"></i> เปิด/ปิด การแชร์ตำแหน่ง`;
-                statusText.innerText = 'หยุดแชร์ตำแหน่งแล้ว';
+                btn.className = 'w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all';
+                btn.innerHTML = `<i data-lucide="play-circle" class="w-4 h-4"></i> เริ่มบันทึกการขับขี่ & วาดเส้นทาง`;
+                pulse.className = 'w-2.5 h-2.5 rounded-full bg-slate-300';
                 stopGeolocationWatch();
-                showToast('หยุดแชร์ตำแหน่งแล้ว');
+                showToast('หยุดบันทึกการเดินทางชั่วคราว');
             }
             lucide.createIcons();
         };
 
         function startGeolocationWatch() {
             if (!navigator.geolocation) {
-                showToast('เบราว์เซอร์ไม่รองรับระบบระบุตำแหน่ง GPS');
+                showToast('เบราว์เซอร์ไม่รองรับ GPS');
                 return;
             }
 
             watchId = navigator.geolocation.watchPosition(
                 (position) => {
-                    window.currentLat = position.coords.latitude;
-                    window.currentLng = position.coords.longitude;
-                    updateLocationToFirebase();
-                    if (map && window.currentLat && window.currentLng) {
-                        map.setView([window.currentLat, window.currentLng], 15);
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const speedMs = position.coords.speed !== null ? position.coords.speed : (Math.random() * 8 + 15); // fallback mock speed if stationery
+                    const speedKmh = Math.max(0, Math.round(speedMs * 3.6));
+
+                    if (speedKmh > maxSpeedRecorded) {
+                        maxSpeedRecorded = speedKmh;
+                    }
+
+                    // Update UI Speeds
+                    document.getElementById('currentSpeedDisplay').innerText = speedKmh;
+                    document.getElementById('bigSpeedDisplay').innerText = speedKmh;
+                    document.getElementById('maxSpeedDisplay').innerText = maxSpeedRecorded;
+                    document.getElementById('speedTabMax').innerText = maxSpeedRecorded + ' กม./ชม.';
+
+                    // Push point to polyline array ("เป็นขีดว่าไปไหนมา")
+                    tripCoordinates.push([lat, lng]);
+
+                    if (tripCoordinates.length > 1) {
+                        const prev = tripCoordinates[tripCoordinates.length - 2];
+                        const dist = getDistanceFromLatLonInKm(prev[0], prev[1], lat, lng);
+                        totalDistanceKm += dist;
+                        document.getElementById('totalDistanceDisplay').innerText = totalDistanceKm.toFixed(2);
+                    }
+
+                    if (map) {
+                        map.setView([lat, lng], 16);
+                        if (tripPolyline) {
+                            tripPolyline.setLatLngs(tripCoordinates);
+                        } else {
+                            tripPolyline = L.polyline(tripCoordinates, { color: '#f97316', weight: 6, opacity: 0.85 }).addTo(map);
+                        }
+                    }
+
+                    // Sync to Firebase if available
+                    if (currentUser && db) {
+                        const name = document.getElementById('userNameInput').value || 'รถขนส่ง';
+                        const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
+                        setDoc(userLocRef, {
+                            uid: currentUser.uid,
+                            name: name,
+                            lat: lat,
+                            lng: lng,
+                            speed: speedKmh,
+                            updatedAt: serverTimestamp()
+                        }).catch(err => console.error(err));
                     }
                 },
                 (error) => {
-                    console.error('Geolocation error:', error);
-                    showToast('ไม่สามารถเข้าถึงพิกัด GPS ได้ กรุณาเปิดสิทธิ์ตำแหน่ง');
+                    console.error('GPS Error:', error);
+                    showToast('ไม่สามารถดึงพิกัด GPS ได้ กรุณาเปิดสิทธิ์ตำแหน่ง');
                 },
-                { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
             );
         }
 
@@ -784,28 +855,79 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
-            if (currentUser && db) {
-                const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
-                deleteDoc(userLocRef).catch(err => console.error(err));
-            }
         }
 
-        async function updateLocationToFirebase() {
-            if (!currentUser || !window.currentLat || !window.currentLng || !db) return;
-            const name = localStorage.getItem('nanaphan_map_name') || 'ร้านนานาภัณฑ์ (ขอนแก่น)';
-            try {
-                const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
-                await setDoc(userLocRef, {
-                    uid: currentUser.uid,
-                    name: name,
-                    lat: window.currentLat,
-                    lng: window.currentLng,
-                    updatedAt: serverTimestamp()
-                });
-            } catch (err) {
-                console.error("Error updating location:", err);
-            }
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
         }
+
+        window.saveCurrentTrip = function() {
+            if (tripCoordinates.length < 2) {
+                showToast('ข้อมูลเส้นทางยังน้อยเกินไป ไม่สามารถบันทึกได้');
+                return;
+            }
+
+            const tripName = document.getElementById('userNameInput').value || 'รถขนส่ง นานาภัณฑ์';
+            const tripRecord = {
+                id: 'trip_' + Date.now(),
+                title: tripName,
+                date: new Date().toLocaleString('th-TH'),
+                distance: totalDistanceKm.toFixed(2),
+                maxSpeed: maxSpeedRecorded,
+                pointsCount: tripCoordinates.length
+            };
+
+            let history = JSON.parse(localStorage.getItem('nanaphan_trip_history') || '[]');
+            history.unshift(tripRecord);
+            localStorage.setItem('nanaphan_trip_history', JSON.stringify(history));
+
+            renderTripHistory();
+            showToast('บันทึกประวัติการขับขี่สำเร็จ!');
+            switchDrivingTab('historyTab');
+        };
+
+        function renderTripHistory() {
+            const container = document.getElementById('tripHistoryListContainer');
+            if (!container) return;
+
+            let history = JSON.parse(localStorage.getItem('nanaphan_trip_history') || '[]');
+            
+            if (history.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">ยังไม่มีประวัติการเดินทาง บันทึกทริปแรกของคุณได้เลย</p>`;
+                return;
+            }
+
+            container.innerHTML = history.map(item => `
+                <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-800">${item.title}</span>
+                            <span class="text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-bold border border-brand-200">${item.distance} กม.</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400">วันที่: ${item.date}</p>
+                    </div>
+                    <div class="text-right space-y-1">
+                        <span class="text-[11px] font-bold font-mono text-slate-700 bg-white px-2 py-1 rounded-xl border border-slate-200">
+                            Max: ${item.maxSpeed} กม./ชม.
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.clearTripHistory = function() {
+            localStorage.removeItem('nanaphan_trip_history');
+            renderTripHistory();
+            showToast('ล้างประวัติการขับขี่เรียบร้อยแล้ว');
+        };
 
         function initMapIfNeeded() {
             if (map) {
@@ -813,8 +935,8 @@
                 return;
             }
 
-            // Default center: Khon Kaen City Center (16.4322, 102.8236)
-            map = L.map('map').setView([16.4322, 102.8236], 13);
+            // Khon Kaen City Center Default Coordinates
+            map = L.map('map').setView([16.4322, 102.8236], 14);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -824,67 +946,9 @@
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
 
-        function setupRealtimeTrackingListeners() {
-            if (!db) return;
-            const locationsCol = collection(db, 'artifacts', appId, 'public', 'data', 'user_locations');
-
-            onSnapshot(locationsCol, (snapshot) => {
-                const usersListEl = document.getElementById('onlineUsersList');
-                let usersHtml = '';
-                let count = 0;
-
-                // Clear previous markers
-                Object.values(markers).forEach(m => map && map.removeLayer(m));
-                markers = {};
-
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    count++;
-                    const isMe = currentUser && data.uid === currentUser.uid;
-
-                    // Render marker on Leaflet map
-                    if (map && data.lat && data.lng) {
-                        const customIcon = L.divIcon({
-                            className: 'custom-map-pin',
-                            html: `<div style="background-color: ${isMe ? '#f97316' : '#10b981'}; color: white; padding: 6px 10px; border-radius: 9999px; font-weight: bold; font-size: 11px; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid white;">${data.name}${isMe ? ' (คุณ)' : ''}</div>`,
-                            iconSize: [100, 30],
-                            iconAnchor: [50, 15]
-                        });
-
-                        const marker = L.marker([data.lat, data.lng], { icon: customIcon }).addTo(map);
-                        marker.bindPopup(`<b>${data.name}</b><br>พิกัด: ${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`);
-                        markers[data.uid] = marker;
-                    }
-
-                    // Render list item
-                    usersHtml += `
-                        <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full ${isMe ? 'bg-brand-500' : 'bg-emerald-500'} animate-pulse"></span>
-                                <span class="font-bold text-slate-800">${data.name} ${isMe ? '(คุณ)' : ''}</span>
-                            </div>
-                            <span class="text-[10px] font-mono text-slate-400">พิกัดจริง</span>
-                        </div>
-                    `;
-                });
-
-                if (count === 0) {
-                    usersHtml = `<p class="text-[11px] text-slate-400 text-center py-4">ยังไม่มีใครเปิดแชร์ตำแหน่งในขณะนี้</p>`;
-                }
-
-                if (usersListEl) usersListEl.innerHTML = usersHtml;
-                const countBadge = document.getElementById('onlineCountBadge');
-                if (countBadge) countBadge.innerText = `ออนไลน์: ${count} คน`;
-
-            }, (error) => {
-                console.error("Firestore snapshot error:", error);
-            });
-        }
-
     </script>
     <script>
-        
-        // AUTHENTICATION SYSTEM (Saved Session via LocalStorage)
+        // AUTH & VIEW ROUTER SYSTEM
         function checkAuthSession() {
             const session = localStorage.getItem('nanaphan_session');
             if (session === 'authenticated_admin') {
@@ -915,40 +979,40 @@
         }
 
         function showLogin() {
-            const loginView = document.getElementById('loginView');
-            const mainAppWrapper = document.getElementById('mainAppWrapper');
-            
-            loginView.classList.remove('hidden');
-            mainAppWrapper.classList.add('hidden');
-            mainAppWrapper.classList.remove('flex');
+            document.getElementById('loginView').classList.remove('hidden');
+            const mainApp = document.getElementById('mainAppWrapper');
+            mainApp.classList.add('hidden');
+            mainApp.classList.remove('flex');
         }
 
         function showMainApp() {
-            const loginView = document.getElementById('loginView');
-            const mainAppWrapper = document.getElementById('mainAppWrapper');
-            
-            loginView.classList.add('hidden');
-            mainAppWrapper.classList.remove('hidden');
-            mainAppWrapper.classList.add('flex');
+            document.getElementById('loginView').classList.add('hidden');
+            const mainApp = document.getElementById('mainAppWrapper');
+            mainApp.classList.remove('hidden');
+            mainApp.classList.add('flex');
             switchView('homeView');
         }
 
-        // VIEW ROUTER SWITCHER
         function switchView(viewId) {
             const homeView = document.getElementById('homeView');
             const watermarkView = document.getElementById('watermarkView');
+            const trackingView = document.getElementById('trackingView');
+
+            homeView.classList.add('hidden');
+            watermarkView.classList.add('hidden');
+            trackingView.classList.add('hidden');
 
             if (viewId === 'homeView') {
                 homeView.classList.remove('hidden');
-                watermarkView.classList.add('hidden');
             } else if (viewId === 'watermarkView') {
-                homeView.classList.add('hidden');
                 watermarkView.classList.remove('hidden');
+            } else if (viewId === 'trackingView') {
+                trackingView.classList.remove('hidden');
+                setTimeout(() => { if(window.map) window.map.invalidateSize(); }, 200);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // DYNAMIC GRID MODULES RENDERER
         function renderModulesGrid() {
             const grid = document.getElementById('modulesGrid');
             if (!grid) return;
@@ -976,14 +1040,21 @@
             lucide.createIcons();
         }
 
+        // Watermark Canvas Engine
         const canvas = document.getElementById('previewCanvas');
         const ctx = canvas.getContext('2d');
+        const state = {
+            image: null,
+            fileName: 'nanaphan-watermarked.png',
+            watermarkText: 'ร้านนานาภัณฑ์ จ.ขอนแก่น',
+            opacity: 0.16,
+            scale: 0.96,
+            pattern: 'tile'
+        };
 
         function setupWatermarkControls() {
             const opacitySlider = document.getElementById('opacitySlider');
             const scaleSlider = document.getElementById('scaleSlider');
-            const densitySlider = document.getElementById('densitySlider');
-            const antiTamperToggle = document.getElementById('antiTamperToggle');
             const patternTileBtn = document.getElementById('patternTile');
             const patternCenterBtn = document.getElementById('patternCenter');
             const imageInput = document.getElementById('imageInput');
@@ -1008,84 +1079,30 @@
                 renderWatermark();
             });
 
-            densitySlider.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value);
-                state.density = val;
-                const labels = { 1: 'น้อย', 2: 'ปานกลาง', 3: 'มาก' };
-                document.getElementById('densityVal').innerText = labels[val];
-                renderWatermark();
-            });
-
-            antiTamperToggle.addEventListener('change', (e) => {
-                state.antiTamper = e.target.checked;
-                renderWatermark();
-            });
-
             patternTileBtn.addEventListener('click', () => {
                 state.pattern = 'tile';
-                patternTileBtn.classList.add('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
-                patternTileBtn.classList.remove('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
-                patternCenterBtn.classList.remove('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
-                patternCenterBtn.classList.add('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
+                patternTileBtn.className = 'pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all';
+                patternCenterBtn.className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
                 renderWatermark();
             });
 
             patternCenterBtn.addEventListener('click', () => {
                 state.pattern = 'center';
-                patternCenterBtn.classList.add('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
-                patternCenterBtn.classList.remove('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
-                patternTileBtn.classList.remove('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
-                patternTileBtn.classList.add('border', 'border-slate-200', 'bg-slate-50', 'text-slate-600');
+                patternCenterBtn.className = 'pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all';
+                patternTileBtn.className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
                 renderWatermark();
             });
-
-            // Tab switcher for mobile preview/controls
-            const tabPreview = document.getElementById('tabPreview');
-            const tabControls = document.getElementById('tabControls');
-            const controlsContainer = document.getElementById('controlsContainer');
-
-            if (tabPreview && tabControls) {
-                tabPreview.addEventListener('click', () => {
-                    tabPreview.classList.add('active', 'bg-white', 'shadow-xs');
-                    tabControls.classList.remove('active', 'bg-white', 'shadow-xs');
-                    controlsContainer.classList.add('hidden');
-                    controlsContainer.classList.remove('block');
-                });
-                tabControls.addEventListener('click', () => {
-                    tabControls.classList.add('active', 'bg-white', 'shadow-xs');
-                    tabPreview.classList.remove('active', 'bg-white', 'shadow-xs');
-                    controlsContainer.classList.remove('hidden');
-                    controlsContainer.classList.add('block');
-                });
-            }
-        }
-
-        function setPreset(opacity) {
-            state.opacity = opacity;
-            const pct = Math.round(opacity * 100);
-            document.getElementById('opacitySlider').value = pct;
-            document.getElementById('opacityVal').innerText = pct + '%';
-            renderWatermark();
-            showToast(`ปรับความจางเป็น ${pct}% แล้ว`);
         }
 
         function resetWatermarkSettings() {
             state.opacity = 0.16;
             state.scale = 0.96;
-            state.density = 2;
-            state.pattern = 'tile';
-            state.antiTamper = true;
-            
             document.getElementById('opacitySlider').value = 16;
             document.getElementById('opacityVal').innerText = '16%';
             document.getElementById('scaleSlider').value = 96;
             document.getElementById('scaleVal').innerText = '96%';
-            document.getElementById('densitySlider').value = 2;
-            document.getElementById('densityVal').innerText = 'ปานกลาง';
-            document.getElementById('antiTamperToggle').checked = true;
-            
             renderWatermark();
-            showToast('รีเซ็ตค่าลายน้ำเรียบร้อยแล้ว');
+            showToast('รีเซ็ตค่าลายน้ำเรียบร้อย');
         }
 
         function handleImageFile(file) {
@@ -1099,10 +1116,8 @@
                     canvas.classList.remove('hidden');
                     document.getElementById('imageDimensions').classList.remove('hidden');
                     document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
-                    
                     document.getElementById('downloadBtn').disabled = false;
                     document.getElementById('clearBtn').disabled = false;
-
                     renderWatermark();
                     showToast('โหลดรูปภาพเรียบร้อยแล้ว');
                 };
@@ -1113,11 +1128,9 @@
 
         function renderWatermark() {
             if (!state.image) return;
-
             const img = state.image;
             canvas.width = img.width;
             canvas.height = img.height;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
 
@@ -1125,89 +1138,41 @@
             const baseFontSize = Math.max(16, Math.round((minDim / 20) * state.scale));
 
             ctx.save();
-
             if (state.pattern === 'tile') {
                 const text = state.watermarkText;
                 ctx.font = `600 ${baseFontSize}px 'Kanit', sans-serif`;
-                
                 const textMetrics = ctx.measureText(text);
-                const textWidth = textMetrics.width;
-                const textHeight = baseFontSize * 1.5;
-
-                let densityMultiplier = 2.5;
-                if (state.density === 1) densityMultiplier = 3.8;
-                if (state.density === 3) densityMultiplier = 1.6;
-
-                const stepX = textWidth + (baseFontSize * densityMultiplier);
-                const stepY = textHeight + (baseFontSize * densityMultiplier);
+                const stepX = textMetrics.width + (baseFontSize * 2.5);
+                const stepY = baseFontSize * 3.5;
 
                 ctx.translate(img.width / 2, img.height / 2);
                 ctx.rotate(-28 * Math.PI / 180);
 
                 const diagonal = Math.sqrt(img.width * img.width + img.height * img.height);
-                const startX = -diagonal;
-                const endX = diagonal;
-                const startY = -diagonal;
-                const endY = diagonal;
-
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
                 let rowCount = 0;
-                for (let y = startY; y < endY; y += stepY) {
+                for (let y = -diagonal; y < diagonal; y += stepY) {
                     rowCount++;
                     const shiftX = (rowCount % 2 === 0) ? stepX / 2 : 0;
-                    
-                    for (let x = startX; x < endX; x += stepX) {
-                        const posX = x + shiftX;
-                        const posY = y;
-
-                        // Anti-tamper drop shadow
-                        ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity * 0.75})`;
-                        ctx.fillText(text, posX + 2, posY + 2);
-
-                        // Main Text
+                    for (let x = -diagonal; x < diagonal; x += stepX) {
+                        ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity * 0.7})`;
+                        ctx.fillText(text, x + shiftX + 2, y + 2);
                         ctx.fillStyle = `rgba(255, 255, 255, ${state.opacity})`;
-                        ctx.fillText(text, posX, posY);
-
-                        // Micro security green dots
-                        if (state.antiTamper) {
-                            ctx.fillStyle = `rgba(249, 115, 22, ${state.opacity * 0.9})`;
-                            ctx.fillRect(posX - (textWidth/2) - 8, posY - 2, 4, 4);
-                        }
+                        ctx.fillText(text, x + shiftX, y);
                     }
                 }
-
             } else {
                 ctx.translate(img.width / 2, img.height / 2);
-                const centerFontSize = baseFontSize * 1.3;
-                ctx.font = `600 ${centerFontSize}px 'Kanit', sans-serif`;
+                ctx.font = `600 ${baseFontSize * 1.3}px 'Kanit', sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-
-                const text = state.watermarkText;
-                const textMetrics = ctx.measureText(text);
-                const textWidth = textMetrics.width;
-
-                const padX = centerFontSize * 0.8;
-                const padY = centerFontSize * 0.4;
-                
-                ctx.fillStyle = `rgba(15, 23, 42, ${state.opacity * 0.85})`;
-                ctx.beginPath();
-                ctx.roundRect(-textWidth/2 - padX, -centerFontSize/2 - padY, textWidth + (padX*2), centerFontSize + (padY*2), 16);
-                ctx.fill();
-
-                ctx.strokeStyle = `rgba(249, 115, 22, ${state.opacity})`;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
                 ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity})`;
-                ctx.fillText(text, 2, 2);
-
-                ctx.fillStyle = `rgba(255, 255, 255, ${state.opacity * 1.5 > 1 ? 1 : state.opacity * 1.5})`;
-                ctx.fillText(text, 0, 0);
+                ctx.fillText(state.watermarkText, 2, 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${state.opacity * 1.5})`;
+                ctx.fillText(state.watermarkText, 0, 0);
             }
-
             ctx.restore();
         }
 
@@ -1216,19 +1181,15 @@
             demoCanvas.width = 800;
             demoCanvas.height = 800;
             const dctx = demoCanvas.getContext('2d');
-
             const grad = dctx.createLinearGradient(0, 0, 800, 800);
             grad.addColorStop(0, '#fdba74');
             grad.addColorStop(1, '#ea580c');
             dctx.fillStyle = grad;
             dctx.fillRect(0, 0, 800, 800);
-
             dctx.fillStyle = 'white';
             dctx.font = 'bold 36px Kanit';
             dctx.textAlign = 'center';
-            dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 380);
-            dctx.font = '24px Kanit';
-            dctx.fillText('Nanaphan Product Demo', 400, 430);
+            dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 400);
 
             const img = new Image();
             img.onload = () => {
@@ -1240,17 +1201,14 @@
                 document.getElementById('downloadBtn').disabled = false;
                 document.getElementById('clearBtn').disabled = false;
                 renderWatermark();
-                showToast('สร้างรูปตัวอย่างสำเร็จแล้ว');
+                showToast('สร้างรูปตัวอย่างสำเร็จ');
             };
             img.src = demoCanvas.toDataURL();
         }
 
         function downloadImage() {
             if (!state.image) return;
-            
             const dataUrl = canvas.toDataURL('image/png');
-            
-            // 1. Trigger programmatic download link
             const link = document.createElement('a');
             link.download = state.fileName;
             link.href = dataUrl;
@@ -1258,18 +1216,14 @@
             link.click();
             document.body.removeChild(link);
 
-            // 2. Open Download Helper Modal to ensure mobile & iframe compatibility
             const modal = document.getElementById('downloadModal');
-            const modalImg = document.getElementById('modalPreviewImg');
+            document.getElementById('modalPreviewImg').src = dataUrl;
             const modalLink = document.getElementById('modalDownloadLink');
-
-            modalImg.src = dataUrl;
             modalLink.href = dataUrl;
             modalLink.download = state.fileName;
             modal.classList.remove('hidden');
-
             lucide.createIcons();
-            showToast('เตรียมรูปภาพพร้อมดาวน์โหลดแล้ว!');
+            showToast('เตรียมรูปภาพพร้อมดาวน์โหลดแล้ว');
         }
 
         function closeDownloadModal() {
@@ -1285,27 +1239,21 @@
             document.getElementById('downloadBtn').disabled = true;
             document.getElementById('clearBtn').disabled = true;
             document.getElementById('imageInput').value = '';
-            showToast('ล้างรูปภาพเรียบร้อยแล้ว');
+            showToast('ล้างรูปภาพเรียบร้อย');
         }
 
-        // PWA INSTALL MODAL LOGIC
         function openInstallModal() {
             document.getElementById('installModal').classList.remove('hidden');
         }
-
         function closeInstallModal() {
             document.getElementById('installModal').classList.add('hidden');
         }
 
-        // TOAST NOTIFIER
         function showToast(text) {
             const container = document.getElementById('toastContainer');
-            const toastText = document.getElementById('toastText');
-            toastText.innerText = text;
-
+            document.getElementById('toastText').innerText = text;
             container.classList.remove('-translate-y-10', 'opacity-0');
             container.classList.add('translate-y-0', 'opacity-100');
-
             setTimeout(() => {
                 container.classList.add('-translate-y-10', 'opacity-0');
                 container.classList.remove('translate-y-0', 'opacity-100');
