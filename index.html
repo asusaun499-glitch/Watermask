@@ -501,6 +501,34 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: Download Helper & Preview           -->
+    <!-- ========================================== -->
+    <div id="downloadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white text-center">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> พร้อมบันทึกรูปภาพสินค้า
+                </h3>
+                <button onclick="closeDownloadModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-600">
+                หากมือถือไม่ดาวน์โหลดอัตโนมัติ ให้ <span class="font-bold text-brand-600">กดค้างที่รูปภาพด้านล่าง</span> แล้วเลือก <span class="font-bold text-slate-800">"บันทึกรูปภาพ" (Save Image)</span>
+            </p>
+            
+            <div class="rounded-2xl overflow-hidden bg-slate-900 p-2 max-h-56 flex items-center justify-center border border-slate-200">
+                <img id="modalPreviewImg" src="" alt="Watermarked Preview" class="max-h-48 object-contain rounded-xl shadow-md">
+            </div>
+
+            <a id="modalDownloadLink" href="#" download="nanaphan-product.png" class="w-full py-3 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปลงเครื่องอีกครั้ง
+            </a>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- JAVASCRIPT APP CORE LOGIC                  -->
     <!-- ========================================== -->
     <script>
@@ -952,11 +980,33 @@
 
         function downloadImage() {
             if (!state.image) return;
+            
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            // 1. Trigger programmatic download link
             const link = document.createElement('a');
             link.download = state.fileName;
-            link.href = canvas.toDataURL('image/png');
+            link.href = dataUrl;
+            document.body.appendChild(link);
             link.click();
-            showToast('บันทึกรูปภาพใส่ลายน้ำสำเร็จ!');
+            document.body.removeChild(link);
+
+            // 2. Open Download Helper Modal to ensure mobile & iframe compatibility
+            const modal = document.getElementById('downloadModal');
+            const modalImg = document.getElementById('modalPreviewImg');
+            const modalLink = document.getElementById('modalDownloadLink');
+
+            modalImg.src = dataUrl;
+            modalLink.href = dataUrl;
+            modalLink.download = state.fileName;
+            modal.classList.remove('hidden');
+
+            lucide.createIcons();
+            showToast('เตรียมรูปภาพพร้อมดาวน์โหลดแล้ว!');
+        }
+
+        function closeDownloadModal() {
+            document.getElementById('downloadModal').classList.add('hidden');
         }
 
         function clearImage() {
