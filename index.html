@@ -1,43 +1,38 @@
 <!DOCTYPE html>
-<html lang="th" class="dark">
+<html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบใส่ลายน้ำอัตโนมัติ - ร้านนานาภัณฑ์ จ.ขอนแก่น</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NanaphanHub - ระบบบริหารจัดการร้านนานาภัณฑ์ จ.ขอนแก่น</title>
+    
+    <!-- PWA & Mobile Web App Settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NanaphanHub">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
-                        },
-                        accent: {
-                            500: '#6366f1',
-                            600: '#4f46e5'
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
                         }
                     },
                     fontFamily: {
                         kanit: ['Kanit', 'sans-serif'],
                     },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 4s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-8px)' },
-                        }
+                    borderRadius: {
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
                     }
                 }
             }
@@ -53,30 +48,41 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body {
+        * {
             font-family: 'Kanit', sans-serif;
-            background: #090d16;
-            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 100%);
-            min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        /* Native App style cards and glassmorphism */
-        .glass-card {
-            background: rgba(18, 26, 43, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+        body {
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(234, 88, 12, 0.05) 0px, transparent 50%);
+            min-height: 100vh;
         }
 
-        .mobile-card-shadow {
-            box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        /* App-like smooth transitions */
+        .page-view {
+            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+        }
+        
+        .page-view.hidden-view {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.98);
+        }
+
+        .page-view.active-view {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
         }
 
         /* Custom Mobile Sliders */
         input[type=range] {
             -webkit-appearance: none;
-            background: #1e293b;
+            background: #e2e8f0;
             border-radius: 999px;
             height: 8px;
         }
@@ -85,352 +91,730 @@
             height: 22px;
             width: 22px;
             border-radius: 50%;
-            background: #22c55e;
+            background: #f97316;
             cursor: pointer;
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
-            transition: transform 0.15s ease, background-color 0.15s ease;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+            transition: transform 0.15s ease;
         }
         input[type=range]::-webkit-slider-thumb:active {
             transform: scale(1.25);
-            background: #4ade80;
         }
 
-        /* Smooth tab animations */
-        .tab-btn {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
-        .tab-btn.active {
-            background-color: #22c55e;
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+
+        .orange-gradient-card {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+        }
+
+        /* Hide scrollbars for clean app feel */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="text-slate-100 antialiased flex flex-col justify-between min-h-screen pb-20 lg:pb-0">
+<body class="text-slate-800 antialiased flex flex-col justify-between min-h-screen">
 
-    <!-- Mobile App-Style Header Bar -->
-    <header class="sticky top-0 z-40 glass-card border-b border-slate-800/80 px-4 py-3">
-        <div class="max-w-5xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20 active:scale-95 transition-transform">
-                    <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+    <!-- Toast Notification Overlay -->
+    <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 transform -translate-y-10 opacity-0">
+        <div id="toastMessage" class="glass-card shadow-xl rounded-2xl px-5 py-3 border border-slate-200 text-sm font-medium flex items-center gap-2.5 text-slate-800">
+            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
+            <span id="toastText">แจ้งเตือนสำเร็จ</span>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: LOGIN PAGE (Admin System)           -->
+    <!-- ========================================== -->
+    <section id="loginView" class="page-view active-view min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md space-y-6">
+            <!-- App Header Title -->
+            <div class="text-center space-y-2">
+                <div class="w-20 h-20 rounded-3xl orange-gradient-card mx-auto flex items-center justify-center text-white shadow-xl shadow-brand-500/30 animate-bounce">
+                    <i data-lucide="store" class="w-10 h-10"></i>
                 </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-wide text-white">
-                            ร้านนานาภัณฑ์ จ.ขอนแก่น
-                        </h1>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                            Auto Watermark
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-400 font-light flex items-center gap-1.5 mt-0.5">
-                        <span class="inline-block w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-                        ใส่ลายน้ำกันปลอมแปลงสินค้า
-                    </p>
-                </div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NanaphanHub Portal</h1>
+                <p class="text-xs text-slate-500 font-normal">ระบบเข้าสู่ระบบสำหรับผู้ดูแล ร้านนานาภัณฑ์ จ.ขอนแก่น</p>
             </div>
 
-            <!-- Quick Action Top Button -->
-            <button id="topUploadBtn" onclick="document.getElementById('imageInput').click()" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 border border-brand-500/30 text-xs font-semibold transition-all active:scale-95">
-                <i data-lucide="upload" class="w-4 h-4"></i>
-                <span>เปลี่ยนรูป</span>
-            </button>
-        </div>
-    </header>
+            <!-- Login Box -->
+            <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 space-y-5 border border-white">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="shield-lock" class="w-5 h-5 text-brand-500"></i> เข้าสู่ระบบ Admin
+                    </h2>
+                    <span class="text-[11px] font-medium bg-brand-50 text-brand-600 px-2.5 py-0.5 rounded-full border border-brand-100">
+                        IP Locked Session
+                    </span>
+                </div>
 
-    <main class="max-w-5xl mx-auto px-4 py-4 sm:py-6 w-full flex-grow">
-
-        <!-- Mobile Segmented View Controller (Visible on Mobile) -->
-        <div class="lg:hidden mb-4 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center gap-1">
-            <button id="tabControls" class="tab-btn flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 flex items-center justify-center gap-2">
-                <i data-lucide="sliders" class="w-4 h-4"></i> ปรับแต่งลายน้ำ
-            </button>
-            <button id="tabPreview" class="tab-btn active flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 flex items-center justify-center gap-2">
-                <i data-lucide="image" class="w-4 h-4"></i> ดูตัวอย่างรูปภาพ
-            </button>
-        </div>
-
-        <!-- Main Responsive Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-            <!-- LEFT PANEL: Controls (Matching exact screenshot design) -->
-            <div id="controlsContainer" class="hidden lg:block lg:col-span-5 space-y-4">
-
-                <!-- Control Panel Card -->
-                <div class="glass-card mobile-card-shadow rounded-3xl p-5 sm:p-6 space-y-5">
-                    
-                    <!-- Header with Reset Button -->
-                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-3.5">
-                        <h2 class="text-base font-bold flex items-center gap-2 text-white tracking-wide">
-                            <i data-lucide="sliders-horizontal" class="w-5 h-5 text-emerald-400"></i> ปรับแต่งสไตล์ลายน้ำ
-                        </h2>
-                        <button id="resetBtn" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors px-2 py-1 rounded-xl hover:bg-slate-800/60 active:scale-95">
-                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> รีเซ็ต
-                        </button>
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-600">ชื่อผู้ใช้งาน (Username)</label>
+                        <div class="relative">
+                            <input type="text" id="usernameInput" required placeholder="กรอกชื่อผู้ใช้ (Admin)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                        </div>
                     </div>
 
-                    <!-- Locked Watermark Text Box -->
                     <div class="space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <label class="text-xs font-semibold text-slate-200">ข้อความลายน้ำ (ล็อคระบบ)</label>
-                            <span class="text-slate-400 text-[11px] flex items-center gap-1">
-                                <i data-lucide="lock" class="w-3 h-3 text-emerald-400"></i> ห้ามแก้ไข
+                        <label class="text-xs font-semibold text-slate-600">รหัสผ่าน (Password)</label>
+                        <div class="relative">
+                            <input type="password" id="passwordInput" required placeholder="กรอกรหัสผ่าน (admin)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                            <i data-lucide="key-round" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                        </div>
+                    </div>
+
+                    <!-- Remember session note -->
+                    <div class="p-3 rounded-2xl bg-orange-50 border border-orange-100 text-[11px] text-orange-800 flex items-start gap-2">
+                        <i data-lucide="info" class="w-4 h-4 text-brand-500 shrink-0 mt-0.5"></i>
+                        <span>ระบบบันทึกความจำอุปกรณ์ (Session Persisted) เข้าสู่ระบบแล้วจะไม่ต้องล็อกอินซ้ำอีก</span>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 rounded-2xl orange-gradient-card text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                        <span>เข้าสู่ระบบ</span>
+                    </button>
+                </form>
+            </div>
+
+            <p class="text-center text-xs text-slate-400">ร้านนานาภัณฑ์ จ.ขอนแก่น &copy; 2026</p>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: MAIN HOME DASHBOARD (ArunHub Style) -->
+    <!-- ========================================== -->
+    <div id="mainAppWrapper" class="hidden-view min-h-screen flex flex-col justify-between">
+        <main id="homeView" class="page-view max-w-lg mx-auto w-full px-4 py-5 space-y-4">
+            
+            <!-- 1. Top Greeting Card (Orange ArunHub style) -->
+            <div class="orange-gradient-card rounded-3xl p-5 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
+                <!-- Background decorative elements -->
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+                
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250" 
+                            alt="Profile" class="w-12 h-12 rounded-2xl object-cover border-2 border-white/40 shadow-sm">
+                        <div>
+                            <p class="text-[11px] text-orange-100 font-light">ยินดีต้อนรับสู่ NanaphanHub</p>
+                            <h2 class="text-base font-bold leading-tight">สวัสดี ร้านนานาภัณฑ์</h2>
+                            <span class="inline-block mt-0.5 px-2 py-0.2 text-[10px] bg-white/20 rounded-full font-medium text-white backdrop-blur-sm">
+                                Administrator (Admin)
                             </span>
                         </div>
-                        <div class="relative group">
-                            <input type="text" value="ร้านนานาภัณฑ์ จ.ขอนแก่น" readonly 
-                                class="w-full bg-slate-950/80 border border-slate-800 text-emerald-400 text-sm font-semibold rounded-2xl px-4 py-3 pl-10 focus:outline-none cursor-not-allowed select-none transition-all shadow-inner">
-                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500 absolute left-3.5 top-3"></i>
-                        </div>
-                        <p class="text-[11px] text-slate-400 leading-relaxed pt-0.5">
-                            ออกแบบมาเพื่อการันตีความเป็นเจ้าของภาพ ป้องกัน AI ลบออกได้ยาก
-                        </p>
                     </div>
-
-                    <!-- Layout Options (Tile vs Center) -->
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-200">รูปแบบการจัดวาง</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button id="patternTile" class="pattern-btn active flex items-center justify-center gap-2.5 p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 text-emerald-400 text-xs font-bold transition-all active:scale-95 shadow-lg shadow-emerald-500/10">
-                                <i data-lucide="grid-3x3" class="w-4 h-4"></i>
-                                <span>ตารางซ้ำ (แนะนำ)</span>
-                            </button>
-                            <button id="patternCenter" class="pattern-btn flex items-center justify-center gap-2.5 p-3 rounded-2xl border border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700 text-xs font-medium transition-all active:scale-95">
-                                <i data-lucide="square" class="w-4 h-4"></i>
-                                <span>ตราตรงกลาง</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Quick Preset Buttons for 1-Tap Convenience -->
-                    <div class="pt-1">
-                        <label class="text-[11px] font-medium text-slate-400 mb-1.5 block">ทางลัดระดับความชัด:</label>
-                        <div class="flex items-center gap-2">
-                            <button onclick="setPreset(0.16)" class="flex-1 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-[11px] font-medium text-slate-300 transition-all active:scale-95">
-                                บางเบา 16%
-                            </button>
-                            <button onclick="setPreset(0.25)" class="flex-1 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-[11px] font-medium text-slate-300 transition-all active:scale-95">
-                                สมดุล 25%
-                            </button>
-                            <button onclick="setPreset(0.40)" class="flex-1 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-[11px] font-medium text-slate-300 transition-all active:scale-95">
-                                ชัดเจน 40%
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Opacity Slider -->
-                    <div class="space-y-2 pt-1">
-                        <div class="flex justify-between items-center text-xs">
-                            <label class="font-semibold text-slate-200">ความจาง/ความชัด (Opacity)</label>
-                            <span id="opacityVal" class="font-mono text-emerald-400 font-bold text-sm">16%</span>
-                        </div>
-                        <input type="range" id="opacitySlider" min="8" max="60" value="16" class="w-full">
-                        <p class="text-[11px] text-slate-400">ปรับให้ไม่บังสินค้าเกินไป แต่ยังเห็นได้ชัดเจน</p>
-                    </div>
-
-                    <!-- Scale Slider -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center text-xs">
-                            <label class="font-semibold text-slate-200">ขนาดตัวอักษร (Scale)</label>
-                            <span id="scaleVal" class="font-mono text-emerald-400 font-bold text-sm">96%</span>
-                        </div>
-                        <input type="range" id="scaleSlider" min="50" max="180" value="96" class="w-full">
-                    </div>
-
-                    <!-- Density Slider -->
-                    <div id="densityControl" class="space-y-2">
-                        <div class="flex justify-between items-center text-xs">
-                            <label class="font-semibold text-slate-200">ความถี่ของลายน้ำ (Density)</label>
-                            <span id="densityVal" class="font-mono text-emerald-400 font-bold text-xs bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">ปานกลาง</span>
-                        </div>
-                        <input type="range" id="densitySlider" min="1" max="3" value="2" step="1" class="w-full">
-                    </div>
-
-                    <!-- Toggle Switch: Anti-tamper Mode -->
-                    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-200 flex items-center gap-2">
-                            <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-400"></i> โหมดป้องกันการไดคัทลบออก
-                        </span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="antiTamperToggle" checked class="sr-only peer">
-                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
-                        </label>
-                    </div>
-
+                    
+                    <button onclick="handleLogout()" title="ออกจากระบบ" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all">
+                        <i data-lucide="log-out" class="w-4 h-4 text-white"></i>
+                    </button>
                 </div>
 
-            </div>
-
-            <!-- RIGHT PANEL: Canvas & Preview (Mobile View Friendly) -->
-            <div id="previewContainer" class="lg:col-span-7 space-y-4">
-
-                <div class="glass-card mobile-card-shadow rounded-3xl p-4 sm:p-6 flex flex-col justify-between min-h-[460px] sm:min-h-[520px]">
-                    
-                    <!-- Preview Top Bar -->
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <h2 class="text-sm sm:text-base font-bold text-white tracking-wide">ตัวอย่างรูปภาพสินค้า</h2>
+                <!-- Featured Highlight Banner Button -->
+                <div onclick="switchView('watermarkView')" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-md">
+                            <i data-lucide="stamp" class="w-5 h-5"></i>
                         </div>
-
-                        <div id="imageDimensions" class="text-[11px] font-mono text-slate-400 bg-slate-900/90 px-3 py-1 rounded-xl border border-slate-800 hidden">
-                            0 x 0 px
+                        <div>
+                            <h3 class="text-xs font-bold text-white">ระบบใส่ลายน้ำสินค้า</h3>
+                            <p class="text-[11px] text-orange-100">ใส่ลายน้ำอัตโนมัติ ป้องกันการก๊อปรูปภาพ</p>
                         </div>
                     </div>
+                    <span class="px-3 py-1 rounded-full bg-white text-brand-600 text-xs font-bold flex items-center gap-1 shadow-sm">
+                        เปิด <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    </span>
+                </div>
+            </div>
 
-                    <!-- Main Canvas Viewport -->
-                    <div class="flex-grow flex items-center justify-center my-3 min-h-[300px] sm:min-h-[380px] bg-slate-950/80 rounded-2xl border border-slate-800/80 relative overflow-hidden p-2">
+            <!-- 2. Quick Action Cards (Middle Row) -->
+            <div class="grid grid-cols-12 gap-3">
+                <div onclick="switchView('watermarkView')" class="col-span-8 glass-card rounded-3xl p-4 flex items-center gap-3 shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+                    <div class="w-10 h-10 rounded-2xl bg-orange-100 text-brand-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800">จัดการรูปภาพสินค้า</h4>
+                        <p class="text-[10px] text-slate-400">แตะเพื่อเปิดใส่ลายน้ำ - ดูตัวอย่าง</p>
+                    </div>
+                </div>
+
+                <div onclick="showToast('โหมดประวัติกำลังพัฒนา')" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+                    <div class="w-8 h-8 rounded-xl bg-orange-50 text-brand-500 flex items-center justify-center mb-1">
+                        <i data-lucide="history" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-[11px] font-bold text-slate-700 leading-tight">ประวัติใช้งาน</span>
+                </div>
+            </div>
+
+            <!-- 3. All Categories Section (เมนูทั้งหมด Grid) -->
+            <div class="space-y-3 pt-1">
+                <div class="flex items-center justify-between px-1">
+                    <span class="px-3 py-1 rounded-full bg-white text-slate-600 text-xs font-bold border border-slate-200 shadow-2xs">
+                        เมนูทั้งหมด
+                    </span>
+                    <span class="text-[11px] text-slate-400">1 หมวดหมู่พร้อมใช้งาน</span>
+                </div>
+
+                <!-- Grid of Module Icons -->
+                <div id="modulesGrid" class="grid grid-cols-3 gap-3">
+                    <!-- Dynamic Modules will render here -->
+                </div>
+            </div>
+
+            <!-- 4. Add to Home Screen Button (PWA Prompt) -->
+            <div class="pt-4 pb-2 text-center space-y-3">
+                <button onclick="openInstallModal()" class="w-full py-3 px-4 rounded-2xl glass-card border border-slate-200 shadow-sm text-xs font-bold text-slate-700 hover:bg-white hover:text-brand-600 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="bookmark-plus" class="w-4 h-4 text-brand-500"></i>
+                    <span>เพิ่ม NanaphanHub ลงหน้าจอโฮม</span>
+                </button>
+
+                <div class="inline-block px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 text-[11px] font-medium border border-slate-200">
+                    ร้านนานาภัณฑ์ จ.ขอนแก่น
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: WATERMARK TOOL MODULE              -->
+        <!-- ========================================== -->
+        <section id="watermarkView" class="page-view hidden-view max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
+            
+            <!-- Module Navigation Bar -->
+            <div class="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
+                <button onclick="switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>กลับหน้าหลัก</span>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h1 class="text-xs font-bold text-slate-800">ระบบใส่ลายน้ำอัตโนมัติ</h1>
+                </div>
+
+                <button id="resetBtn" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 active:scale-95">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> รีเซ็ต
+                </button>
+            </div>
+
+            <!-- Segmented Control for Mobile Screens -->
+            <div class="lg:hidden mb-4 p-1 rounded-2xl bg-slate-200/80 border border-slate-300/60 flex items-center gap-1">
+                <button id="tabPreview" class="tab-btn active flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> ดูตัวอย่างรูปภาพ
+                </button>
+                <button id="tabControls" class="tab-btn flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all">
+                    <i data-lucide="sliders" class="w-3.5 h-3.5"></i> ปรับแต่งลายน้ำ
+                </button>
+            </div>
+
+            <!-- Responsive Main Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+                <!-- CONTROLS CONTAINER (Styled exactly like requested screenshot) -->
+                <div id="controlsContainer" class="hidden lg:block lg:col-span-5 space-y-4">
+                    <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-4">
                         
-                        <!-- Tap / Drop Upload Box (Empty State) -->
-                        <div id="emptyState" onclick="document.getElementById('imageInput').click()" class="flex flex-col items-center justify-center text-center p-6 space-y-4 cursor-pointer group hover:opacity-90 transition-opacity">
-                            <input type="file" id="imageInput" accept="image/*" class="hidden">
-                            
-                            <div class="w-20 h-20 rounded-3xl bg-slate-900 border-2 border-dashed border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-xl group-hover:scale-105 transition-transform">
-                                <i data-lucide="image-plus" class="w-10 h-10"></i>
-                            </div>
-                            
-                            <div class="max-w-xs space-y-1">
-                                <p class="text-slate-100 font-bold text-base">แตะที่นี่เพื่อเลือกรูปภาพ</p>
-                                <p class="text-xs text-slate-400">หรือลากไฟล์รูปภาพมาวางที่นี่ได้ทันที</p>
-                            </div>
+                        <!-- Header -->
+                        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-brand-500"></i> ปรับแต่งสไตล์ลายน้ำ
+                            </h2>
+                        </div>
 
-                            <div class="pt-2">
-                                <button type="button" id="selectDemoBtn" onclick="event.stopPropagation(); createDemoImage();" class="px-4 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold border border-emerald-500/30 transition-all active:scale-95 flex items-center gap-2 shadow-lg">
-                                    <i data-lucide="sparkles" class="w-4 h-4"></i> ลองใช้รูปตัวอย่าง
+                        <!-- Locked Text -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-xs">
+                                <label class="font-bold text-slate-700">ข้อความลายน้ำ (ล็อคระบบ)</label>
+                                <span class="text-[11px] text-slate-400 flex items-center gap-1">
+                                    <i data-lucide="lock" class="w-3 h-3 text-brand-500"></i> ห้ามแก้ไข
+                                </span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" value="ร้านนานาภัณฑ์ จ.ขอนแก่น" readonly 
+                                    class="w-full bg-slate-100 border border-slate-200 text-brand-600 font-bold text-xs rounded-2xl px-4 py-2.5 pl-9 focus:outline-none cursor-not-allowed">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-brand-500 absolute left-3 top-3"></i>
+                            </div>
+                            <p class="text-[10px] text-slate-400">การันตีความเป็นเจ้าของภาพ ป้องกัน AI ลบออกได้ยาก</p>
+                        </div>
+
+                        <!-- Pattern Layout Options -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-700">รูปแบบการจัดวาง</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button id="patternTile" class="pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                    <i data-lucide="grid-3x3" class="w-4 h-4"></i>
+                                    <span>ตารางซ้ำ (แนะนำ)</span>
+                                </button>
+                                <button id="patternCenter" class="pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                                    <i data-lucide="square" class="w-4 h-4"></i>
+                                    <span>ตราตรงกลาง</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Processing Loader -->
-                        <div id="loader" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-20 flex flex-col items-center justify-center gap-3">
-                            <div class="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
-                            <p class="text-xs text-emerald-400 font-medium">กำลังประมวลผลลายน้ำ...</p>
+                        <!-- Quick Opacity Presets -->
+                        <div class="pt-1">
+                            <label class="text-[10px] font-semibold text-slate-400 block mb-1">ทางลัดระดับความชัด:</label>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="setPreset(0.16)" class="flex-1 py-1 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-[11px] font-medium text-slate-600 transition-all">16%</button>
+                                <button onclick="setPreset(0.25)" class="flex-1 py-1 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-[11px] font-medium text-slate-600 transition-all">25%</button>
+                                <button onclick="setPreset(0.40)" class="flex-1 py-1 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-[11px] font-medium text-slate-600 transition-all">40%</button>
+                            </div>
                         </div>
 
-                        <!-- Canvas Display -->
-                        <canvas id="previewCanvas" class="max-w-full max-h-[420px] object-contain rounded-xl shadow-2xl hidden"></canvas>
+                        <!-- Opacity Slider -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <label class="font-semibold text-slate-700">ความจาง/ความชัด (Opacity)</label>
+                                <span id="opacityVal" class="font-mono text-brand-600 font-bold text-xs">16%</span>
+                            </div>
+                            <input type="range" id="opacitySlider" min="8" max="60" value="16" class="w-full">
+                        </div>
+
+                        <!-- Scale Slider -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <label class="font-semibold text-slate-700">ขนาดตัวอักษร (Scale)</label>
+                                <span id="scaleVal" class="font-mono text-brand-600 font-bold text-xs">96%</span>
+                            </div>
+                            <input type="range" id="scaleSlider" min="50" max="180" value="96" class="w-full">
+                        </div>
+
+                        <!-- Density Slider -->
+                        <div id="densityControl" class="space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <label class="font-semibold text-slate-700">ความถี่ของลายน้ำ (Density)</label>
+                                <span id="densityVal" class="font-mono text-brand-600 font-bold text-[10px] bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">ปานกลาง</span>
+                            </div>
+                            <input type="range" id="densitySlider" min="1" max="3" value="2" step="1" class="w-full">
+                        </div>
+
+                        <!-- Anti-tamper Switch -->
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-brand-500"></i> โหมดป้องกันไดคัทลบออก
+                            </span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="antiTamperToggle" checked class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
+                            </label>
+                        </div>
+
                     </div>
+                </div>
 
-                    <!-- Action Buttons Desktop & Tablet View -->
-                    <div class="hidden lg:flex items-center justify-between gap-3 pt-2 border-t border-slate-800/60">
-                        <button id="clearBtn" disabled class="px-4 py-2.5 rounded-2xl border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 font-semibold text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 active:scale-95">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i> ลบรูป
-                        </button>
+                <!-- PREVIEW CONTAINER -->
+                <div id="previewContainer" class="lg:col-span-7 space-y-4">
+                    <div class="glass-card rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 flex flex-col justify-between min-h-[420px]">
+                        
+                        <!-- Canvas Header -->
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <h3 class="text-xs font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="eye" class="w-4 h-4 text-brand-500"></i> ตัวอย่างรูปภาพสินค้า
+                            </h3>
+                            <div id="imageDimensions" class="text-[10px] font-mono text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 hidden">
+                                0 x 0 px
+                            </div>
+                        </div>
 
-                        <button id="downloadBtn" disabled class="px-7 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs transition-all shadow-xl shadow-emerald-600/25 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2">
-                            <i data-lucide="download" class="w-4.5 h-4.5"></i> บันทึกรูปภาพสินค้า
-                        </button>
+                        <!-- Main Canvas Box -->
+                        <div class="flex-grow flex items-center justify-center my-3 min-h-[300px] bg-slate-900 rounded-2xl relative overflow-hidden p-2">
+                            
+                            <!-- Empty State File Upload -->
+                            <div id="emptyState" onclick="document.getElementById('imageInput').click()" class="flex flex-col items-center justify-center text-center p-6 space-y-3 cursor-pointer group">
+                                <input type="file" id="imageInput" accept="image/*" class="hidden">
+                                
+                                <div class="w-16 h-16 rounded-3xl bg-slate-800 border-2 border-dashed border-brand-500/50 flex items-center justify-center text-brand-400 shadow-lg group-hover:scale-105 transition-transform">
+                                    <i data-lucide="image-plus" class="w-8 h-8"></i>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-white font-bold text-sm">แตะเพื่อเลือกรูปภาพสินค้า</p>
+                                    <p class="text-[11px] text-slate-400">รองรับไฟล์ JPG, PNG, WEBP</p>
+                                </div>
+
+                                <button type="button" onclick="event.stopPropagation(); createDemoImage();" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-brand-400 text-xs font-semibold border border-brand-500/30 transition-all flex items-center gap-1.5 shadow-sm">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ลองใช้รูปตัวอย่าง
+                                </button>
+                            </div>
+
+                            <canvas id="previewCanvas" class="max-w-full max-h-[380px] object-contain rounded-xl shadow-2xl hidden"></canvas>
+                        </div>
+
+                        <!-- Action Bar Buttons -->
+                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                            <button id="clearBtn" disabled class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i> ลบรูป
+                            </button>
+
+                            <button id="downloadBtn" disabled class="flex-1 py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปภาพสินค้า
+                            </button>
+                        </div>
+
                     </div>
-
                 </div>
 
             </div>
+        </section>
 
-        </div>
-
-    </main>
-
-    <!-- Sticky Mobile Bottom Bar (Action Center for Phones) -->
-    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-3 glass-card border-t border-slate-800 bg-slate-950/90 flex items-center gap-2">
-        <button id="mobileUploadBtn" onclick="document.getElementById('imageInput').click()" class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center active:scale-95">
-            <i data-lucide="image-plus" class="w-5 h-5 text-emerald-400"></i>
-        </button>
-
-        <button id="mobileDownloadBtn" disabled class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-            <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปภาพ
-        </button>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL: Add to Home Screen Instructions     -->
+    <!-- ========================================== -->
+    <div id="installModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="smartphone" class="w-5 h-5 text-brand-500"></i> ติดตั้ง NanaphanHub
+                </h3>
+                <button onclick="closeInstallModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-600">
+                <p>เปิดใช้งานได้เสมือนแอปจริงบนมือถือ ไม่ต้องดาวน์โหลดผ่าน App Store</p>
+
+                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                    <p class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="apple" class="w-4 h-4 text-slate-700"></i> บน iOS / iPhone (Safari):
+                    </p>
+                    <ol class="list-decimal list-inside text-[11px] text-slate-500 space-y-1 pl-1">
+                        <li>กดปุ่ม <span class="font-bold text-slate-700">Share (แชร์)</span> ด้านล่าง</li>
+                        <li>เลือก <span class="font-bold text-slate-700">Add to Home Screen (เพิ่มไปยังหน้าจอโฮม)</span></li>
+                    </ol>
+                </div>
+
+                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                    <p class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="chrome" class="w-4 h-4 text-emerald-600"></i> บน Android (Chrome):
+                    </p>
+                    <ol class="list-decimal list-inside text-[11px] text-slate-500 space-y-1 pl-1">
+                        <li>กดเมนูจุด 3 จุดมุมขวาบน</li>
+                        <li>เลือก <span class="font-bold text-slate-700">Install app / เพิ่มลงในหน้าจอหลัก</span></li>
+                    </ol>
+                </div>
+            </div>
+
+            <button onclick="closeInstallModal()" class="w-full py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md">
+                รับทราบ
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT APP CORE LOGIC                  -->
+    <!-- ========================================== -->
     <script>
-        // Updated State matching exact values requested
+        
+        // Modules Configuration Array (Easily add more modules in future!)
+        const APP_MODULES = [
+            {
+                id: 'watermark',
+                title: 'ใส่ลายน้ำ',
+                badge: 'ใหม่',
+                badgeColor: 'bg-rose-500 text-white',
+                icon: 'stamp',
+                iconBg: 'bg-brand-500 text-white',
+                active: true,
+                action: () => switchView('watermarkView')
+            },
+            {
+                id: 'price_tag',
+                title: 'ป้ายราคาสินค้า',
+                badge: 'เร็วๆ นี้',
+                badgeColor: 'bg-slate-200 text-slate-600',
+                icon: 'tag',
+                iconBg: 'bg-orange-100 text-brand-600',
+                active: false,
+                action: () => showToast('โมดูล "ป้ายราคาสินค้า" กำลังพัฒนา')
+            },
+            {
+                id: 'stock',
+                title: 'ตารางสต็อก',
+                badge: 'เร็วๆ นี้',
+                badgeColor: 'bg-slate-200 text-slate-600',
+                icon: 'boxes',
+                iconBg: 'bg-orange-100 text-brand-600',
+                active: false,
+                action: () => showToast('โมดูล "ตารางสต็อก" กำลังพัฒนา')
+            },
+            {
+                id: 'profit',
+                title: 'คำนวณกำไร',
+                badge: 'เร็วๆ นี้',
+                badgeColor: 'bg-slate-200 text-slate-600',
+                icon: 'calculator',
+                iconBg: 'bg-orange-100 text-brand-600',
+                active: false,
+                action: () => showToast('โมดูล "คำนวณกำไร" กำลังพัฒนา')
+            },
+            {
+                id: 'catalog',
+                title: 'ผลงาน/แคตตาล็อก',
+                badge: 'เร็วๆ นี้',
+                badgeColor: 'bg-slate-200 text-slate-600',
+                icon: 'image-album',
+                iconBg: 'bg-orange-100 text-brand-600',
+                active: false,
+                action: () => showToast('โมดูล "ผลงานของฉัน" กำลังพัฒนา')
+            },
+            {
+                id: 'settings',
+                title: 'ตั้งค่าร้านค้า',
+                badge: 'เร็วๆ นี้',
+                badgeColor: 'bg-slate-200 text-slate-600',
+                icon: 'settings-2',
+                iconBg: 'bg-orange-100 text-brand-600',
+                active: false,
+                action: () => showToast('โมดูล "ตั้งค่าร้านค้า" กำลังพัฒนา')
+            }
+        ];
+
+        // Watermark Generator Internal State
         const state = {
             image: null,
-            fileName: 'watermarked-image.png',
+            fileName: 'nanaphan-product.png',
             watermarkText: 'ร้านนานาภัณฑ์ จ.ขอนแก่น',
             pattern: 'tile', // 'tile' or 'center'
-            opacity: 0.16, // Default 16% as in screenshot
-            scale: 0.96,  // Default 96% as in screenshot
-            density: 2,   // Default medium density
+            opacity: 0.16,
+            scale: 0.96,
+            density: 2,
             antiTamper: true
         };
 
-        // DOM elements
-        const imageInput = document.getElementById('imageInput');
-        const previewCanvas = document.getElementById('previewCanvas');
-        const emptyState = document.getElementById('emptyState');
-        const loader = document.getElementById('loader');
-        const imageDimensions = document.getElementById('imageDimensions');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const mobileDownloadBtn = document.getElementById('mobileDownloadBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const resetBtn = document.getElementById('resetBtn');
+        // Initialize App on DOM Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderModulesGrid();
+            checkAuthSession();
+            setupWatermarkControls();
+        });
 
-        // Sliders & controls
-        const opacitySlider = document.getElementById('opacitySlider');
-        const opacityVal = document.getElementById('opacityVal');
-        const scaleSlider = document.getElementById('scaleSlider');
-        const scaleVal = document.getElementById('scaleVal');
-        const densitySlider = document.getElementById('densitySlider');
-        const densityVal = document.getElementById('densityVal');
-        const antiTamperToggle = document.getElementById('antiTamperToggle');
-        const patternTileBtn = document.getElementById('patternTile');
-        const patternCenterBtn = document.getElementById('patternCenter');
-
-        // Mobile Tab buttons
-        const tabControls = document.getElementById('tabControls');
-        const tabPreview = document.getElementById('tabPreview');
-        const controlsContainer = document.getElementById('controlsContainer');
-        const previewContainer = document.getElementById('previewContainer');
-
-        // Mobile Tab Switcher Logic
-        if (tabControls && tabPreview) {
-            tabControls.addEventListener('click', () => {
-                tabControls.classList.add('active');
-                tabPreview.classList.remove('active');
-                controlsContainer.classList.remove('hidden');
-                previewContainer.classList.add('hidden');
-            });
-
-            tabPreview.addEventListener('click', () => {
-                tabPreview.classList.add('active');
-                tabControls.classList.remove('active');
-                previewContainer.classList.remove('hidden');
-                controlsContainer.classList.add('hidden');
-            });
+        // AUTHENTICATION SYSTEM (Saved Session via LocalStorage)
+        function checkAuthSession() {
+            const session = localStorage.getItem('nanaphan_session');
+            if (session === 'authenticated_admin') {
+                showMainApp();
+            } else {
+                showLogin();
+            }
         }
 
-        // Quick Preset function
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('usernameInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+
+            if (user === 'Admin' && pass === 'admin') {
+                localStorage.setItem('nanaphan_session', 'authenticated_admin');
+                showToast('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ!');
+                showMainApp();
+            } else {
+                showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('nanaphan_session');
+            showToast('ออกจากระบบเรียบร้อย');
+            showLogin();
+        }
+
+        function showLogin() {
+            document.getElementById('loginView').classList.remove('hidden-view');
+            document.getElementById('loginView').classList.add('active-view');
+            document.getElementById('mainAppWrapper').classList.add('hidden-view');
+            document.getElementById('mainAppWrapper').classList.remove('active-view');
+        }
+
+        function showMainApp() {
+            document.getElementById('loginView').classList.add('hidden-view');
+            document.getElementById('loginView').classList.remove('active-view');
+            document.getElementById('mainAppWrapper').classList.remove('hidden-view');
+            document.getElementById('mainAppWrapper').classList.add('active-view');
+            switchView('homeView');
+        }
+
+        // VIEW ROUTER SWITCHER
+        function switchView(viewId) {
+            const views = document.querySelectorAll('#mainAppWrapper .page-view');
+            views.forEach(v => {
+                v.classList.add('hidden-view');
+                v.classList.remove('active-view');
+            });
+
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.classList.remove('hidden-view');
+                target.classList.add('active-view');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // DYNAMIC GRID MODULES RENDERER
+        function renderModulesGrid() {
+            const grid = document.getElementById('modulesGrid');
+            if (!grid) return;
+
+            grid.innerHTML = APP_MODULES.map(mod => `
+                <div onclick="APP_MODULES.find(m => m.id === '${mod.id}').action()" 
+                    class="glass-card rounded-3xl p-3.5 flex flex-col items-center justify-between text-center relative border border-slate-200/80 shadow-xs cursor-pointer active:scale-95 hover:shadow-md transition-all h-28">
+                    
+                    ${mod.badge ? `
+                        <span class="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${mod.badgeColor}">
+                            ${mod.badge}
+                        </span>
+                    ` : ''}
+
+                    <div class="w-11 h-11 rounded-2xl ${mod.iconBg} flex items-center justify-center mt-1 shadow-sm">
+                        <i data-lucide="${mod.icon}" class="w-5 h-5"></i>
+                    </div>
+
+                    <span class="text-xs font-bold text-slate-800 leading-tight">
+                        ${mod.title}
+                    </span>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function setupWatermarkControls() {
+            const opacitySlider = document.getElementById('opacitySlider');
+            const scaleSlider = document.getElementById('scaleSlider');
+            const densitySlider = document.getElementById('densitySlider');
+            const antiTamperToggle = document.getElementById('antiTamperToggle');
+            const patternTileBtn = document.getElementById('patternTile');
+            const patternCenterBtn = document.getElementById('patternCenter');
+            const imageInput = document.getElementById('imageInput');
+
+            imageInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleImageFile(e.target.files[0]);
+                }
+            });
+
+            opacitySlider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                state.opacity = val / 100;
+                document.getElementById('opacityVal').innerText = val + '%';
+                renderWatermark();
+            });
+
+            scaleSlider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                state.scale = val / 100;
+                document.getElementById('scaleVal').innerText = val + '%';
+                renderWatermark();
+            });
+
+            densitySlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                state.density = val;
+                const labels = { 1: 'น้อย', 2: 'ปานกลาง', 3: 'มาก' };
+                document.getElementById('densityVal').innerText = labels[val];
+                renderWatermark();
+            });
+
+            antiTamperToggle.addEventListener('change', (e) => {
+                state.antiTamper = e.target.checked;
+                renderWatermark();
+            });
+
+            patternTileBtn.addEventListener('click', () => {
+                state.pattern = 'tile';
+                patternTileBtn.classList.add('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                patternCenterBtn.classList.remove('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                renderWatermark();
+            });
+
+            patternCenterBtn.addEventListener('click', () => {
+                state.pattern = 'center';
+                patternCenterBtn.classList.add('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                patternTileBtn.classList.remove('active', 'border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600');
+                renderWatermark();
+            });
+
+            document.getElementById('downloadBtn').addEventListener('click', downloadImage);
+            document.getElementById('clearBtn').addEventListener('click', clearImage);
+
+            // Tab switcher for mobile preview/controls
+            const tabPreview = document.getElementById('tabPreview');
+            const tabControls = document.getElementById('tabControls');
+            const controlsContainer = document.getElementById('controlsContainer');
+
+            if (tabPreview && tabControls) {
+                tabPreview.addEventListener('click', () => {
+                    tabPreview.classList.add('active', 'bg-white', 'shadow-xs');
+                    tabControls.classList.remove('active', 'bg-white', 'shadow-xs');
+                    controlsContainer.classList.add('hidden');
+                });
+                tabControls.addEventListener('click', () => {
+                    tabControls.classList.add('active', 'bg-white', 'shadow-xs');
+                    tabPreview.classList.remove('active', 'bg-white', 'shadow-xs');
+                    controlsContainer.classList.remove('hidden');
+                });
+            }
+        }
+
         function setPreset(opacity) {
             state.opacity = opacity;
             const pct = Math.round(opacity * 100);
-            opacitySlider.value = pct;
-            opacityVal.innerText = pct + '%';
+            document.getElementById('opacitySlider').value = pct;
+            document.getElementById('opacityVal').innerText = pct + '%';
             renderWatermark();
-            showToast(`ตั้งค่าความจางเป็น ${pct}% แล้ว`);
+            showToast(`ปรับความจางเป็น ${pct}% แล้ว`);
         }
 
-        // Keep Mobile Download Sync
-        function updateDownloadButtonsState(disabled) {
-            downloadBtn.disabled = disabled;
-            if (mobileDownloadBtn) mobileDownloadBtn.disabled = disabled;
-            if (clearBtn) clearBtn.disabled = disabled;
+        function handleImageFile(file) {
+            state.fileName = 'watermarked-' + file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.image = img;
+                    document.getElementById('emptyState').classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    document.getElementById('imageDimensions').classList.remove('hidden');
+                    document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
+                    
+                    document.getElementById('downloadBtn').disabled = false;
+                    document.getElementById('clearBtn').disabled = false;
+
+                    renderWatermark();
+                    showToast('โหลดรูปภาพเรียบร้อยแล้ว');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
-        // Connect mobile download button
-        if (mobileDownloadBtn) {
-            mobileDownloadBtn.addEventListener('click', () => downloadBtn.click());
-        }
-
-        // Core Watermark Renderer with anti-counterfeit details
         function renderWatermark() {
             if (!state.image) return;
 
             const img = state.image;
-            previewCanvas.width = img.width;
-            previewCanvas.height = img.height;
+            canvas.width = img.width;
+            canvas.height = img.height;
 
-            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
 
             const minDim = Math.min(img.width, img.height);
@@ -475,17 +859,17 @@
                         const posY = y;
 
                         // Anti-tamper drop shadow
-                        ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity * 0.7})`;
+                        ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity * 0.75})`;
                         ctx.fillText(text, posX + 2, posY + 2);
 
                         // Main Text
                         ctx.fillStyle = `rgba(255, 255, 255, ${state.opacity})`;
                         ctx.fillText(text, posX, posY);
 
-                        // Anti-tamper micro security green dots
+                        // Micro security green dots
                         if (state.antiTamper) {
-                            ctx.fillStyle = `rgba(34, 197, 94, ${state.opacity * 0.9})`;
-                            ctx.fillRect(posX - (textWidth/2) - 10, posY - 2, 4, 4);
+                            ctx.fillStyle = `rgba(249, 115, 22, ${state.opacity * 0.9})`;
+                            ctx.fillRect(posX - (textWidth/2) - 8, posY - 2, 4, 4);
                         }
                     }
                 }
@@ -504,12 +888,12 @@
                 const padX = centerFontSize * 0.8;
                 const padY = centerFontSize * 0.4;
                 
-                ctx.fillStyle = `rgba(9, 13, 22, ${state.opacity * 0.85})`;
+                ctx.fillStyle = `rgba(15, 23, 42, ${state.opacity * 0.85})`;
                 ctx.beginPath();
                 ctx.roundRect(-textWidth/2 - padX, -centerFontSize/2 - padY, textWidth + (padX*2), centerFontSize + (padY*2), 16);
                 ctx.fill();
 
-                ctx.strokeStyle = `rgba(34, 197, 94, ${state.opacity})`;
+                ctx.strokeStyle = `rgba(249, 115, 22, ${state.opacity})`;
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
@@ -523,47 +907,84 @@
             ctx.restore();
         }
 
-        // Updated Reset Defaults matching exact screenshot
-        resetBtn.addEventListener('click', () => {
-            state.opacity = 0.16;
-            state.scale = 0.96;
-            state.density = 2;
-            state.antiTamper = true;
+        function createDemoImage() {
+            const demoCanvas = document.createElement('canvas');
+            demoCanvas.width = 800;
+            demoCanvas.height = 800;
+            const dctx = demoCanvas.getContext('2d');
 
-            opacitySlider.value = 16;
-            opacityVal.innerText = '16%';
-            scaleSlider.value = 96;
-            scaleVal.innerText = '96%';
-            densitySlider.value = 2;
-            densityVal.innerText = 'ปานกลาง';
-            antiTamperToggle.checked = true;
+            const grad = dctx.createLinearGradient(0, 0, 800, 800);
+            grad.addColorStop(0, '#fdba74');
+            grad.addColorStop(1, '#ea580c');
+            dctx.fillStyle = grad;
+            dctx.fillRect(0, 0, 800, 800);
 
-            patternTileBtn.click();
-            showToast('รีเซ็ตการตั้งค่าเรียบร้อยแล้ว');
-        });
+            dctx.fillStyle = 'white';
+            dctx.font = 'bold 36px Kanit';
+            dctx.textAlign = 'center';
+            dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 380);
+            dctx.font = '24px Kanit';
+            dctx.fillText('Nanaphan Product Demo', 400, 430);
 
-        // Patch handle Image File to sync button states
-        const originalHandleImage = handleImageFile;
-        handleImageFile = function(file) {
-            originalHandleImage(file);
-            updateDownloadButtonsState(false);
-            // On mobile, auto jump to preview tab
-            if (window.innerWidth < 1024 && tabPreview) {
-                tabPreview.click();
-            }
-        };
+            const img = new Image();
+            img.onload = () => {
+                state.image = img;
+                document.getElementById('emptyState').classList.add('hidden');
+                canvas.classList.remove('hidden');
+                document.getElementById('imageDimensions').classList.remove('hidden');
+                document.getElementById('imageDimensions').innerText = '800 x 800 px';
+                document.getElementById('downloadBtn').disabled = false;
+                document.getElementById('clearBtn').disabled = false;
+                renderWatermark();
+                showToast('สร้างรูปตัวอย่างสำเร็จแล้ว');
+            };
+            img.src = demoCanvas.toDataURL();
+        }
 
-        // Clear Image Handler sync
-        clearBtn.addEventListener('click', () => {
+        function downloadImage() {
+            if (!state.image) return;
+            const link = document.createElement('a');
+            link.download = state.fileName;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('บันทึกรูปภาพใส่ลายน้ำสำเร็จ!');
+        }
+
+        function clearImage() {
             state.image = null;
-            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-            previewCanvas.classList.add('hidden');
-            emptyState.classList.remove('hidden');
-            imageDimensions.classList.add('hidden');
-            updateDownloadButtonsState(true);
-            imageInput.value = '';
-            showToast('ลบรูปภาพแล้ว');
-        });
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('imageDimensions').classList.add('hidden');
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+            document.getElementById('imageInput').value = '';
+            showToast('ล้างรูปภาพเรียบร้อยแล้ว');
+        }
+
+        // PWA INSTALL MODAL LOGIC
+        function openInstallModal() {
+            document.getElementById('installModal').classList.remove('hidden');
+        }
+
+        function closeInstallModal() {
+            document.getElementById('installModal').classList.add('hidden');
+        }
+
+        // TOAST NOTIFIER
+        function showToast(text) {
+            const container = document.getElementById('toastContainer');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = text;
+
+            container.classList.remove('-translate-y-10', 'opacity-0');
+            container.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                container.classList.add('-translate-y-10', 'opacity-0');
+                container.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
