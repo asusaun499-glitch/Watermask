@@ -413,11 +413,16 @@
 
                 <div class="flex items-center gap-2">
                     <span id="gpsPulseIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-                    <h1 class="text-xs font-bold text-slate-800">ระบบเช็คความเร็ว & ประวัติเส้นทาง</h1>
+                    <h1 class="text-xs font-bold text-slate-800">ระบบเช็คตำแหน่ง & ความเร็วเพื่อนร่วมทาง</h1>
                 </div>
 
-                <div id="onlineCountBadge" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full border border-emerald-200">
-                    GPS พร้อม
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openProfileModal()" class="w-9 h-9 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-600 flex items-center justify-center border border-brand-200 active:scale-95 transition-all" title="ตั้งค่าโปรไฟล์">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                    </button>
+                    <div id="onlineCountBadge" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-200 hidden sm:block">
+                        GPS พร้อม
+                    </div>
                 </div>
             </div>
 
@@ -484,7 +489,7 @@
                     <div class="lg:col-span-8">
                         <div class="glass-card rounded-3xl p-3 shadow-lg border border-slate-200 relative">
                             <div class="absolute top-5 right-5 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-md border border-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping"></span> เส้นทางเดินรถ (Polyline Trail)
+                                <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping"></span> ตำแหน่งผู้ใช้ทั้งหมดบนแผนที่
                             </div>
                             <div id="map" class="w-full h-[460px] rounded-2xl shadow-inner bg-slate-100 z-10"></div>
                         </div>
@@ -605,6 +610,50 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: Profile & Gear Settings             -->
+    <!-- ========================================== -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="user-cog" class="w-5 h-5 text-brand-500"></i> ตั้งค่าโปรไฟล์ & รูปไอคอน
+                </h3>
+                <button onclick="closeProfileModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">ชื่อผู้ใช้ / ชื่อรถขนส่ง</label>
+                    <input type="text" id="profileNameInput" placeholder="เช่น พี่โต้ง นานาภัณฑ์" 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">เลือกรูปโปรไฟล์ / ไอคอนตัวแทน</label>
+                    <div class="grid grid-cols-4 gap-2 pt-1">
+                        <button type="button" onclick="selectAvatar('🚗')" class="avatar-option p-3 rounded-2xl border-2 border-brand-500 bg-orange-50 text-xl flex items-center justify-center transition-all">🚗</button>
+                        <button type="button" onclick="selectAvatar('🚚')" class="avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all">🚚</button>
+                        <button type="button" onclick="selectAvatar('🏍️')" class="avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all">🏍️</button>
+                        <button type="button" onclick="selectAvatar('🧑‍💼')" class="avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all">🧑‍💼</button>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">หรือ URL รูปภาพโปรไฟล์ (ถ้ามี)</label>
+                    <input type="url" id="profileAvatarUrlInput" placeholder="https://example.com/avatar.jpg" 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+
+            <button onclick="saveProfileSettings()" class="w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">
+                บันทึกการตั้งค่าโปรไฟล์
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- JAVASCRIPT APP CORE LOGIC                  -->
     <!-- ========================================== -->
     <script type="module">
@@ -620,11 +669,19 @@
         let watchId = null;
         let isTrackingActive = false;
         
-        // Driving Tracking & Polyline Variables
+        // Driving Tracking & Multi-User Markers
         let tripCoordinates = [];
         let tripPolyline = null;
         let maxSpeedRecorded = 0;
         let totalDistanceKm = 0;
+        let otherUserMarkers = {};
+        let unsubLocations = null;
+
+        let userProfile = {
+            name: localStorage.getItem('nanaphan_profile_name') || 'รถขนส่ง นานาภัณฑ์ 01',
+            avatar: localStorage.getItem('nanaphan_profile_avatar') || '🚗',
+            avatarUrl: localStorage.getItem('nanaphan_profile_url') || ''
+        };
 
         const APP_MODULES = [
             {
@@ -720,9 +777,46 @@
             setupWatermarkControls();
             renderTripHistory();
 
-            const savedName = localStorage.getItem('nanaphan_car_name') || 'รถขนส่ง นานาภัณฑ์ 01';
-            document.getElementById('userNameInput').value = savedName;
+            // Init Profile Inputs
+            document.getElementById('userNameInput').value = userProfile.name;
+            document.getElementById('profileNameInput').value = userProfile.name;
+            document.getElementById('profileAvatarUrlInput').value = userProfile.avatarUrl;
         });
+
+        // Profile Modal & Gear Controls
+        window.openProfileModal = function() {
+            document.getElementById('profileModal').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.closeProfileModal = function() {
+            document.getElementById('profileModal').classList.add('hidden');
+        };
+
+        window.selectAvatar = function(emoji) {
+            userProfile.avatar = emoji;
+            document.querySelectorAll('.avatar-option').forEach(btn => {
+                btn.className = 'avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all';
+                if (btn.innerText === emoji) {
+                    btn.className = 'avatar-option p-3 rounded-2xl border-2 border-brand-500 bg-orange-50 text-xl flex items-center justify-center transition-all';
+                }
+            });
+        };
+
+        window.saveProfileSettings = function() {
+            const name = document.getElementById('profileNameInput').value.trim() || 'รถขนส่ง นานาภัณฑ์';
+            const url = document.getElementById('profileAvatarUrlInput').value.trim();
+            userProfile.name = name;
+            userProfile.avatarUrl = url;
+
+            localStorage.setItem('nanaphan_profile_name', name);
+            localStorage.setItem('nanaphan_profile_avatar', userProfile.avatar);
+            localStorage.setItem('nanaphan_profile_url', url);
+
+            document.getElementById('userNameInput').value = name;
+            closeProfileModal();
+            showToast('บันทึกโปรไฟล์สำเร็จ!');
+        };
 
         // Driving Sub-Tab Switcher
         window.switchDrivingTab = function(tabId) {
@@ -796,7 +890,7 @@
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    const speedMs = position.coords.speed !== null ? position.coords.speed : (Math.random() * 8 + 15); // fallback mock speed if stationery
+                    const speedMs = position.coords.speed !== null ? position.coords.speed : (Math.random() * 8 + 15);
                     const speedKmh = Math.max(0, Math.round(speedMs * 3.6));
 
                     if (speedKmh > maxSpeedRecorded) {
@@ -809,7 +903,6 @@
                     document.getElementById('maxSpeedDisplay').innerText = maxSpeedRecorded;
                     document.getElementById('speedTabMax').innerText = maxSpeedRecorded + ' กม./ชม.';
 
-                    // Push point to polyline array ("เป็นขีดว่าไปไหนมา")
                     tripCoordinates.push([lat, lng]);
 
                     if (tripCoordinates.length > 1) {
@@ -828,13 +921,14 @@
                         }
                     }
 
-                    // Sync to Firebase if available
+                    // Sync to Firebase (All users can see each other's live position & speed badge)
                     if (currentUser && db) {
-                        const name = document.getElementById('userNameInput').value || 'รถขนส่ง';
                         const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
                         setDoc(userLocRef, {
                             uid: currentUser.uid,
-                            name: name,
+                            name: userProfile.name,
+                            avatar: userProfile.avatar,
+                            avatarUrl: userProfile.avatarUrl,
                             lat: lat,
                             lng: lng,
                             speed: speedKmh,
@@ -942,6 +1036,57 @@
                 maxZoom: 19,
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+
+            // Listen to all users in Firestore to display live markers with speed badge on top
+            if (db) {
+                const locsRef = collection(db, 'artifacts', appId, 'public', 'data', 'user_locations');
+                unsubLocations = onSnapshot(locsRef, (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        const data = change.doc.data();
+                        const uid = data.uid;
+
+                        if (!data.lat || !data.lng) return;
+
+                        // Create HTML for Custom Leaflet Icon with Speed Badge ON TOP
+                        const speed = data.speed || 0;
+                        const avatarContent = data.avatarUrl ? `<img src="${data.avatarUrl}" class="w-full h-full object-cover rounded-full" />` : (data.avatar || '🚗');
+                        const displayName = data.name || 'ผู้ใช้งาน';
+
+                        const iconHtml = `
+                            <div class="relative flex flex-col items-center">
+                                <!-- Speed badge right on top of icon -->
+                                <div class="absolute -top-7 bg-slate-900 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded-full shadow-md border border-brand-500 whitespace-nowrap z-30">
+                                    ⚡ ${speed} กม./ชม.
+                                </div>
+                                <!-- Avatar Pin -->
+                                <div class="w-11 h-11 rounded-full bg-white border-2 border-brand-500 shadow-xl flex items-center justify-center text-xl overflow-hidden">
+                                    ${avatarContent}
+                                </div>
+                                <!-- Name Label -->
+                                <div class="mt-1 bg-white/90 backdrop-blur-sm text-slate-800 font-bold text-[10px] px-2 py-0.5 rounded-md shadow-sm border border-slate-200 whitespace-nowrap">
+                                    ${displayName}
+                                </div>
+                            </div>
+                        `;
+
+                        const customIcon = L.divIcon({
+                            className: 'custom-user-pin',
+                            html: iconHtml,
+                            iconSize: [44, 44],
+                            iconAnchor: [22, 22]
+                        });
+
+                        if (otherUserMarkers[uid]) {
+                            otherUserMarkers[uid].setLatLng([data.lat, data.lng]);
+                            otherUserMarkers[uid].setIcon(customIcon);
+                        } else {
+                            const marker = L.marker([data.lat, data.lng], { icon: customIcon }).addTo(map);
+                            marker.bindPopup(`<b>${displayName}</b><br>ความเร็ว: ${speed} กม./ชม.`);
+                            otherUserMarkers[uid] = marker;
+                        }
+                    });
+                });
+            }
 
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
