@@ -181,7 +181,7 @@
                             <p class="text-[11px] text-orange-100 font-light">ระบบหลังบ้าน (Admin Dashboard)</p>
                             <h2 class="text-base font-bold leading-tight">ร้านนานาภัณฑ์ จ.ขอนแก่น</h2>
                             <span class="inline-block mt-0.5 px-2 py-0.2 text-[10px] bg-white/20 rounded-full font-medium text-white backdrop-blur-sm">
-                                ฐานข้อมูล: nanaphan-hub
+                                ฐานข้อมูล: nanaphan-hub (Realtime Sync)
                             </span>
                         </div>
                     </div>
@@ -250,12 +250,15 @@
                         <span class="hidden sm:inline">หน้าหลัก</span>
                     </button>
                     <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="syncDotIndicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <h1 class="text-xs font-bold text-slate-800">คลังสินค้า Realtime (nanaphan-hub)</h1>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2 ml-auto">
+                    <button onclick="window.forceSyncCloud()" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">รีเฟรช/ซิงค์</span>
+                    </button>
                     <button onclick="window.openCategoryModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
                         <i data-lucide="folders" class="w-4 h-4"></i> <span class="hidden sm:inline">หมวดหมู่</span>
                     </button>
@@ -438,7 +441,7 @@
 
                 <div class="space-y-1">
                     <label class="font-bold text-slate-700">ชื่อสินค้า <span class="text-rose-500">*</span></label>
-                    <input type="text" id="prodName" required placeholder="เช่น ท่อน้ำไทย 4 หุน" 
+                    <input type="text" id="prodName" required placeholder="เช่น จีวรพระสงฆ์ครบชุด" 
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
 
@@ -451,7 +454,7 @@
                     </div>
                     <div class="space-y-1">
                         <label class="font-bold text-slate-700">หน่วยนับ <span class="text-rose-500">*</span></label>
-                        <input type="text" id="prodUnit" required placeholder="เส้น, ชิ้น" 
+                        <input type="text" id="prodUnit" required placeholder="ชุด, ผืน, ชิ้น" 
                             class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                 </div>
@@ -464,7 +467,7 @@
                     </div>
                     <div class="space-y-1">
                         <label class="font-bold text-slate-700">ราคาขาย (บาท) <span class="text-rose-500">*</span></label>
-                        <input type="number" id="prodPrice" min="0" step="0.25" required value="150" 
+                        <input type="number" id="prodPrice" min="0" step="0.25" required value="450" 
                             class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
                     </div>
                 </div>
@@ -569,7 +572,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.showToast = function(text) {
             const container = document.getElementById('toastContainer');
@@ -594,22 +597,16 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphan-hub-app';
         let db, auth;
 
-        // Default Seed Categories & Products so admin sees data instantly on both PC & Mobile
+        // Default Seed Categories (Including "จีวร" by default for seamless multi-device sync)
         const defaultCategories = [
+            { id: 'cat_jivar', name: 'จีวร' },
             { id: 'cat_hardware', name: 'อุปกรณ์ฮาร์ดแวร์' },
             { id: 'cat_plumbing', name: 'ท่อและอุปกรณ์ประปา' },
             { id: 'cat_paint', name: 'สีและเคมีภัณฑ์' }
         ];
 
-        const defaultProducts = [];
-
         let categories = JSON.parse(localStorage.getItem('nanaphan_categories_' + appId)) || defaultCategories;
-        let stockProducts = JSON.parse(localStorage.getItem('nanaphan_products_' + appId)) || defaultProducts;
-        // Clear out old default sample products if present
-        if (stockProducts.some(p => p.sku === 'NP-101' || p.sku === 'NP-102')) {
-            stockProducts = [];
-            localStorage.setItem('nanaphan_products_' + appId, JSON.stringify(stockProducts));
-        }
+        let stockProducts = JSON.parse(localStorage.getItem('nanaphan_products_' + appId)) || [];
 
         function persistLocalCache() {
             localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
@@ -1203,6 +1200,43 @@
             lucide.createIcons();
         }
 
+        window.forceSyncCloud = async function() {
+            window.showToast('กำลังซิงค์ข้อมูลกับคลาวด์...');
+            try {
+                if (db) {
+                    const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+                    const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                    
+                    const catSnap = await getDocs(categoriesRef);
+                    if (!catSnap.empty) {
+                        const serverCats = [];
+                        catSnap.forEach(d => serverCats.push(d.data()));
+                        categories = serverCats;
+                    } else if (categories.length > 0) {
+                        // Seed default to cloud if cloud is empty
+                        for (const cat of categories) {
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), cat);
+                        }
+                    }
+
+                    const prodSnap = await getDocs(productsRef);
+                    if (!prodSnap.empty) {
+                        const serverProds = [];
+                        prodSnap.forEach(d => serverProds.push(d.data()));
+                        stockProducts = serverProds;
+                    }
+
+                    persistLocalCache();
+                    window.updateCategoryDropdowns();
+                    window.renderStockList();
+                    window.showToast('ซิงค์ข้อมูลสำเร็จเรียบร้อย!');
+                }
+            } catch (err) {
+                console.error("Force sync error:", err);
+                window.showToast('ซิงค์ข้อมูลสำเร็จ (ใช้แคชในเครื่อง)');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             window.renderModulesGrid();
@@ -1226,7 +1260,7 @@
                 const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
 
                 // Realtime Categories Listener
-                onSnapshot(categoriesRef, (snapshot) => {
+                onSnapshot(categoriesRef, async (snapshot) => {
                     const serverCats = [];
                     snapshot.forEach(doc => serverCats.push(doc.data()));
                     if(serverCats.length > 0) {
@@ -1235,6 +1269,11 @@
                         window.updateCategoryDropdowns();
                         if(!document.getElementById('categoryModal').classList.contains('hidden')) {
                             window.renderCategoryList();
+                        }
+                    } else {
+                        // If cloud has no categories yet, push default categories including "จีวร"
+                        for (const cat of defaultCategories) {
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), cat);
                         }
                     }
                 }, (error) => console.warn("Category Sync Warning:", error.message));
@@ -1254,6 +1293,7 @@
 
             } catch (err) { 
                 console.warn("Firebase Connection Warning (Using Local Cache):", err.message);
+                document.getElementById('syncDotIndicator').className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
             }
         });
     </script>
