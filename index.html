@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NanaphanHub - ระบบบริหารจัดการและติดตามการขับขี่ จ.ขอนแก่น</title>
+    <title>NanaphanHub - ระบบบริหารจัดการ จ.ขอนแก่น</title>
     
     <!-- PWA & Mobile Web App Settings -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -47,9 +47,8 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Leaflet CSS & JS for Realtime Map & Polyline Route -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- JsBarcode for Barcode Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <style>
         * {
@@ -106,12 +105,16 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        .no-spinners::-webkit-outer-spin-button,
+        .no-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .no-spinners { -moz-appearance: textfield; }
     </style>
 </head>
-<body class="text-slate-800 antialiased flex flex-col justify-between min-h-screen">
+<body class="text-slate-800 antialiased flex flex-col min-h-screen">
 
     <!-- Toast Notification Overlay -->
-    <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 transform -translate-y-10 opacity-0">
+    <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] pointer-events-none transition-all duration-300 transform -translate-y-10 opacity-0">
         <div id="toastMessage" class="glass-card shadow-xl rounded-2xl px-5 py-3 border border-slate-200 text-sm font-medium flex items-center gap-2.5 text-slate-800">
             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
             <span id="toastText">แจ้งเตือนสำเร็จ</span>
@@ -123,7 +126,6 @@
     <!-- ========================================== -->
     <section id="loginView" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center p-4 transition-all duration-300">
         <div class="w-full max-w-md space-y-6">
-            <!-- App Header Title -->
             <div class="text-center space-y-2">
                 <div class="w-20 h-20 rounded-3xl orange-gradient-card mx-auto flex items-center justify-center text-white shadow-xl shadow-brand-500/30 animate-bounce">
                     <i data-lucide="store" class="w-10 h-10"></i>
@@ -132,18 +134,17 @@
                 <p class="text-xs text-slate-500 font-normal">ระบบเข้าสู่ระบบสำหรับผู้ดูแล ร้านนานาภัณฑ์ จ.ขอนแก่น</p>
             </div>
 
-            <!-- Login Box -->
             <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 space-y-5 border border-white">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                         <i data-lucide="shield-lock" class="w-5 h-5 text-brand-500"></i> เข้าสู่ระบบ Admin
                     </h2>
                     <span class="text-[11px] font-medium bg-brand-50 text-brand-600 px-2.5 py-0.5 rounded-full border border-brand-100">
-                        IP Locked Session
+                        IP Locked
                     </span>
                 </div>
 
-                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <form id="loginForm" onsubmit="window.handleLogin(event)" class="space-y-4">
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-600">ชื่อผู้ใช้งาน (Username)</label>
                         <div class="relative">
@@ -162,30 +163,22 @@
                         </div>
                     </div>
 
-                    <!-- Remember session note -->
-                    <div class="p-3 rounded-2xl bg-orange-50 border border-orange-100 text-[11px] text-orange-800 flex items-start gap-2">
-                        <i data-lucide="info" class="w-4 h-4 text-brand-500 shrink-0 mt-0.5"></i>
-                        <span>ระบบบันทึกความจำอุปกรณ์ (Session Persisted) เข้าสู่ระบบแล้วจะไม่ต้องล็อกอินซ้ำอีก</span>
-                    </div>
-
                     <button type="submit" class="w-full py-3.5 rounded-2xl orange-gradient-card text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 active:scale-95 transition-all flex items-center justify-center gap-2">
                         <i data-lucide="log-in" class="w-4 h-4"></i>
                         <span>เข้าสู่ระบบ</span>
                     </button>
                 </form>
             </div>
-
-            <p class="text-center text-xs text-slate-400">ร้านนานาภัณฑ์ จ.ขอนแก่น &copy; 2026</p>
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- VIEW 2: MAIN HOME DASHBOARD                -->
-    <!-- ========================================== -->
-    <div id="mainAppWrapper" class="hidden min-h-screen flex-col justify-between">
-        <main id="homeView" class="max-w-lg mx-auto w-full px-4 py-5 space-y-4">
+    <div id="mainAppWrapper" class="hidden min-h-screen flex-col w-full">
+        <!-- ========================================== -->
+        <!-- VIEW 2: MAIN HOME DASHBOARD                -->
+        <!-- ========================================== -->
+        <main id="homeView" class="max-w-lg mx-auto w-full px-4 py-5 space-y-4 flex-grow">
             
-            <!-- 1. Top Greeting Card -->
+            <!-- Top Greeting Card -->
             <div class="orange-gradient-card rounded-3xl p-5 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
                 
@@ -198,25 +191,25 @@
                             <p class="text-[11px] text-orange-100 font-light">ยินดีต้อนรับสู่ NanaphanHub</p>
                             <h2 class="text-base font-bold leading-tight">สวัสดี ร้านนานาภัณฑ์</h2>
                             <span class="inline-block mt-0.5 px-2 py-0.2 text-[10px] bg-white/20 rounded-full font-medium text-white backdrop-blur-sm">
-                                Administrator (Admin)
+                                Administrator
                             </span>
                         </div>
                     </div>
                     
-                    <button onclick="handleLogout()" title="ออกจากระบบ" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all">
+                    <button onclick="window.handleLogout()" title="ออกจากระบบ" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
                         <i data-lucide="log-out" class="w-4 h-4 text-white"></i>
                     </button>
                 </div>
 
                 <!-- Featured Highlight Banner Button -->
-                <div onclick="switchView('watermarkView')" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md">
+                <div onclick="window.switchView('watermarkView')" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-md">
                             <i data-lucide="stamp" class="w-5 h-5"></i>
                         </div>
                         <div>
                             <h3 class="text-xs font-bold text-white">ระบบใส่ลายน้ำสินค้า</h3>
-                            <p class="text-[11px] text-orange-100">ใส่ลายน้ำอัตโนมัติ ป้องกันการก๊อปรูปภาพ</p>
+                            <p class="text-[11px] text-orange-100">ใส่ลายน้ำอัตโนมัติ ป้องกันการก๊อปรูป</p>
                         </div>
                     </div>
                     <span class="px-3 py-1 rounded-full bg-white text-brand-600 text-xs font-bold flex items-center gap-1 shadow-sm">
@@ -225,431 +218,371 @@
                 </div>
             </div>
 
-            <!-- 2. Quick Action Cards (Middle Row) -->
+            <!-- Quick Action Cards -->
             <div class="grid grid-cols-12 gap-3">
-                <div onclick="switchView('trackingView'); initMapIfNeeded();" class="col-span-8 glass-card rounded-3xl p-4 flex items-center gap-3 shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
-                    <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                        <i data-lucide="car" class="w-5 h-5"></i>
+                <div onclick="window.switchView('stockView')" class="col-span-8 glass-card rounded-3xl p-4 flex items-center gap-3 shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+                    <div class="w-10 h-10 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="boxes" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h4 class="text-xs font-bold text-slate-800">เช็คความเร็ว & เส้นทางขับขี่</h4>
-                        <p class="text-[10px] text-slate-400">บันทึกประวัติเส้นทาง (ขีดสีส้ม)</p>
+                        <h4 class="text-xs font-bold text-slate-800">จัดการสต็อกสินค้า</h4>
+                        <p class="text-[10px] text-slate-400">เพิ่ม/ลดสต็อก เช็คสินค้าคงเหลือ</p>
                     </div>
                 </div>
 
-                <div onclick="switchView('watermarkView')" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+                <div onclick="window.switchView('watermarkView')" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
                     <div class="w-8 h-8 rounded-xl bg-orange-50 text-brand-500 flex items-center justify-center mb-1">
                         <i data-lucide="image" class="w-4 h-4"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-slate-700 leading-tight">ลายน้ำสินค้า</span>
+                    <span class="text-[11px] font-bold text-slate-700 leading-tight">ลายน้ำ</span>
                 </div>
             </div>
 
-            <!-- 3. All Categories Section -->
+            <!-- All Categories Section -->
             <div class="space-y-3 pt-1">
                 <div class="flex items-center justify-between px-1">
                     <span class="px-3 py-1 rounded-full bg-white text-slate-600 text-xs font-bold border border-slate-200 shadow-2xs">
                         เมนูทั้งหมด
                     </span>
-                    <span id="activeModuleCount" class="text-[11px] text-slate-400">2 หมวดหมู่พร้อมใช้งาน</span>
                 </div>
-
                 <div id="modulesGrid" class="grid grid-cols-3 gap-3">
                     <!-- Dynamic Modules rendered via JS -->
                 </div>
             </div>
-
-            <!-- 4. Add to Home Screen Button -->
-            <div class="pt-4 pb-2 text-center space-y-3">
-                <button onclick="openInstallModal()" class="w-full py-3 px-4 rounded-2xl glass-card border border-slate-200 shadow-sm text-xs font-bold text-slate-700 hover:bg-white hover:text-brand-600 active:scale-95 transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="bookmark-plus" class="w-4 h-4 text-brand-500"></i>
-                    <span>เพิ่ม NanaphanHub ลงหน้าจอโฮม</span>
-                </button>
-
-                <div class="inline-block px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 text-[11px] font-medium border border-slate-200">
-                    ร้านนานาภัณฑ์ จ.ขอนแก่น
-                </div>
-            </div>
-
         </main>
 
         <!-- ========================================== -->
-        <!-- VIEW 3: WATERMARK TOOL MODULE              -->
+        <!-- VIEW 3: INVENTORY STOCK MANAGEMENT MODULE  -->
         <!-- ========================================== -->
-        <section id="watermarkView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
-            <div class="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
-                <button onclick="switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span>กลับหน้าหลัก</span>
-                </button>
-
+        <section id="stockView" class="hidden max-w-4xl mx-auto px-4 py-4 w-full flex-grow">
+            
+            <div class="flex items-center justify-between mb-3 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs flex-wrap gap-2">
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <h1 class="text-xs font-bold text-slate-800">ระบบใส่ลายน้ำอัตโนมัติ</h1>
-                </div>
-
-                <button id="resetBtn" onclick="resetWatermarkSettings()" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 active:scale-95">
-                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> รีเซ็ต
-                </button>
-            </div>
-
-            <!-- Segmented Control for Mobile -->
-            <div class="lg:hidden mb-4 p-1 rounded-2xl bg-slate-200/80 border border-slate-300/60 flex items-center gap-1">
-                <button id="tabPreview" class="tab-btn active flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all bg-white shadow-xs">
-                    <i data-lucide="image" class="w-3.5 h-3.5"></i> ดูตัวอย่างรูปภาพ
-                </button>
-                <button id="tabControls" class="tab-btn flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 transition-all">
-                    <i data-lucide="sliders" class="w-3.5 h-3.5"></i> ปรับแต่งลายน้ำ
-                </button>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                <div id="controlsContainer" class="hidden lg:block lg:col-span-5 space-y-4">
-                    <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 space-y-4">
-                        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-brand-500"></i> ปรับแต่งสไตล์ลายน้ำ
-                            </h2>
-                        </div>
-
-                        <div class="space-y-1">
-                            <div class="flex items-center justify-between text-xs">
-                                <label class="font-bold text-slate-700">ข้อความลายน้ำ (ล็อคระบบ)</label>
-                                <span class="text-[11px] text-slate-400 flex items-center gap-1">
-                                    <i data-lucide="lock" class="w-3 h-3 text-brand-500"></i> ห้ามแก้ไข
-                                </span>
-                            </div>
-                            <div class="relative">
-                                <input type="text" value="ร้านนานาภัณฑ์ จ.ขอนแก่น" readonly 
-                                    class="w-full bg-slate-100 border border-slate-200 text-brand-600 font-bold text-xs rounded-2xl px-4 py-2.5 pl-9 focus:outline-none cursor-not-allowed">
-                                <i data-lucide="shield-check" class="w-4 h-4 text-brand-500 absolute left-3 top-3"></i>
-                            </div>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-700">รูปแบบการจัดวาง</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button id="patternTile" class="pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all">
-                                    <i data-lucide="grid-3x3" class="w-4 h-4"></i>
-                                    <span>ตารางซ้ำ (แนะนำ)</span>
-                                </button>
-                                <button id="patternCenter" class="pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
-                                    <i data-lucide="square" class="w-4 h-4"></i>
-                                    <span>ตราตรงกลาง</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="space-y-1">
-                            <div class="flex justify-between items-center text-xs">
-                                <label class="font-semibold text-slate-700">ความจาง (Opacity)</label>
-                                <span id="opacityVal" class="font-mono text-brand-600 font-bold text-xs">16%</span>
-                            </div>
-                            <input type="range" id="opacitySlider" min="8" max="60" value="16" class="w-full">
-                        </div>
-
-                        <div class="space-y-1">
-                            <div class="flex justify-between items-center text-xs">
-                                <label class="font-semibold text-slate-700">ขนาดตัวอักษร (Scale)</label>
-                                <span id="scaleVal" class="font-mono text-brand-600 font-bold text-xs">96%</span>
-                            </div>
-                            <input type="range" id="scaleSlider" min="50" max="180" value="96" class="w-full">
-                        </div>
+                    <button onclick="window.switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">กลับ</span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse"></span>
+                        <h1 class="text-xs font-bold text-slate-800">ระบบคลังสินค้า</h1>
                     </div>
                 </div>
 
-                <div id="previewContainer" class="lg:col-span-7 space-y-4">
-                    <div class="glass-card rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 flex flex-col justify-between min-h-[420px]">
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <h3 class="text-xs font-bold text-slate-700 flex items-center gap-2">
-                                <i data-lucide="eye" class="w-4 h-4 text-brand-500"></i> ตัวอย่างรูปภาพสินค้า
-                            </h3>
-                            <div id="imageDimensions" class="text-[10px] font-mono text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 hidden">
-                                0 x 0 px
-                            </div>
-                        </div>
+                <div class="flex items-center gap-2 ml-auto">
+                    <button onclick="window.openCategoryModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+                        <i data-lucide="folders" class="w-4 h-4"></i> <span class="hidden sm:inline">หมวดหมู่</span>
+                    </button>
+                    <button onclick="window.openAddProductModal()" class="px-3 py-1.5 rounded-xl orange-gradient-card text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มสินค้า
+                    </button>
+                </div>
+            </div>
 
-                        <div class="flex-grow flex items-center justify-center my-3 min-h-[300px] bg-slate-900 rounded-2xl relative overflow-hidden p-2">
-                            <div id="emptyState" onclick="document.getElementById('imageInput').click()" class="flex flex-col items-center justify-center text-center p-6 space-y-3 cursor-pointer group">
-                                <input type="file" id="imageInput" accept="image/*" class="hidden">
-                                <div class="w-16 h-16 rounded-3xl bg-slate-800 border-2 border-dashed border-brand-500/50 flex items-center justify-center text-brand-400 shadow-lg group-hover:scale-105 transition-transform">
-                                    <i data-lucide="image-plus" class="w-8 h-8"></i>
-                                </div>
-                                <div>
-                                    <p class="text-white font-bold text-sm">แตะเพื่อเลือกรูปภาพสินค้า</p>
-                                    <p class="text-[11px] text-slate-400">รองรับไฟล์ JPG, PNG, WEBP</p>
-                                </div>
-                                <button type="button" onclick="event.stopPropagation(); createDemoImage();" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-brand-400 text-xs font-semibold border border-brand-500/30 transition-all flex items-center gap-1.5 shadow-sm">
-                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ลองใช้รูปตัวอย่าง
-                                </button>
-                            </div>
-                            <canvas id="previewCanvas" class="max-w-full max-h-[380px] object-contain rounded-xl shadow-2xl hidden"></canvas>
-                        </div>
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="glass-card rounded-3xl p-3.5 border border-slate-200 text-center shadow-xs">
+                    <span class="text-[10px] text-slate-500 block font-semibold mb-1"><i data-lucide="package" class="w-3 h-3 inline text-slate-400"></i> สินค้าในระบบ</span>
+                    <span id="statTotalItems" class="text-lg font-black font-mono text-slate-800">0</span>
+                </div>
+                <div class="glass-card rounded-3xl p-3.5 border border-slate-200 text-center shadow-xs">
+                    <span class="text-[10px] text-slate-500 block font-semibold mb-1"><i data-lucide="layers" class="w-3 h-3 inline text-brand-500"></i> จำนวนชิ้นรวม</span>
+                    <span id="statTotalQty" class="text-lg font-black font-mono text-brand-600">0</span>
+                </div>
+                <div class="glass-card rounded-3xl p-3.5 border border-slate-200 text-center shadow-xs bg-amber-50/30">
+                    <span class="text-[10px] text-amber-600 block font-semibold mb-1"><i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> ใกล้หมด (&le;5)</span>
+                    <span id="statLowStock" class="text-lg font-black font-mono text-amber-500">0</span>
+                </div>
+                <div class="glass-card rounded-3xl p-3.5 border border-slate-200 text-center shadow-xs bg-rose-50/30">
+                    <span class="text-[10px] text-rose-600 block font-semibold mb-1"><i data-lucide="x-circle" class="w-3 h-3 inline"></i> สินค้าหมด (0)</span>
+                    <span id="statOutOfStock" class="text-lg font-black font-mono text-rose-500">0</span>
+                </div>
+            </div>
 
-                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                            <button id="clearBtn" disabled onclick="clearImage()" class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i> ลบรูป
-                            </button>
-                            <button id="downloadBtn" disabled onclick="downloadImage()" class="flex-1 py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
-                                <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปภาพสินค้า
-                            </button>
-                        </div>
-                    </div>
+            <!-- Filters -->
+            <div class="glass-card rounded-3xl p-3 mb-4 shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-2">
+                <div class="relative flex-grow">
+                    <input type="text" id="stockSearchInput" oninput="window.filterStockList()" placeholder="ค้นหาชื่อสินค้า, SKU, บาร์โค้ด..." 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 pl-9 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                </div>
+                <div class="flex gap-2">
+                    <select id="stockCategoryFilter" onchange="window.filterStockList()" class="bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none flex-1">
+                        <option value="">หมวดหมู่ทั้งหมด</option>
+                    </select>
+                    <select id="stockStatusFilter" onchange="window.filterStockList()" class="bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none flex-1 sm:w-32">
+                        <option value="">ทุกสถานะ</option>
+                        <option value="normal">🟢 มีสินค้า</option>
+                        <option value="low">🟡 ใกล้หมด</option>
+                        <option value="out">🔴 หมด</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- List Container -->
+            <div class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="clipboard-list" class="w-4 h-4 text-brand-500"></i> รายการสินค้า
+                    </h3>
+                    <span id="filteredCountText" class="text-[11px] font-medium bg-slate-100 px-2 py-0.5 rounded-full text-slate-500">แสดงทั้งหมด</span>
+                </div>
+
+                <div id="stockListContainer" class="space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar pb-10">
+                    <!-- Dynamic Stock Cards rendered via JS -->
                 </div>
             </div>
         </section>
 
         <!-- ========================================== -->
-        <!-- VIEW 4: DRIVING SPEED & ROUTE TRACKING      -->
+        <!-- VIEW 4: WATERMARK MODULE                   -->
         <!-- ========================================== -->
-        <section id="trackingView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
-            
-            <!-- Header navigation -->
-            <div class="flex items-center justify-between mb-3 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
-                <button onclick="switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
+        <section id="watermarkView" class="hidden max-w-lg mx-auto w-full px-4 py-4 flex-col space-y-4 flex-grow">
+            <!-- Header with Back Button -->
+            <div class="flex items-center justify-between mb-2 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
+                <button onclick="window.switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span>กลับหน้าหลัก</span>
                 </button>
-
-                <div class="flex items-center gap-2">
-                    <span id="gpsPulseIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-                    <h1 class="text-xs font-bold text-slate-800">ระบบเช็คตำแหน่ง & ความเร็วเพื่อนร่วมทาง</h1>
-                </div>
-
-                <div class="flex items-center gap-1.5">
-                    <button onclick="openProfileModal()" class="w-9 h-9 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-600 flex items-center justify-center border border-brand-200 active:scale-95 transition-all" title="ตั้งค่าโปรไฟล์">
-                        <i data-lucide="settings" class="w-4 h-4"></i>
-                    </button>
-                    <div id="onlineCountBadge" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-200 hidden sm:block">
-                        GPS พร้อม
-                    </div>
-                </div>
+                <h2 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="stamp" class="w-4 h-4 text-brand-500"></i> ระบบสร้างลายน้ำ
+                </h2>
             </div>
 
-            <!-- Driving Sub-Tabs Bar -->
-            <div class="mb-3 grid grid-cols-3 gap-2">
-                <button onclick="switchDrivingTab('mapTab')" id="btnMapTab" class="py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5">
-                    <i data-lucide="map" class="w-4 h-4"></i> แผนที่เส้นทาง
-                </button>
-                <button onclick="switchDrivingTab('speedTab')" id="btnSpeedTab" class="py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5">
-                    <i data-lucide="gauge" class="w-4 h-4"></i> ความเร็ว (km/h)
-                </button>
-                <button onclick="switchDrivingTab('historyTab')" id="btnHistoryTab" class="py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5">
-                    <i data-lucide="history" class="w-4 h-4"></i> ประวัติขับขี่
-                </button>
-            </div>
-
-            <!-- TAB 1: MAP & ROUTE POLYLINE -->
-            <div id="paneMapTab" class="space-y-4">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-                    
-                    <!-- Left Sidebar Controls -->
-                    <div class="lg:col-span-4 space-y-3">
-                        <div class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3">
-                            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
-                                <i data-lucide="navigation" class="w-4 h-4 text-brand-500"></i> ควบคุมการบันทึกการเดินทาง
-                            </h2>
-
-                            <div class="space-y-1">
-                                <label class="text-[11px] font-bold text-slate-600">ชื่อคนขับ / รถยนต์</label>
-                                <input type="text" id="userNameInput" value="รถขนส่ง นานาภัณฑ์ 01" 
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
-                            </div>
-
-                            <!-- Live Driving Stats Summary -->
-                            <div class="grid grid-cols-2 gap-2 pt-1">
-                                <div class="bg-orange-50 border border-orange-100 p-2.5 rounded-2xl text-center">
-                                    <span class="text-[10px] text-slate-500 block">ความเร็วปัจจุบัน</span>
-                                    <span id="currentSpeedDisplay" class="text-lg font-black font-mono text-brand-600">0</span>
-                                    <span class="text-[10px] text-slate-600"> km/h</span>
-                                </div>
-                                <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl text-center">
-                                    <span class="text-[10px] text-slate-500 block">ความเร็วสูงสุด</span>
-                                    <span id="maxSpeedDisplay" class="text-lg font-black font-mono text-slate-800">0</span>
-                                    <span class="text-[10px] text-slate-600"> km/h</span>
-                                </div>
-                            </div>
-
-                            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl flex items-center justify-between text-xs">
-                                <span class="text-slate-600 font-medium">ระยะทางทริปนี้:</span>
-                                <span class="font-bold font-mono text-slate-800"><span id="totalDistanceDisplay">0.00</span> กม.</span>
-                            </div>
-
-                            <button onclick="toggleTracking()" id="trackingToggleBtn" class="w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
-                                <i data-lucide="play-circle" class="w-4 h-4"></i> เริ่มบันทึกการขับขี่ & วาดเส้นทาง
-                            </button>
-
-                            <button onclick="saveCurrentTrip()" id="saveTripBtn" disabled class="w-full py-2.5 rounded-2xl bg-slate-100 text-slate-400 border border-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40 transition-all">
-                                <i data-lucide="save" class="w-4 h-4"></i> บันทึกประวัติทริปนี้ลงเครื่อง
-                            </button>
-                        </div>
+            <!-- Upload Box / Canvas Area -->
+            <div class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3 text-center">
+                <div id="emptyState" class="border-2 border-dashed border-slate-300 rounded-2xl p-6 bg-slate-50/50 flex flex-col items-center justify-center space-y-2 cursor-pointer hover:bg-slate-50 transition-all relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-100 text-brand-600 flex items-center justify-center shadow-xs">
+                        <i data-lucide="image-plus" class="w-6 h-6"></i>
                     </div>
-
-                    <!-- Right Map Container -->
-                    <div class="lg:col-span-8">
-                        <div class="glass-card rounded-3xl p-3 shadow-lg border border-slate-200 relative">
-                            <div class="absolute top-5 right-5 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-md border border-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping"></span> ตำแหน่งผู้ใช้ทั้งหมดบนแผนที่
-                            </div>
-                            <div id="map" class="w-full h-[460px] rounded-2xl shadow-inner bg-slate-100 z-10"></div>
-                        </div>
-                    </div>
-
+                    <p class="text-xs font-bold text-slate-700">คลิกเพื่ออัปโหลดรูปภาพสินค้า</p>
+                    <p class="text-[10px] text-slate-400">รองรับไฟล์ JPG, PNG</p>
+                    <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
                 </div>
-            </div>
 
-            <!-- TAB 2: SPEEDOMETER & STATS -->
-            <div id="paneSpeedTab" class="hidden space-y-4">
-                <div class="glass-card rounded-3xl p-6 shadow-lg border border-slate-200 text-center max-w-md mx-auto space-y-6">
-                    <h3 class="text-sm font-bold text-slate-800 flex items-center justify-center gap-2">
-                        <i data-lucide="gauge" class="w-5 h-5 text-brand-500"></i> มาตรวัดความเร็วดิจิทัลแบบเรียลไทม์
-                    </h3>
-
-                    <!-- Speedometer Circle -->
-                    <div class="w-48 h-48 rounded-full orange-gradient-card mx-auto flex flex-col items-center justify-center text-white shadow-xl shadow-brand-500/30 border-4 border-white/40">
-                        <span id="bigSpeedDisplay" class="text-5xl font-black font-mono tracking-tighter">0</span>
-                        <span class="text-xs font-semibold tracking-widest uppercase opacity-90">KM / H</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3 pt-2">
-                        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                            <span class="text-[11px] text-slate-500 block">ความเร็วสูงสุดในทริป</span>
-                            <span id="speedTabMax" class="text-base font-bold font-mono text-slate-800">0 กม./ชม.</span>
-                        </div>
-                        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                            <span class="text-[11px] text-slate-500 block">สถานะ GPS</span>
-                            <span id="gpsStatusBadgeText" class="text-xs font-bold text-emerald-600">พร้อมใช้งาน</span>
-                        </div>
-                    </div>
-
-                    <p class="text-[11px] text-slate-400">ระบบจะคำนวณความเร็วอัตโนมัติจากพิกัด GPS ของอุปกรณ์ขณะเคลื่อนที่</p>
+                <!-- Canvas Preview -->
+                <div class="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 flex items-center justify-center max-h-[350px]">
+                    <canvas id="previewCanvas" class="max-h-[340px] w-auto object-contain hidden"></canvas>
                 </div>
-            </div>
 
-            <!-- TAB 3: TRIP HISTORY LOGS -->
-            <div id="paneHistoryTab" class="hidden space-y-4">
-                <div class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 max-w-2xl mx-auto space-y-4">
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="clipboard-list" class="w-4 h-4 text-brand-500"></i> ประวัติการเดินทางย้อนหลัง (Trip History)
-                        </h3>
-                        <button onclick="clearTripHistory()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold px-2.5 py-1 rounded-xl hover:bg-rose-50">
-                            ล้างประวัติ
+                <div class="flex items-center justify-between px-1 text-[11px] text-slate-500">
+                    <span id="imageDimensions" class="hidden font-mono bg-slate-100 px-2.5 py-1 rounded-lg">0 x 0 px</span>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button id="clearBtn" disabled onclick="window.clearImage()" class="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 disabled:opacity-40 transition-all">
+                            ลบรูป
+                        </button>
+                        <button onclick="window.createDemoImage()" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all">
+                            ใช้รูปตัวอย่าง
                         </button>
                     </div>
-
-                    <div id="tripHistoryListContainer" class="space-y-2.5 max-h-96 overflow-y-auto no-scrollbar">
-                        <!-- History items rendered here -->
-                    </div>
                 </div>
             </div>
 
+            <!-- Watermark Controls Settings -->
+            <div class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3.5 text-xs">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
+                    <i data-lucide="sliders" class="w-4 h-4 text-brand-500"></i> ตั้งค่ารูปแบบลายน้ำ
+                </h3>
+
+                <!-- Pattern layout mode -->
+                <div class="space-y-1.5">
+                    <label class="font-bold text-slate-700">รูปแบบการวางลายน้ำ</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="patternTile" class="pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="layout-grid" class="w-4 h-4"></i> เรียงเต็มแผ่น
+                        </button>
+                        <button type="button" id="patternCenter" class="pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="crosshair" class="w-4 h-4"></i> ตรงกลางรูป
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opacity Slider -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between font-bold text-slate-700">
+                        <span>ความโปร่งแสง (Opacity)</span>
+                        <span id="opacityVal" class="text-brand-600 font-mono">16%</span>
+                    </div>
+                    <input type="range" id="opacitySlider" min="5" max="50" value="16" class="w-full">
+                </div>
+
+                <!-- Scale Slider -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between font-bold text-slate-700">
+                        <span>ขนาดตัวอักษร (Scale)</span>
+                        <span id="scaleVal" class="text-brand-600 font-mono">96%</span>
+                    </div>
+                    <input type="range" id="scaleSlider" min="50" max="200" value="96" class="w-full">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <button onclick="window.resetWatermarkSettings()" class="py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> รีเซ็ตค่า
+                    </button>
+                    <button id="downloadBtn" disabled onclick="window.downloadImage()" class="py-3 rounded-2xl orange-gradient-card text-white font-bold shadow-md shadow-brand-500/25 active:scale-95 disabled:opacity-40 transition-all flex items-center justify-center gap-1.5">
+                        <i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูป
+                    </button>
+                </div>
+            </div>
         </section>
 
-    </div>
+    </div> <!-- End mainAppWrapper -->
 
     <!-- ========================================== -->
-    <!-- MODAL: Add to Home Screen                  -->
+    <!-- MODALS SECTION                             -->
     <!-- ========================================== -->
-    <div id="installModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white">
+
+    <!-- 1. MODAL: Add / Edit Product -->
+    <div id="productModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="smartphone" class="w-5 h-5 text-brand-500"></i> ติดตั้ง NanaphanHub
+                <h3 id="productModalTitle" class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="package-plus" class="w-5 h-5 text-brand-500"></i> เพิ่มสินค้าใหม่
                 </h3>
-                <button onclick="closeInstallModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                <button type="button" onclick="window.closeProductModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
-            <div class="space-y-3 text-xs text-slate-600">
-                <p>เปิดใช้งานได้เสมือนแอปจริงบนมือถือ ไม่ต้องดาวน์โหลดผ่าน App Store</p>
-                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-                    <p class="font-bold text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="apple" class="w-4 h-4 text-slate-700"></i> บน iOS / iPhone (Safari):
-                    </p>
-                    <ol class="list-decimal list-inside text-[11px] text-slate-500 space-y-1 pl-1">
-                        <li>กดปุ่ม <span class="font-bold text-slate-700">Share (แชร์)</span> ด้านล่าง</li>
-                        <li>เลือก <span class="font-bold text-slate-700">Add to Home Screen (เพิ่มไปยังหน้าจอโฮม)</span></li>
-                    </ol>
-                </div>
-            </div>
+            <form id="productForm" onsubmit="window.saveProduct(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="editProductId">
 
-            <button onclick="closeInstallModal()" class="w-full py-2.5 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md">
-                รับทราบ
-            </button>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700">รหัสสินค้า / SKU <span class="text-rose-500">*</span></label>
+                        <input type="text" id="prodSku" required placeholder="เช่น NP-001" 
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700">บาร์โค้ด (ถ้ามี)</label>
+                        <input type="text" id="prodBarcode" placeholder="สร้างอัตโนมัติ" 
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-700">ชื่อสินค้า <span class="text-rose-500">*</span></label>
+                    <input type="text" id="prodName" required placeholder="เช่น ท่อน้ำไทย 4 หุน" 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700">หมวดหมู่ <span class="text-rose-500">*</span></label>
+                        <select id="prodCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <!-- Rendered via JS -->
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700">หน่วยนับ <span class="text-rose-500">*</span></label>
+                        <input type="text" id="prodUnit" required placeholder="เส้น, ชิ้น" 
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700">จำนวนเริ่มต้น <span class="text-rose-500">*</span></label>
+                        <input type="number" id="prodQty" min="0" required value="0" 
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700">ราคาขาย (บาท) <span class="text-rose-500">*</span></label>
+                        <input type="number" id="prodPrice" min="0" step="0.25" required value="0" 
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="window.closeProductModal()" class="w-1/3 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold active:scale-95 transition-all">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="w-2/3 py-3 rounded-2xl orange-gradient-card text-white font-bold shadow-md active:scale-95 transition-all flex justify-center items-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL: Download Helper                     -->
-    <!-- ========================================== -->
-    <div id="downloadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <!-- 2. MODAL: Category Management -->
+    <div id="categoryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="folders" class="w-5 h-5 text-brand-500"></i> จัดการหมวดหมู่สินค้า
+                </h3>
+                <button onclick="window.closeCategoryModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form onsubmit="window.addCategory(event)" class="flex gap-2 shrink-0">
+                <input type="text" id="newCategoryInput" required placeholder="พิมพ์ชื่อหมวดหมู่ใหม่..." 
+                    class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <button type="submit" class="px-4 py-2 rounded-xl bg-brand-500 text-white font-bold text-xs active:scale-95 transition-all">
+                    เพิ่ม
+                </button>
+            </form>
+
+            <div class="overflow-y-auto no-scrollbar flex-grow space-y-2" id="categoryListContainer">
+                <!-- Rendered via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MODAL: Barcode Viewer -->
+    <div id="barcodeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col items-center gap-4 text-center">
+            <h3 id="barcodeModalName" class="text-sm font-bold text-slate-800">ชื่อสินค้า</h3>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <svg id="largeBarcode"></svg>
+            </div>
+            <div class="flex gap-2 w-full">
+                <button onclick="window.closeBarcodeModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ปิด</button>
+                <button onclick="window.copyBarcodeText()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all flex justify-center items-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> คัดลอก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MODAL: Global Confirmation -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+        <div class="glass-card rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
+            <div class="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-500 mb-2">
+                <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <h3 id="confirmTitle" class="text-sm font-bold text-slate-800">ยืนยันการทำรายการ?</h3>
+                <p id="confirmDesc" class="text-xs text-slate-500 mt-1">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button id="confirmCancelBtn" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ยกเลิก</button>
+                <button id="confirmOkBtn" class="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs active:scale-95 transition-all shadow-md shadow-rose-500/30">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MODAL: Download Helper -->
+    <div id="downloadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
         <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white text-center">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                     <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> พร้อมบันทึกรูปภาพสินค้า
                 </h3>
-                <button onclick="closeDownloadModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                <button onclick="window.closeDownloadModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            
             <p class="text-xs text-slate-600">
-                หากมือถือไม่ดาวน์โหลดอัตโนมัติ ให้ <span class="font-bold text-brand-600">กดค้างที่รูปภาพด้านล่าง</span> แล้วเลือก <span class="font-bold text-slate-800">"บันทึกรูปภาพ" (Save Image)</span>
+                หากมือถือไม่ดาวน์โหลดอัตโนมัติ ให้ <span class="font-bold text-brand-600">กดค้างที่รูปภาพด้านล่าง</span> แล้วเลือก <span class="font-bold text-slate-800">"บันทึกรูปภาพ"</span>
             </p>
-            
             <div class="rounded-2xl overflow-hidden bg-slate-900 p-2 max-h-56 flex items-center justify-center border border-slate-200">
-                <img id="modalPreviewImg" src="" alt="Watermarked Preview" class="max-h-48 object-contain rounded-xl shadow-md">
+                <img id="modalPreviewImg" src="" alt="Preview" class="max-h-48 object-contain rounded-xl shadow-md">
             </div>
-
             <a id="modalDownloadLink" href="#" download="nanaphan-product.png" class="w-full py-3 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
                 <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปลงเครื่องอีกครั้ง
             </a>
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- MODAL: Profile & Gear Settings             -->
-    <!-- ========================================== -->
-    <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="user-cog" class="w-5 h-5 text-brand-500"></i> ตั้งค่าโปรไฟล์ & รูปไอคอน
-                </h3>
-                <button onclick="closeProfileModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <div class="space-y-3">
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-700">ชื่อผู้ใช้ / ชื่อรถขนส่ง</label>
-                    <input type="text" id="profileNameInput" placeholder="เช่น พี่โต้ง นานาภัณฑ์" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-700">เลือกรูปโปรไฟล์ / ไอคอนตัวแทน</label>
-                    <div class="grid grid-cols-4 gap-2 pt-1">
-                        <button type="button" onclick="selectAvatar('🚗')" class="avatar-option p-3 rounded-2xl border-2 border-brand-500 bg-orange-50 text-xl flex items-center justify-center transition-all">🚗</button>
-                        <button type="button" onclick="selectAvatar('🚚')" class="avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all">🚚</button>
-                        <button type="button" onclick="selectAvatar('🏍️')" class="avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all">🏍️</button>
-                        <button type="button" onclick="selectAvatar('🧑‍💼')" class="avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all">🧑‍💼</button>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-700">หรือ URL รูปภาพโปรไฟล์ (ถ้ามี)</label>
-                    <input type="url" id="profileAvatarUrlInput" placeholder="https://example.com/avatar.jpg" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-            </div>
-
-            <button onclick="saveProfileSettings()" class="w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">
-                บันทึกการตั้งค่าโปรไฟล์
-            </button>
         </div>
     </div>
 
@@ -659,742 +592,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphanhub-portal-khonkaen';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
-
-        let db, auth, currentUser = null;
-        let map = null;
-        let watchId = null;
-        let isTrackingActive = false;
-        
-        // Driving Tracking & Multi-User Markers
-        let tripCoordinates = [];
-        let tripPolyline = null;
-        let maxSpeedRecorded = 0;
-        let totalDistanceKm = 0;
-        let otherUserMarkers = {};
-        let unsubLocations = null;
-
-        let userProfile = {
-            name: localStorage.getItem('nanaphan_profile_name') || 'รถขนส่ง นานาภัณฑ์ 01',
-            avatar: localStorage.getItem('nanaphan_profile_avatar') || '🚗',
-            avatarUrl: localStorage.getItem('nanaphan_profile_url') || ''
-        };
-
-        const APP_MODULES = [
-            {
-                id: 'watermark',
-                title: 'ใส่ลายน้ำ',
-                badge: 'ใหม่',
-                badgeColor: 'bg-rose-500 text-white',
-                icon: 'stamp',
-                iconBg: 'bg-brand-500 text-white',
-                active: true,
-                action: () => switchView('watermarkView')
-            },
-            {
-                id: 'tracking',
-                title: 'ความเร็ว & เส้นทาง',
-                badge: 'Realtime',
-                badgeColor: 'bg-emerald-500 text-white',
-                icon: 'navigation',
-                iconBg: 'bg-emerald-100 text-emerald-600',
-                active: true,
-                action: () => {
-                    switchView('trackingView');
-                    initMapIfNeeded();
-                }
-            },
-            {
-                id: 'price_tag',
-                title: 'ป้ายราคาสินค้า',
-                badge: 'เร็วๆ นี้',
-                badgeColor: 'bg-slate-200 text-slate-600',
-                icon: 'tag',
-                iconBg: 'bg-orange-100 text-brand-600',
-                active: false,
-                action: () => showToast('โมดูล "ป้ายราคาสินค้า" กำลังพัฒนา')
-            },
-            {
-                id: 'stock',
-                title: 'ตารางสต็อก',
-                badge: 'เร็วๆ นี้',
-                badgeColor: 'bg-slate-200 text-slate-600',
-                icon: 'boxes',
-                iconBg: 'bg-orange-100 text-brand-600',
-                active: false,
-                action: () => showToast('โมดูล "ตารางสต็อก" กำลังพัฒนา')
-            },
-            {
-                id: 'profit',
-                title: 'คำนวณกำไร',
-                badge: 'เร็วๆ นี้',
-                badgeColor: 'bg-slate-200 text-slate-600',
-                icon: 'calculator',
-                iconBg: 'bg-orange-100 text-brand-600',
-                active: false,
-                action: () => showToast('โมดูล "คำนวณกำไร" กำลังพัฒนา')
-            },
-            {
-                id: 'catalog',
-                title: 'ผลงาน/แคตตาล็อก',
-                badge: 'เร็วๆ นี้',
-                badgeColor: 'bg-slate-200 text-slate-600',
-                icon: 'image-album',
-                iconBg: 'bg-orange-100 text-brand-600',
-                active: false,
-                action: () => showToast('โมดูล "ผลงานของฉัน" กำลังพัฒนา')
-            }
-        ];
-
-        window.APP_MODULES = APP_MODULES;
-
-        async function initFirebase() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                currentUser = auth.currentUser;
-                console.log("Firebase initialized successfully, UID:", currentUser?.uid);
-            } catch (err) {
-                console.error("Firebase init error:", err);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
-            lucide.createIcons();
-            renderModulesGrid();
-            checkAuthSession();
-            setupWatermarkControls();
-            renderTripHistory();
-
-            // Init Profile Inputs
-            document.getElementById('userNameInput').value = userProfile.name;
-            document.getElementById('profileNameInput').value = userProfile.name;
-            document.getElementById('profileAvatarUrlInput').value = userProfile.avatarUrl;
-        });
-
-        // Profile Modal & Gear Controls
-        window.openProfileModal = function() {
-            document.getElementById('profileModal').classList.remove('hidden');
-            lucide.createIcons();
-        };
-
-        window.closeProfileModal = function() {
-            document.getElementById('profileModal').classList.add('hidden');
-        };
-
-        window.selectAvatar = function(emoji) {
-            userProfile.avatar = emoji;
-            document.querySelectorAll('.avatar-option').forEach(btn => {
-                btn.className = 'avatar-option p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xl flex items-center justify-center transition-all';
-                if (btn.innerText === emoji) {
-                    btn.className = 'avatar-option p-3 rounded-2xl border-2 border-brand-500 bg-orange-50 text-xl flex items-center justify-center transition-all';
-                }
-            });
-        };
-
-        window.saveProfileSettings = function() {
-            const name = document.getElementById('profileNameInput').value.trim() || 'รถขนส่ง นานาภัณฑ์';
-            const url = document.getElementById('profileAvatarUrlInput').value.trim();
-            userProfile.name = name;
-            userProfile.avatarUrl = url;
-
-            localStorage.setItem('nanaphan_profile_name', name);
-            localStorage.setItem('nanaphan_profile_avatar', userProfile.avatar);
-            localStorage.setItem('nanaphan_profile_url', url);
-
-            document.getElementById('userNameInput').value = name;
-            closeProfileModal();
-            showToast('บันทึกโปรไฟล์สำเร็จ!');
-        };
-
-        // Driving Sub-Tab Switcher
-        window.switchDrivingTab = function(tabId) {
-            const mapTab = document.getElementById('paneMapTab');
-            const speedTab = document.getElementById('paneSpeedTab');
-            const historyTab = document.getElementById('paneHistoryTab');
-
-            const btnMap = document.getElementById('btnMapTab');
-            const btnSpeed = document.getElementById('btnSpeedTab');
-            const btnHistory = document.getElementById('btnHistoryTab');
-
-            mapTab.classList.add('hidden');
-            speedTab.classList.add('hidden');
-            historyTab.classList.add('hidden');
-
-            btnMap.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5';
-            btnSpeed.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5';
-            btnHistory.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center gap-1.5';
-
-            if (tabId === 'mapTab') {
-                mapTab.classList.remove('hidden');
-                btnMap.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5';
-                setTimeout(() => { if(map) map.invalidateSize(); }, 150);
-            } else if (tabId === 'speedTab') {
-                speedTab.classList.remove('hidden');
-                btnSpeed.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5';
-            } else if (tabId === 'historyTab') {
-                historyTab.classList.remove('hidden');
-                btnHistory.className = 'py-2 px-3 rounded-2xl text-xs font-bold bg-white text-brand-600 border border-brand-200 shadow-sm flex items-center justify-center gap-1.5';
-                renderTripHistory();
-            }
-            lucide.createIcons();
-        };
-
-        window.toggleTracking = function() {
-            isTrackingActive = !isTrackingActive;
-            const btn = document.getElementById('trackingToggleBtn');
-            const pulse = document.getElementById('gpsPulseIndicator');
-            const saveBtn = document.getElementById('saveTripBtn');
-
-            if (isTrackingActive) {
-                btn.className = 'w-full py-3 rounded-2xl bg-slate-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2';
-                btn.innerHTML = `<i data-lucide="stop-circle" class="w-4 h-4 text-rose-400 animate-pulse"></i> หยุดบันทึกการเดินทาง`;
-                pulse.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
-                saveBtn.disabled = false;
-                saveBtn.className = 'w-full py-2.5 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all';
-                
-                // Reset trip metrics if starting fresh
-                tripCoordinates = [];
-                maxSpeedRecorded = 0;
-                totalDistanceKm = 0;
-                startGeolocationWatch();
-                showToast('เริ่มบันทึกพิกัดและเส้นทางขับขี่แล้ว');
-            } else {
-                btn.className = 'w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all';
-                btn.innerHTML = `<i data-lucide="play-circle" class="w-4 h-4"></i> เริ่มบันทึกการขับขี่ & วาดเส้นทาง`;
-                pulse.className = 'w-2.5 h-2.5 rounded-full bg-slate-300';
-                stopGeolocationWatch();
-                showToast('หยุดบันทึกการเดินทางชั่วคราว');
-            }
-            lucide.createIcons();
-        };
-
-        function startGeolocationWatch() {
-            if (!navigator.geolocation) {
-                showToast('เบราว์เซอร์ไม่รองรับ GPS');
-                return;
-            }
-
-            watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const speedMs = position.coords.speed !== null ? position.coords.speed : (Math.random() * 8 + 15);
-                    const speedKmh = Math.max(0, Math.round(speedMs * 3.6));
-
-                    if (speedKmh > maxSpeedRecorded) {
-                        maxSpeedRecorded = speedKmh;
-                    }
-
-                    // Update UI Speeds
-                    document.getElementById('currentSpeedDisplay').innerText = speedKmh;
-                    document.getElementById('bigSpeedDisplay').innerText = speedKmh;
-                    document.getElementById('maxSpeedDisplay').innerText = maxSpeedRecorded;
-                    document.getElementById('speedTabMax').innerText = maxSpeedRecorded + ' กม./ชม.';
-
-                    tripCoordinates.push([lat, lng]);
-
-                    if (tripCoordinates.length > 1) {
-                        const prev = tripCoordinates[tripCoordinates.length - 2];
-                        const dist = getDistanceFromLatLonInKm(prev[0], prev[1], lat, lng);
-                        totalDistanceKm += dist;
-                        document.getElementById('totalDistanceDisplay').innerText = totalDistanceKm.toFixed(2);
-                    }
-
-                    if (map) {
-                        map.setView([lat, lng], 16);
-                        if (tripPolyline) {
-                            tripPolyline.setLatLngs(tripCoordinates);
-                        } else {
-                            tripPolyline = L.polyline(tripCoordinates, { color: '#f97316', weight: 6, opacity: 0.85 }).addTo(map);
-                        }
-                    }
-
-                    // Sync to Firebase (All users can see each other's live position & speed badge)
-                    if (currentUser && db) {
-                        const userLocRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_locations', currentUser.uid);
-                        setDoc(userLocRef, {
-                            uid: currentUser.uid,
-                            name: userProfile.name,
-                            avatar: userProfile.avatar,
-                            avatarUrl: userProfile.avatarUrl,
-                            lat: lat,
-                            lng: lng,
-                            speed: speedKmh,
-                            updatedAt: serverTimestamp()
-                        }).catch(err => console.error(err));
-                    }
-                },
-                (error) => {
-                    console.error('GPS Error:', error);
-                    showToast('ไม่สามารถดึงพิกัด GPS ได้ กรุณาเปิดสิทธิ์ตำแหน่ง');
-                },
-                { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
-            );
-        }
-
-        function stopGeolocationWatch() {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-        }
-
-        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * (Math.PI / 180);
-            const dLon = (lon2 - lon1) * (Math.PI / 180);
-            const a = 
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-
-        window.saveCurrentTrip = function() {
-            if (tripCoordinates.length < 2) {
-                showToast('ข้อมูลเส้นทางยังน้อยเกินไป ไม่สามารถบันทึกได้');
-                return;
-            }
-
-            const tripName = document.getElementById('userNameInput').value || 'รถขนส่ง นานาภัณฑ์';
-            const tripRecord = {
-                id: 'trip_' + Date.now(),
-                title: tripName,
-                date: new Date().toLocaleString('th-TH'),
-                distance: totalDistanceKm.toFixed(2),
-                maxSpeed: maxSpeedRecorded,
-                pointsCount: tripCoordinates.length
-            };
-
-            let history = JSON.parse(localStorage.getItem('nanaphan_trip_history') || '[]');
-            history.unshift(tripRecord);
-            localStorage.setItem('nanaphan_trip_history', JSON.stringify(history));
-
-            renderTripHistory();
-            showToast('บันทึกประวัติการขับขี่สำเร็จ!');
-            switchDrivingTab('historyTab');
-        };
-
-        function renderTripHistory() {
-            const container = document.getElementById('tripHistoryListContainer');
-            if (!container) return;
-
-            let history = JSON.parse(localStorage.getItem('nanaphan_trip_history') || '[]');
-            
-            if (history.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">ยังไม่มีประวัติการเดินทาง บันทึกทริปแรกของคุณได้เลย</p>`;
-                return;
-            }
-
-            container.innerHTML = history.map(item => `
-                <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-slate-800">${item.title}</span>
-                            <span class="text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-bold border border-brand-200">${item.distance} กม.</span>
-                        </div>
-                        <p class="text-[10px] text-slate-400">วันที่: ${item.date}</p>
-                    </div>
-                    <div class="text-right space-y-1">
-                        <span class="text-[11px] font-bold font-mono text-slate-700 bg-white px-2 py-1 rounded-xl border border-slate-200">
-                            Max: ${item.maxSpeed} กม./ชม.
-                        </span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.clearTripHistory = function() {
-            localStorage.removeItem('nanaphan_trip_history');
-            renderTripHistory();
-            showToast('ล้างประวัติการขับขี่เรียบร้อยแล้ว');
-        };
-
-        function initMapIfNeeded() {
-            if (map) {
-                setTimeout(() => { map.invalidateSize(); }, 200);
-                return;
-            }
-
-            // Khon Kaen City Center Default Coordinates
-            map = L.map('map').setView([16.4322, 102.8236], 14);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Listen to all users in Firestore to display live markers with speed badge on top
-            if (db) {
-                const locsRef = collection(db, 'artifacts', appId, 'public', 'data', 'user_locations');
-                unsubLocations = onSnapshot(locsRef, (snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        const data = change.doc.data();
-                        const uid = data.uid;
-
-                        if (!data.lat || !data.lng) return;
-
-                        // Create HTML for Custom Leaflet Icon with Speed Badge ON TOP
-                        const speed = data.speed || 0;
-                        const avatarContent = data.avatarUrl ? `<img src="${data.avatarUrl}" class="w-full h-full object-cover rounded-full" />` : (data.avatar || '🚗');
-                        const displayName = data.name || 'ผู้ใช้งาน';
-
-                        const iconHtml = `
-                            <div class="relative flex flex-col items-center">
-                                <!-- Speed badge right on top of icon -->
-                                <div class="absolute -top-7 bg-slate-900 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded-full shadow-md border border-brand-500 whitespace-nowrap z-30">
-                                    ⚡ ${speed} กม./ชม.
-                                </div>
-                                <!-- Avatar Pin -->
-                                <div class="w-11 h-11 rounded-full bg-white border-2 border-brand-500 shadow-xl flex items-center justify-center text-xl overflow-hidden">
-                                    ${avatarContent}
-                                </div>
-                                <!-- Name Label -->
-                                <div class="mt-1 bg-white/90 backdrop-blur-sm text-slate-800 font-bold text-[10px] px-2 py-0.5 rounded-md shadow-sm border border-slate-200 whitespace-nowrap">
-                                    ${displayName}
-                                </div>
-                            </div>
-                        `;
-
-                        const customIcon = L.divIcon({
-                            className: 'custom-user-pin',
-                            html: iconHtml,
-                            iconSize: [44, 44],
-                            iconAnchor: [22, 22]
-                        });
-
-                        if (otherUserMarkers[uid]) {
-                            otherUserMarkers[uid].setLatLng([data.lat, data.lng]);
-                            otherUserMarkers[uid].setIcon(customIcon);
-                        } else {
-                            const marker = L.marker([data.lat, data.lng], { icon: customIcon }).addTo(map);
-                            marker.bindPopup(`<b>${displayName}</b><br>ความเร็ว: ${speed} กม./ชม.`);
-                            otherUserMarkers[uid] = marker;
-                        }
-                    });
-                });
-            }
-
-            setTimeout(() => { map.invalidateSize(); }, 300);
-        }
-
-    </script>
-    <script>
-        // AUTH & VIEW ROUTER SYSTEM
-        function checkAuthSession() {
-            const session = localStorage.getItem('nanaphan_session');
-            if (session === 'authenticated_admin') {
-                showMainApp();
-            } else {
-                showLogin();
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('usernameInput').value.trim();
-            const pass = document.getElementById('passwordInput').value.trim();
-
-            if (user === 'Admin' && pass === 'admin') {
-                localStorage.setItem('nanaphan_session', 'authenticated_admin');
-                showToast('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ!');
-                showMainApp();
-            } else {
-                showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-            }
-        }
-
-        function handleLogout() {
-            localStorage.removeItem('nanaphan_session');
-            showToast('ออกจากระบบเรียบร้อย');
-            showLogin();
-        }
-
-        function showLogin() {
-            document.getElementById('loginView').classList.remove('hidden');
-            const mainApp = document.getElementById('mainAppWrapper');
-            mainApp.classList.add('hidden');
-            mainApp.classList.remove('flex');
-        }
-
-        function showMainApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            const mainApp = document.getElementById('mainAppWrapper');
-            mainApp.classList.remove('hidden');
-            mainApp.classList.add('flex');
-            switchView('homeView');
-        }
-
-        function switchView(viewId) {
-            const homeView = document.getElementById('homeView');
-            const watermarkView = document.getElementById('watermarkView');
-            const trackingView = document.getElementById('trackingView');
-
-            homeView.classList.add('hidden');
-            watermarkView.classList.add('hidden');
-            trackingView.classList.add('hidden');
-
-            if (viewId === 'homeView') {
-                homeView.classList.remove('hidden');
-            } else if (viewId === 'watermarkView') {
-                watermarkView.classList.remove('hidden');
-            } else if (viewId === 'trackingView') {
-                trackingView.classList.remove('hidden');
-                setTimeout(() => { if(window.map) window.map.invalidateSize(); }, 200);
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function renderModulesGrid() {
-            const grid = document.getElementById('modulesGrid');
-            if (!grid) return;
-
-            grid.innerHTML = APP_MODULES.map(mod => `
-                <div onclick="window.APP_MODULES.find(m => m.id === '${mod.id}').action()" 
-                    class="glass-card rounded-3xl p-3.5 flex flex-col items-center justify-between text-center relative border border-slate-200/80 shadow-xs cursor-pointer active:scale-95 hover:shadow-md transition-all h-28">
-                    
-                    ${mod.badge ? `
-                        <span class="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${mod.badgeColor}">
-                            ${mod.badge}
-                        </span>
-                    ` : ''}
-
-                    <div class="w-11 h-11 rounded-2xl ${mod.iconBg} flex items-center justify-center mt-1 shadow-sm">
-                        <i data-lucide="${mod.icon}" class="w-5 h-5"></i>
-                    </div>
-
-                    <span class="text-xs font-bold text-slate-800 leading-tight">
-                        ${mod.title}
-                    </span>
-                </div>
-            `).join('');
-
-            lucide.createIcons();
-        }
-
-        // Watermark Canvas Engine
-        const canvas = document.getElementById('previewCanvas');
-        const ctx = canvas.getContext('2d');
-        const state = {
-            image: null,
-            fileName: 'nanaphan-watermarked.png',
-            watermarkText: 'ร้านนานาภัณฑ์ จ.ขอนแก่น',
-            opacity: 0.16,
-            scale: 0.96,
-            pattern: 'tile'
-        };
-
-        function setupWatermarkControls() {
-            const opacitySlider = document.getElementById('opacitySlider');
-            const scaleSlider = document.getElementById('scaleSlider');
-            const patternTileBtn = document.getElementById('patternTile');
-            const patternCenterBtn = document.getElementById('patternCenter');
-            const imageInput = document.getElementById('imageInput');
-
-            imageInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    handleImageFile(e.target.files[0]);
-                }
-            });
-
-            opacitySlider.addEventListener('input', (e) => {
-                const val = e.target.value;
-                state.opacity = val / 100;
-                document.getElementById('opacityVal').innerText = val + '%';
-                renderWatermark();
-            });
-
-            scaleSlider.addEventListener('input', (e) => {
-                const val = e.target.value;
-                state.scale = val / 100;
-                document.getElementById('scaleVal').innerText = val + '%';
-                renderWatermark();
-            });
-
-            patternTileBtn.addEventListener('click', () => {
-                state.pattern = 'tile';
-                patternTileBtn.className = 'pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all';
-                patternCenterBtn.className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
-                renderWatermark();
-            });
-
-            patternCenterBtn.addEventListener('click', () => {
-                state.pattern = 'center';
-                patternCenterBtn.className = 'pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all';
-                patternTileBtn.className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
-                renderWatermark();
-            });
-        }
-
-        function resetWatermarkSettings() {
-            state.opacity = 0.16;
-            state.scale = 0.96;
-            document.getElementById('opacitySlider').value = 16;
-            document.getElementById('opacityVal').innerText = '16%';
-            document.getElementById('scaleSlider').value = 96;
-            document.getElementById('scaleVal').innerText = '96%';
-            renderWatermark();
-            showToast('รีเซ็ตค่าลายน้ำเรียบร้อย');
-        }
-
-        function handleImageFile(file) {
-            state.fileName = 'watermarked-' + file.name;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    state.image = img;
-                    document.getElementById('emptyState').classList.add('hidden');
-                    canvas.classList.remove('hidden');
-                    document.getElementById('imageDimensions').classList.remove('hidden');
-                    document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
-                    document.getElementById('downloadBtn').disabled = false;
-                    document.getElementById('clearBtn').disabled = false;
-                    renderWatermark();
-                    showToast('โหลดรูปภาพเรียบร้อยแล้ว');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function renderWatermark() {
-            if (!state.image) return;
-            const img = state.image;
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-
-            const minDim = Math.min(img.width, img.height);
-            const baseFontSize = Math.max(16, Math.round((minDim / 20) * state.scale));
-
-            ctx.save();
-            if (state.pattern === 'tile') {
-                const text = state.watermarkText;
-                ctx.font = `600 ${baseFontSize}px 'Kanit', sans-serif`;
-                const textMetrics = ctx.measureText(text);
-                const stepX = textMetrics.width + (baseFontSize * 2.5);
-                const stepY = baseFontSize * 3.5;
-
-                ctx.translate(img.width / 2, img.height / 2);
-                ctx.rotate(-28 * Math.PI / 180);
-
-                const diagonal = Math.sqrt(img.width * img.width + img.height * img.height);
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-
-                let rowCount = 0;
-                for (let y = -diagonal; y < diagonal; y += stepY) {
-                    rowCount++;
-                    const shiftX = (rowCount % 2 === 0) ? stepX / 2 : 0;
-                    for (let x = -diagonal; x < diagonal; x += stepX) {
-                        ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity * 0.7})`;
-                        ctx.fillText(text, x + shiftX + 2, y + 2);
-                        ctx.fillStyle = `rgba(255, 255, 255, ${state.opacity})`;
-                        ctx.fillText(text, x + shiftX, y);
-                    }
-                }
-            } else {
-                ctx.translate(img.width / 2, img.height / 2);
-                ctx.font = `600 ${baseFontSize * 1.3}px 'Kanit', sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = `rgba(0, 0, 0, ${state.opacity})`;
-                ctx.fillText(state.watermarkText, 2, 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${state.opacity * 1.5})`;
-                ctx.fillText(state.watermarkText, 0, 0);
-            }
-            ctx.restore();
-        }
-
-        function createDemoImage() {
-            const demoCanvas = document.createElement('canvas');
-            demoCanvas.width = 800;
-            demoCanvas.height = 800;
-            const dctx = demoCanvas.getContext('2d');
-            const grad = dctx.createLinearGradient(0, 0, 800, 800);
-            grad.addColorStop(0, '#fdba74');
-            grad.addColorStop(1, '#ea580c');
-            dctx.fillStyle = grad;
-            dctx.fillRect(0, 0, 800, 800);
-            dctx.fillStyle = 'white';
-            dctx.font = 'bold 36px Kanit';
-            dctx.textAlign = 'center';
-            dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 400);
-
-            const img = new Image();
-            img.onload = () => {
-                state.image = img;
-                document.getElementById('emptyState').classList.add('hidden');
-                canvas.classList.remove('hidden');
-                document.getElementById('imageDimensions').classList.remove('hidden');
-                document.getElementById('imageDimensions').innerText = '800 x 800 px';
-                document.getElementById('downloadBtn').disabled = false;
-                document.getElementById('clearBtn').disabled = false;
-                renderWatermark();
-                showToast('สร้างรูปตัวอย่างสำเร็จ');
-            };
-            img.src = demoCanvas.toDataURL();
-        }
-
-        function downloadImage() {
-            if (!state.image) return;
-            const dataUrl = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = state.fileName;
-            link.href = dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            const modal = document.getElementById('downloadModal');
-            document.getElementById('modalPreviewImg').src = dataUrl;
-            const modalLink = document.getElementById('modalDownloadLink');
-            modalLink.href = dataUrl;
-            modalLink.download = state.fileName;
-            modal.classList.remove('hidden');
-            lucide.createIcons();
-            showToast('เตรียมรูปภาพพร้อมดาวน์โหลดแล้ว');
-        }
-
-        function closeDownloadModal() {
-            document.getElementById('downloadModal').classList.add('hidden');
-        }
-
-        function clearImage() {
-            state.image = null;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.classList.add('hidden');
-            document.getElementById('emptyState').classList.remove('hidden');
-            document.getElementById('imageDimensions').classList.add('hidden');
-            document.getElementById('downloadBtn').disabled = true;
-            document.getElementById('clearBtn').disabled = true;
-            document.getElementById('imageInput').value = '';
-            showToast('ล้างรูปภาพเรียบร้อย');
-        }
-
-        function openInstallModal() {
-            document.getElementById('installModal').classList.remove('hidden');
-        }
-        function closeInstallModal() {
-            document.getElementById('installModal').classList.add('hidden');
-        }
-
-        function showToast(text) {
+        // Global assignments for HTML onclick handlers
+        window.showToast = function(text) {
             const container = document.getElementById('toastContainer');
             document.getElementById('toastText').innerText = text;
             container.classList.remove('-translate-y-10', 'opacity-0');
@@ -1404,6 +605,544 @@
                 container.classList.remove('translate-y-0', 'opacity-100');
             }, 3000);
         }
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphan-hub-app';
+        let db, auth;
+
+        // Data Models
+        let categories = [];
+        let stockProducts = [];
+
+        // Modules Config
+        window.APP_MODULES = [
+            { id: 'watermark', title: 'ใส่ลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-brand-500 text-white', action: () => window.switchView('watermarkView') },
+            { id: 'stock', title: 'จัดการสต็อก', badge: 'Active', badgeColor: 'bg-emerald-500 text-white', icon: 'boxes', iconBg: 'bg-emerald-100 text-emerald-600', action: () => { window.switchView('stockView'); window.renderStockList(); } },
+            { id: 'price_tag', title: 'ป้ายราคา', badge: 'เร็วๆ นี้', badgeColor: 'bg-slate-200 text-slate-600', icon: 'tag', iconBg: 'bg-orange-100 text-brand-600', action: () => window.showToast('กำลังพัฒนา') }
+        ];
+
+        window.checkAuthSession = function() {
+            if (localStorage.getItem('nanaphan_session') === 'authenticated_admin') {
+                window.showMainApp();
+            } else {
+                window.showLogin();
+            }
+        }
+
+        window.handleLogin = function(e) {
+            e.preventDefault();
+            const user = document.getElementById('usernameInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+            if (user === 'Admin' && pass === 'admin') {
+                localStorage.setItem('nanaphan_session', 'authenticated_admin');
+                window.showToast('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ!');
+                window.showMainApp();
+            } else {
+                window.showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        window.handleLogout = function() {
+            localStorage.removeItem('nanaphan_session');
+            window.showToast('ออกจากระบบเรียบร้อย');
+            window.showLogin();
+        }
+
+        window.showLogin = function() {
+            document.getElementById('loginView').classList.remove('hidden');
+            const app = document.getElementById('mainAppWrapper');
+            app.classList.add('hidden'); app.classList.remove('flex');
+        }
+
+        window.showMainApp = function() {
+            document.getElementById('loginView').classList.add('hidden');
+            const app = document.getElementById('mainAppWrapper');
+            app.classList.remove('hidden'); app.classList.add('flex');
+            window.switchView('homeView');
+        }
+
+        window.switchView = function(viewId) {
+            ['homeView', 'watermarkView', 'stockView'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(viewId);
+            if(target) target.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function animateModalOpen(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            void modal.offsetWidth; // trigger reflow
+            modal.classList.remove('opacity-0');
+            modal.querySelector('div').classList.remove('scale-95');
+        }
+
+        function animateModalClose(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        let confirmAction = null;
+        window.showConfirm = function(title, desc, onConfirm) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmDesc').innerText = desc;
+            confirmAction = onConfirm;
+            animateModalOpen('confirmModal');
+        }
+        document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+            animateModalClose('confirmModal'); confirmAction = null;
+        });
+        document.getElementById('confirmOkBtn').addEventListener('click', () => {
+            if(confirmAction) confirmAction();
+            animateModalClose('confirmModal');
+        });
+
+        window.updateCategoryDropdowns = function() {
+            const filterSelect = document.getElementById('stockCategoryFilter');
+            const formSelect = document.getElementById('prodCategory');
+            const optionsHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            if(filterSelect) filterSelect.innerHTML = `<option value="">หมวดหมู่ทั้งหมด</option>` + optionsHTML;
+            if(formSelect) formSelect.innerHTML = optionsHTML;
+        };
+
+        window.openCategoryModal = function() { window.renderCategoryList(); animateModalOpen('categoryModal'); };
+        window.closeCategoryModal = function() { animateModalClose('categoryModal'); };
+
+        window.addCategory = async function(e) {
+            e.preventDefault();
+            if (!auth || !auth.currentUser) return;
+            const input = document.getElementById('newCategoryInput');
+            const name = input.value.trim();
+            if(name) {
+                const idToSave = 'c_' + Date.now();
+                const finalData = { id: idToSave, name };
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', idToSave), finalData);
+                    input.value = '';
+                    window.showToast('เพิ่มหมวดหมู่สำเร็จ');
+                } catch (err) {
+                    console.error(err);
+                    window.showToast('เกิดข้อผิดพลาด');
+                }
+            }
+        };
+
+        window.deleteCategory = function(id, name) {
+            if (!auth || !auth.currentUser) return;
+            const inUseCount = stockProducts.filter(p => p.categoryId === id).length;
+            if(inUseCount > 0) return window.showToast(`ไม่สามารถลบได้ มีสินค้าในหมวดหมู่นี้`);
+            window.showConfirm('ลบหมวดหมู่', `ต้องการลบหมวดหมู่ "${name}" ใช่หรือไม่?`, async () => {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id));
+                    window.showToast('ลบสำเร็จ');
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+        };
+
+        window.renderCategoryList = function() {
+            const container = document.getElementById('categoryListContainer');
+            container.innerHTML = categories.map(cat => {
+                const count = stockProducts.filter(p => p.categoryId === cat.id).length;
+                return `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <div><span class="text-xs font-bold text-slate-700">${cat.name}</span><p class="text-[10px] text-slate-500">${count} รายการ</p></div>
+                        <button onclick="window.deleteCategory('${cat.id}', '${cat.name}')" class="p-1.5 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 active:scale-95 transition-all ${count > 0 ? 'opacity-30' : ''}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        window.openAddProductModal = function(id = null) {
+            if (categories.length === 0) return window.showToast("กรุณาสร้างหมวดหมู่ก่อน");
+            document.getElementById('productForm').reset();
+            const title = document.getElementById('productModalTitle');
+            if (id) {
+                const item = stockProducts.find(p => p.id === id);
+                if (item) {
+                    title.innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-brand-500"></i> แก้ไขข้อมูลสินค้า`;
+                    document.getElementById('editProductId').value = item.id;
+                    document.getElementById('prodSku').value = item.sku;
+                    document.getElementById('prodBarcode').value = item.barcode || '';
+                    document.getElementById('prodName').value = item.name;
+                    document.getElementById('prodCategory').value = item.categoryId;
+                    document.getElementById('prodUnit').value = item.unit;
+                    document.getElementById('prodQty').value = item.qty;
+                    document.getElementById('prodPrice').value = item.price;
+                }
+            } else {
+                title.innerHTML = `<i data-lucide="package-plus" class="w-5 h-5 text-brand-500"></i> เพิ่มสินค้าใหม่`;
+                document.getElementById('editProductId').value = '';
+                document.getElementById('prodSku').value = 'NP-' + Math.floor(1000 + Math.random() * 9000);
+            }
+            animateModalOpen('productModal');
+            lucide.createIcons();
+        };
+
+        window.closeProductModal = function() { animateModalClose('productModal'); };
+
+        window.saveProduct = async function(e) {
+            e.preventDefault();
+            if (!auth || !auth.currentUser) return;
+            const editId = document.getElementById('editProductId').value;
+            const itemData = {
+                sku: document.getElementById('prodSku').value.trim(),
+                barcode: document.getElementById('prodBarcode').value.trim() || String(Date.now()).slice(-8),
+                name: document.getElementById('prodName').value.trim(),
+                categoryId: document.getElementById('prodCategory').value,
+                unit: document.getElementById('prodUnit').value.trim(),
+                qty: parseInt(document.getElementById('prodQty').value) || 0,
+                price: parseFloat(document.getElementById('prodPrice').value) || 0,
+                updatedAt: Date.now()
+            };
+
+            const isDuplicate = stockProducts.some(p => p.barcode === itemData.barcode && p.id !== editId);
+            if(isDuplicate) return window.showToast('บาร์โค้ดซ้ำกับสินค้าอื่น');
+
+            const idToSave = editId || 'p_' + Date.now();
+            const finalData = { id: idToSave, ...itemData };
+            
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', idToSave), finalData);
+                window.showToast(editId ? 'อัปเดตข้อมูลสำเร็จ' : 'เพิ่มสินค้าใหม่แล้ว');
+                window.closeProductModal();
+            } catch (err) {
+                console.error(err);
+                window.showToast('เกิดข้อผิดพลาดในการบันทึก');
+            }
+        };
+
+        window.deleteProduct = function(id, name) {
+            if (!auth || !auth.currentUser) return;
+            window.showConfirm('ลบสินค้า', `ลบสินค้า "${name}" ใช่หรือไม่?`, async () => {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+                    window.showToast('ลบสำเร็จ');
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+        };
+
+        window.adjustQtyBtn = function(id, amount) {
+            const item = stockProducts.find(p => p.id === id);
+            if (item) updateItemQty(id, Math.max(0, item.qty + amount));
+        };
+
+        window.manualInputQty = function(id, inputElement) {
+            let val = parseInt(inputElement.value);
+            if(isNaN(val) || val < 0) {
+                const item = stockProducts.find(p => p.id === id);
+                inputElement.value = item ? item.qty : 0; return;
+            }
+            updateItemQty(id, val);
+        }
+
+        async function updateItemQty(id, newQty) {
+            if (!auth || !auth.currentUser) return;
+            const item = stockProducts.find(p => p.id === id);
+            if (item && item.qty !== newQty) {
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
+                        ...item,
+                        qty: newQty,
+                        updatedAt: Date.now()
+                    });
+                    const inputEl = document.getElementById(`qtyInput_${id}`);
+                    if(inputEl) { inputEl.classList.add('bg-brand-100'); setTimeout(()=>inputEl.classList.remove('bg-brand-100'), 300); }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        function updateStatusBadgeUI(badgeEl, qty) {
+            badgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max';
+            if(qty === 0) { badgeEl.classList.add('bg-rose-100', 'text-rose-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> หมด`; }
+            else if (qty <= 5) { badgeEl.classList.add('bg-amber-100', 'text-amber-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใกล้หมด`; }
+            else { badgeEl.classList.add('bg-emerald-100', 'text-emerald-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> มีสินค้า`; }
+        }
+
+        window.openBarcodeModal = function(name, barcode) {
+            document.getElementById('barcodeModalName').innerText = name;
+            document.getElementById('barcodeModalName').dataset.barcode = barcode;
+            JsBarcode("#largeBarcode", barcode, { format: "CODE128", lineColor: "#1e293b", width: 2, height: 80, displayValue: true, fontSize: 16, fontOptions: "bold", font: "Kanit" });
+            animateModalOpen('barcodeModal');
+        }
+        window.closeBarcodeModal = function() { animateModalClose('barcodeModal'); }
+        
+        window.copyBarcodeText = function() {
+            const bc = document.getElementById('barcodeModalName').dataset.barcode;
+            if(bc) {
+                navigator.clipboard.writeText(bc).catch(() => {
+                    let ta = document.createElement("textarea"); ta.value = bc; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                });
+                window.showToast('คัดลอก Barcode: ' + bc);
+            }
+        }
+
+        window.filterStockList = function() { window.renderStockList(); };
+
+        function updateDashboardStats() {
+            document.getElementById('statTotalItems').innerText = stockProducts.length;
+            document.getElementById('statTotalQty').innerText = stockProducts.reduce((sum, p) => sum + p.qty, 0).toLocaleString();
+            document.getElementById('statLowStock').innerText = stockProducts.filter(p => p.qty > 0 && p.qty <= 5).length;
+            document.getElementById('statOutOfStock').innerText = stockProducts.filter(p => p.qty === 0).length;
+        }
+
+        window.renderStockList = function() {
+            const container = document.getElementById('stockListContainer');
+            if (!container) return;
+            updateDashboardStats();
+
+            const query = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
+            const selectedCat = document.getElementById('stockCategoryFilter')?.value || '';
+            const selectedStatus = document.getElementById('stockStatusFilter')?.value || '';
+
+            let filtered = stockProducts.filter(item => {
+                const matchQuery = item.name.toLowerCase().includes(query) || item.sku.toLowerCase().includes(query) || (item.barcode||'').includes(query);
+                const matchCat = selectedCat === '' || item.categoryId === selectedCat;
+                let matchStatus = true;
+                if(selectedStatus === 'normal') matchStatus = item.qty > 5;
+                if(selectedStatus === 'low') matchStatus = item.qty > 0 && item.qty <= 5;
+                if(selectedStatus === 'out') matchStatus = item.qty === 0;
+                return matchQuery && matchCat && matchStatus;
+            });
+            filtered.sort((a,b) => b.updatedAt - a.updatedAt);
+
+            document.getElementById('filteredCountText').innerText = `แสดง ${filtered.length} จาก ${stockProducts.length}`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-400 text-sm">ไม่พบรายการสินค้า</div>`; return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const catObj = categories.find(c => c.id === item.categoryId) || {name: 'ไม่ระบุ'};
+                const isOut = item.qty === 0;
+                return `
+                    <div class="p-3.5 rounded-2xl bg-white border ${isOut ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs transition-colors shadow-sm">
+                        <div class="flex items-start gap-3 w-full sm:w-auto overflow-hidden">
+                            <div onclick="window.openBarcodeModal('${item.name}', '${item.barcode}')" class="shrink-0 w-20 h-16 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 active:scale-95 overflow-hidden px-1">
+                                <svg class="barcode-svg max-w-full h-auto max-h-10" data-bc="${item.barcode}"></svg>
+                                <span class="text-[8px] text-slate-400 font-mono mt-0.5 truncate w-full text-center">${item.sku}</span>
+                            </div>
+                            <div class="space-y-1 w-full min-w-0">
+                                <div class="flex items-start justify-between sm:justify-start gap-2">
+                                    <h4 class="font-bold text-slate-800 truncate text-sm" title="${item.name}">${item.name}</h4>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                                    <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">${catObj.name}</span>
+                                </div>
+                                <div class="text-[11px]">ราคา: <strong class="text-brand-600 text-xs">฿${item.price}</strong> / ${item.unit}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                            <div id="statusBadge_${item.id}"></div>
+                            <div class="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-200">
+                                <button onclick="window.adjustQtyBtn('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center">-</button>
+                                <input type="number" id="qtyInput_${item.id}" value="${item.qty}" min="0" onchange="window.manualInputQty('${item.id}', this)" class="w-10 text-center bg-transparent font-bold font-mono text-slate-800 focus:outline-none no-spinners">
+                                <button onclick="window.adjustQtyBtn('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-brand-600">+</button>
+                            </div>
+                            <div class="flex gap-1.5 ml-2">
+                                <button onclick="window.openAddProductModal('${item.id}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-200 text-slate-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                <button onclick="window.deleteProduct('${item.id}', '${item.name}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+            
+            lucide.createIcons();
+            filtered.forEach(item => updateStatusBadgeUI(document.getElementById(`statusBadge_${item.id}`), item.qty));
+            setTimeout(() => {
+                document.querySelectorAll('.barcode-svg').forEach(svg => {
+                    if(svg.dataset.bc) JsBarcode(svg, svg.dataset.bc, { format: "CODE128", displayValue: false, width: 1, height: 30, background: "transparent", lineColor: "#334155", margin: 0 });
+                });
+            }, 10);
+        }
+
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+        const wmState = { image: null, fileName: 'watermarked.png', text: 'ร้านนานาภัณฑ์ จ.ขอนแก่น', opacity: 0.16, scale: 0.96, pattern: 'tile' };
+
+        window.setupWatermarkControls = function() {
+            document.getElementById('imageInput').addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) window.handleImageFile(e.target.files[0]);
+            });
+            document.getElementById('opacitySlider').addEventListener('input', (e) => {
+                wmState.opacity = e.target.value / 100; document.getElementById('opacityVal').innerText = e.target.value + '%'; window.renderWatermark();
+            });
+            document.getElementById('scaleSlider').addEventListener('input', (e) => {
+                wmState.scale = e.target.value / 100; document.getElementById('scaleVal').innerText = e.target.value + '%'; window.renderWatermark();
+            });
+            document.getElementById('patternTile').addEventListener('click', (e) => {
+                wmState.pattern = 'tile'; e.currentTarget.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600'); e.currentTarget.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
+                document.getElementById('patternCenter').className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
+                window.renderWatermark();
+            });
+            document.getElementById('patternCenter').addEventListener('click', (e) => {
+                wmState.pattern = 'center'; e.currentTarget.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600'); e.currentTarget.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
+                document.getElementById('patternTile').className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
+                window.renderWatermark();
+            });
+        }
+
+        window.resetWatermarkSettings = function() {
+            wmState.opacity = 0.16; wmState.scale = 0.96;
+            document.getElementById('opacitySlider').value = 16; document.getElementById('opacityVal').innerText = '16%';
+            document.getElementById('scaleSlider').value = 96; document.getElementById('scaleVal').innerText = '96%';
+            window.renderWatermark(); window.showToast('รีเซ็ตค่าเรียบร้อย');
+        }
+
+        window.handleImageFile = function(file) {
+            wmState.fileName = 'wm-' + file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    wmState.image = img;
+                    document.getElementById('emptyState').classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    document.getElementById('imageDimensions').classList.remove('hidden');
+                    document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
+                    document.getElementById('downloadBtn').disabled = false;
+                    document.getElementById('clearBtn').disabled = false;
+                    window.renderWatermark();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.renderWatermark = function() {
+            if (!wmState.image) return;
+            const img = wmState.image;
+            canvas.width = img.width; canvas.height = img.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0);
+
+            const baseSize = Math.max(16, Math.round((Math.min(img.width, img.height) / 20) * wmState.scale));
+            ctx.save();
+            if (wmState.pattern === 'tile') {
+                ctx.font = `600 ${baseSize}px 'Kanit'`;
+                const metrics = ctx.measureText(wmState.text);
+                const stepX = metrics.width + (baseSize * 2.5), stepY = baseSize * 3.5;
+                ctx.translate(img.width / 2, img.height / 2); ctx.rotate(-28 * Math.PI / 180);
+                const diag = Math.sqrt(img.width*img.width + img.height*img.height);
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                let rowCount = 0;
+                for (let y = -diag; y < diag; y += stepY) {
+                    rowCount++; const shiftX = (rowCount % 2 === 0) ? stepX / 2 : 0;
+                    for (let x = -diag; x < diag; x += stepX) {
+                        ctx.fillStyle = `rgba(0,0,0,${wmState.opacity * 0.7})`; ctx.fillText(wmState.text, x + shiftX + 2, y + 2);
+                        ctx.fillStyle = `rgba(255,255,255,${wmState.opacity})`; ctx.fillText(wmState.text, x + shiftX, y);
+                    }
+                }
+            } else {
+                ctx.translate(img.width / 2, img.height / 2); ctx.font = `600 ${baseSize * 1.3}px 'Kanit'`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillStyle = `rgba(0,0,0,${wmState.opacity})`; ctx.fillText(wmState.text, 2, 2);
+                ctx.fillStyle = `rgba(255,255,255,${wmState.opacity * 1.5})`; ctx.fillText(wmState.text, 0, 0);
+            }
+            ctx.restore();
+        }
+
+        window.createDemoImage = function() {
+            const dc = document.createElement('canvas'); dc.width = 800; dc.height = 800; const dctx = dc.getContext('2d');
+            const grad = dctx.createLinearGradient(0, 0, 800, 800); grad.addColorStop(0, '#fdba74'); grad.addColorStop(1, '#ea580c');
+            dctx.fillStyle = grad; dctx.fillRect(0, 0, 800, 800); dctx.fillStyle = 'white'; dctx.font = 'bold 36px Kanit'; dctx.textAlign = 'center'; dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 400);
+            const img = new Image();
+            img.onload = () => {
+                wmState.image = img;
+                document.getElementById('emptyState').classList.add('hidden'); canvas.classList.remove('hidden');
+                document.getElementById('imageDimensions').classList.remove('hidden'); document.getElementById('imageDimensions').innerText = '800 x 800 px';
+                document.getElementById('downloadBtn').disabled = false; document.getElementById('clearBtn').disabled = false;
+                window.renderWatermark();
+            };
+            img.src = dc.toDataURL();
+        }
+
+        window.downloadImage = function() {
+            if (!wmState.image) return;
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('modalPreviewImg').src = dataUrl;
+            const link = document.getElementById('modalDownloadLink');
+            link.href = dataUrl; link.download = wmState.fileName;
+            document.getElementById('downloadModal').classList.remove('hidden'); lucide.createIcons();
+            
+            // Auto trigger for desktop
+            const a = document.createElement('a'); a.download = wmState.fileName; a.href = dataUrl;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+        window.closeDownloadModal = function() { document.getElementById('downloadModal').classList.add('hidden'); }
+
+        window.clearImage = function() {
+            wmState.image = null; ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden'); document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('imageDimensions').classList.add('hidden');
+            document.getElementById('downloadBtn').disabled = true; document.getElementById('clearBtn').disabled = true;
+            document.getElementById('imageInput').value = '';
+        }
+
+        window.renderModulesGrid = function() {
+            document.getElementById('modulesGrid').innerHTML = window.APP_MODULES.map(mod => `
+                <div onclick="window.APP_MODULES.find(m => m.id === '${mod.id}').action()" class="glass-card rounded-3xl p-3.5 flex flex-col items-center justify-between text-center relative border border-slate-200/80 shadow-xs cursor-pointer active:scale-95 hover:shadow-md transition-all h-28">
+                    ${mod.badge ? `<span class="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${mod.badgeColor}">${mod.badge}</span>` : ''}
+                    <div class="w-11 h-11 rounded-2xl ${mod.iconBg} flex items-center justify-center mt-1 shadow-sm"><i data-lucide="${mod.icon}" class="w-5 h-5"></i></div>
+                    <span class="text-xs font-bold text-slate-800 leading-tight">${mod.title}</span>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            window.renderModulesGrid();
+            window.updateCategoryDropdowns();
+            window.setupWatermarkControls();
+            window.checkAuthSession();
+            
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                console.log("Firebase initialized and authenticated");
+
+                // ระบบ Real-time synchronization
+                const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+
+                onSnapshot(categoriesRef, (snapshot) => {
+                    categories = [];
+                    snapshot.forEach(doc => categories.push(doc.data()));
+                    window.updateCategoryDropdowns();
+                    if(!document.getElementById('categoryModal').classList.contains('hidden')) {
+                        window.renderCategoryList();
+                    }
+                    if(!document.getElementById('stockView').classList.contains('hidden')) {
+                        window.renderStockList();
+                    }
+                }, (error) => console.error("Category Sync Error:", error));
+
+                onSnapshot(productsRef, (snapshot) => {
+                    stockProducts = [];
+                    snapshot.forEach(doc => stockProducts.push(doc.data()));
+                    if(!document.getElementById('stockView').classList.contains('hidden')) {
+                        window.renderStockList();
+                    }
+                }, (error) => console.error("Product Sync Error:", error));
+
+            } catch (err) { console.error("Firebase info:", err.message); }
+        });
     </script>
 </body>
 </html>
