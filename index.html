@@ -829,34 +829,72 @@
             });
         };
 
+        window.qtyUpdateTimeouts = {};
+
         window.adjustQtyBtn = function(id, amount) {
             const item = stockProducts.find(p => p.id === id);
-            if (item) updateItemQty(id, Math.max(0, item.qty + amount));
+            if (item) {
+                const newQty = Math.max(0, item.qty + amount);
+                item.qty = newQty; // Optimistic UI Update เปลี่ยนแปลงทันทีโดยไม่ต้องรอฐานข้อมูล
+                
+                // อัปเดตตัวเลขบนหน้าจอทันที
+                const inputEl = document.getElementById(`qtyInput_${id}`);
+                if (inputEl) {
+                    inputEl.value = newQty;
+                    inputEl.classList.add('bg-brand-100');
+                    setTimeout(() => inputEl.classList.remove('bg-brand-100'), 150);
+                }
+                
+                // อัปเดตป้ายสถานะ
+                const badgeEl = document.getElementById(`statusBadge_${id}`);
+                if (badgeEl) updateStatusBadgeUI(badgeEl, newQty);
+                
+                updateDashboardStats();
+                
+                // หน่วงเวลาการอัปเดตไปที่ Firestore เพื่อให้สามารถกดปุ่มรัวๆ บนมือถือได้โดยไม่กระตุก
+                if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
+                window.qtyUpdateTimeouts[id] = setTimeout(() => {
+                    updateItemQtyFirestore(id, newQty);
+                }, 500);
+            }
         };
 
         window.manualInputQty = function(id, inputElement) {
             let val = parseInt(inputElement.value);
             if(isNaN(val) || val < 0) {
                 const item = stockProducts.find(p => p.id === id);
-                inputElement.value = item ? item.qty : 0; return;
+                inputElement.value = item ? item.qty : 0; 
+                return;
             }
-            updateItemQty(id, val);
+            const item = stockProducts.find(p => p.id === id);
+            if (item) {
+                item.qty = val;
+                
+                const badgeEl = document.getElementById(`statusBadge_${id}`);
+                if (badgeEl) updateStatusBadgeUI(badgeEl, val);
+                
+                updateDashboardStats();
+                
+                if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
+                window.qtyUpdateTimeouts[id] = setTimeout(() => {
+                    updateItemQtyFirestore(id, val);
+                }, 500);
+            }
         }
 
-        async function updateItemQty(id, newQty) {
+        async function updateItemQtyFirestore(id, newQty) {
             if (!auth || !auth.currentUser) return;
             const item = stockProducts.find(p => p.id === id);
-            if (item && item.qty !== newQty) {
+            if (item) {
                 try {
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
                         ...item,
                         qty: newQty,
                         updatedAt: Date.now()
                     });
-                    const inputEl = document.getElementById(`qtyInput_${id}`);
-                    if(inputEl) { inputEl.classList.add('bg-brand-100'); setTimeout(()=>inputEl.classList.remove('bg-brand-100'), 300); }
                 } catch (err) {
-                    console.error(err);
+                    console.error("Firestore update error:", err);
+                    window.showToast('เกิดข้อผิดพลาดในการอัปเดตสต็อก');
                 }
             }
         }
