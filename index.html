@@ -43,6 +43,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="./barcode-scan-processor.js"></script>
 
 <style>
     * {
@@ -861,6 +862,65 @@
             updatedAt: Date.now()
         }
     ];
+
+    function normalizeBarcodeValue(value) {
+        return String(value || '').replace(/[\s\-_]+/g, '').trim().toUpperCase();
+    }
+
+    function seedDefaultProductsIfNeeded() {
+        const existing = JSON.parse(localStorage.getItem('nanaphan_products_' + appId) || '[]');
+        if (Array.isArray(existing) && existing.length > 0) {
+            stockProducts = existing;
+            return;
+        }
+
+        stockProducts = [
+            {
+                id: 'demo_p_01',
+                type: 'simple',
+                sku: 'SKU-001',
+                barcode: '885123456789',
+                name: 'สกรูหัวกลม 5mm',
+                categoryId: 'cat_hardware',
+                unit: 'กล่อง',
+                qty: 24,
+                price: 129,
+                lowStockThreshold: 5,
+                updatedAt: Date.now()
+            },
+            {
+                id: 'demo_p_02',
+                type: 'simple',
+                sku: 'SKU-002',
+                barcode: '885987654321',
+                name: 'สีทาบ้าน Premium White',
+                categoryId: 'cat_paint',
+                unit: 'ถัง',
+                qty: 8,
+                price: 490,
+                lowStockThreshold: 3,
+                updatedAt: Date.now()
+            },
+            {
+                id: 'demo_p_03',
+                type: 'variable',
+                sku: 'SKU-003',
+                barcode: '880123456789',
+                name: 'แปรงล้างท่อ',
+                categoryId: 'cat_plumbing',
+                unit: 'ชิ้น',
+                qty: 14,
+                variants: [
+                    { id: 'demo_v_01', optionName: 'เล็ก', fullName: 'แปรงล้างท่อ - เล็ก', barcode: '880123456789', unit: 'ชิ้น', price: 90, stock: 7, lowStockThreshold: 2 },
+                    { id: 'demo_v_02', optionName: 'ใหญ่', fullName: 'แปรงล้างท่อ - ใหญ่', barcode: '880123456790', unit: 'ชิ้น', price: 140, stock: 7, lowStockThreshold: 2 }
+                ],
+                lowStockThreshold: 5,
+                updatedAt: Date.now()
+            }
+        ];
+
+        persistLocalCache();
+    }
 
     function persistLocalCache() {
         localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
@@ -1742,36 +1802,30 @@
             fallback.classList.add('hidden');
             video.play().catch(() => {});
 
-            const runAutoBarcodeCheck = async () => {
-                const modal = document.getElementById('scanBarcodeModal');
-                if (!modal || modal.classList.contains('hidden')) {
-                    return;
-                }
-
-                try {
-                    if ('BarcodeDetector' in window && video.readyState >= 2) {
-                        const detector = new BarcodeDetector({
-                            formats: ['code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code']
-                        });
-                        const codes = await detector.detect(video);
-                        if (codes && codes.length) {
-                            const detectedCode = (codes[0].rawValue || '').trim();
-                            if (detectedCode) {
-                                const input = document.getElementById('scanBarcodeInput');
-                                if (input) input.value = detectedCode;
-                                const resolved = window.resolveBarcodeToProduct(detectedCode, true);
-                                if (resolved) return;
-                            }
+            if (!window.barcodeScanProcessor) {
+                window.barcodeScanProcessor = new window.BarcodeScanProcessor({
+                    products: () => stockProducts,
+                    onMatch: function (payload) {
+                        const input = document.getElementById('scanBarcodeInput');
+                        if (input) input.value = payload.barcode || input.value;
+                        window.openScanResultModal(payload);
+                    },
+                    onNoMatch: function (code) {
+                        const input = document.getElementById('scanBarcodeInput');
+                        if (input) input.value = code;
+                    },
+                    onStatus: function (message) {
+                        const box = document.getElementById('scanFallbackBox');
+                        if (box && !video.classList.contains('hidden')) {
+                            box.innerText = message;
+                            box.classList.remove('hidden');
                         }
-                    }
-                } catch (err) {
-                    // Ignore detection errors and keep retrying; mobile browsers often need a small delay before the first read.
-                }
+                    },
+                    intervalMs: 400
+                });
+            }
 
-                window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 700);
-            };
-
-            window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 800);
+            window.barcodeScanProcessor.start(video);
         } catch (err) {
             fallback.innerText = 'ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์กล้อง หรือกรอกบาร์โค้ดด้วยมือ';
             fallback.classList.remove('hidden');
@@ -1784,6 +1838,9 @@
         if (window.scanDetectionTimer) {
             clearTimeout(window.scanDetectionTimer);
             window.scanDetectionTimer = null;
+        }
+        if (window.barcodeScanProcessor) {
+            window.barcodeScanProcessor.stop();
         }
         if (video && video.srcObject) {
             video.srcObject.getTracks().forEach(track => track.stop());
@@ -1837,16 +1894,17 @@
     };
 
     function findBarcodeInProducts(code) {
-        const normalized = String(code || '').trim();
+        const normalized = normalizeBarcodeValue(code);
         if (!normalized) return null;
 
         for (const item of stockProducts) {
-            if ((item.barcode || '').trim() === normalized) {
+            const productBarcode = normalizeBarcodeValue(item.barcode);
+            if (productBarcode && productBarcode === normalized) {
                 return { product: item, variant: null, type: 'product' };
             }
 
             if (Array.isArray(item.variants)) {
-                const variant = item.variants.find(v => (v.barcode || '').trim() === normalized);
+                const variant = item.variants.find(v => normalizeBarcodeValue(v.barcode) === normalized);
                 if (variant) {
                     return { product: item, variant, type: 'variant' };
                 }
@@ -2425,6 +2483,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
+        seedDefaultProductsIfNeeded();
         lucide.createIcons();
         window.renderModulesGrid();
         window.setupWatermarkControls();
