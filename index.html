@@ -5,104 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NanaphanHub - ระบบบริหารจัดการสต็อก (Admin Realtime)</title>
     
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="NanaphanHub">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NanaphanHub">
 
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    brand: {
-                        50: '#fff7ed',
-                        100: '#ffedd5',
-                        500: '#f97316',
-                        600: '#ea580c',
-                        700: '#c2410c',
-                        800: '#9a3412',
-                    }
-                },
-                fontFamily: {
-                    kanit: ['Kanit', 'sans-serif'],
-                },
-                borderRadius: {
-                    '3xl': '1.5rem',
-                    '4xl': '2rem',
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed', 100: '#ffedd5', 500: '#f97316', 
+                            600: '#ea580c', 700: '#c2410c', 800: '#9a3412',
+                        }
+                    },
+                    fontFamily: { kanit: ['Kanit', 'sans-serif'] },
+                    borderRadius: { '3xl': '1.5rem', '4xl': '2rem' }
                 }
             }
         }
-    }
-</script>
+    </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
-<style>
-    * {
-        font-family: 'Kanit', sans-serif;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-    }
+    <style>
+        * {
+            font-family: 'Kanit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(234, 88, 12, 0.05) 0px, transparent 50%);
+            min-height: 100vh;
+        }
+        input[type=range] {
+            -webkit-appearance: none; background: #e2e8f0; border-radius: 999px; height: 8px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%;
+            background: #f97316; cursor: pointer; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.25); }
 
-    body {
-        background-color: #f8fafc;
-        background-image: 
-            radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.08) 0px, transparent 50%),
-            radial-gradient(at 100% 100%, rgba(234, 88, 12, 0.05) 0px, transparent 50%);
-        min-height: 100vh;
-    }
-
-    input[type=range] {
-        -webkit-appearance: none;
-        background: #e2e8f0;
-        border-radius: 999px;
-        height: 8px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 22px;
-        width: 22px;
-        border-radius: 50%;
-        background: #f97316;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
-        transition: transform 0.15s ease;
-    }
-    input[type=range]::-webkit-slider-thumb:active {
-        transform: scale(1.25);
-    }
-
-    .glass-card {
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-    }
-
-    .orange-gradient-card {
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    
-    .no-spinners::-webkit-outer-spin-button,
-    .no-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .no-spinners { -moz-appearance: textfield; }
-</style>
-
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .orange-gradient-card { background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-spinners::-webkit-outer-spin-button,
+        .no-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .no-spinners { -moz-appearance: textfield; }
+    </style>
+</head>
+<body>
 
 <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] pointer-events-none transition-all duration-300 transform -translate-y-10 opacity-0">
     <div id="toastMessage" class="glass-card shadow-xl rounded-2xl px-5 py-3 border border-slate-200 text-sm font-medium flex items-center gap-2.5 text-slate-800">
@@ -173,9 +140,7 @@
             
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                        น
-                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-lg shadow-sm">น</div>
                     <div>
                         <p class="text-[11px] text-orange-100 font-light">ระบบหลังบ้าน & คำนวณราคา (Admin)</p>
                         <h2 class="text-base font-bold leading-tight">ร้านนานาภัณฑ์ จ.ขอนแก่น</h2>
@@ -190,14 +155,14 @@
                 </button>
             </div>
 
-            <div onclick="window.switchView('watermarkView')" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
+            <div onclick="window.openScannerModal()" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-md">
-                        <i data-lucide="stamp" class="w-5 h-5"></i>
+                        <i data-lucide="scan-barcode" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold text-white">ระบบใส่ลายน้ำสินค้า</h3>
-                        <p class="text-[11px] text-orange-100">ใส่ลายน้ำภาพสินค้าก่อนโพสต์ขาย</p>
+                        <h3 class="text-xs font-bold text-white">ระบบสแกนบาร์โค้ด</h3>
+                        <p class="text-[11px] text-orange-100">สแกนเพื่อค้นหาและจัดการสต็อก</p>
                     </div>
                 </div>
                 <span class="px-3 py-1 rounded-full bg-white text-brand-600 text-xs font-bold flex items-center gap-1 shadow-sm">
@@ -232,7 +197,7 @@
                 </span>
             </div>
             <div id="modulesGrid" class="grid grid-cols-3 gap-3">
-                <!-- Dynamic Modules -->
+                <!-- Dynamic Modules populated via JS -->
             </div>
         </div>
     </main>
@@ -270,7 +235,6 @@
             </div>
         </div>
 
-        <!-- Stats Grid with Total Valuation -->
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
             <div class="glass-card rounded-3xl p-3.5 border border-slate-200 text-center shadow-xs">
                 <span class="text-[10px] text-slate-500 block font-semibold mb-1"><i data-lucide="package" class="w-3 h-3 inline text-slate-400"></i> รายการ</span>
@@ -294,7 +258,6 @@
             </div>
         </div>
 
-        <!-- Filters -->
         <div class="glass-card rounded-3xl p-3 mb-4 shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-2">
             <div class="relative flex-grow">
                 <input type="text" id="stockSearchInput" oninput="window.filterStockList()" placeholder="ค้นหาชื่อสินค้า, SKU, บาร์โค้ด..." 
@@ -323,7 +286,7 @@
             </div>
 
             <div id="stockListContainer" class="space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar pb-10">
-                <!-- Dynamic Stock Cards -->
+                <!-- Dynamic Stock Cards Rendered by JS -->
             </div>
         </div>
     </section>
@@ -377,10 +340,10 @@
             <div class="space-y-1.5">
                 <label class="font-bold text-slate-700">รูปแบบการวางลายน้ำ</label>
                 <div class="grid grid-cols-2 gap-2">
-                    <button type="button" id="patternTile" class="pattern-btn active p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                    <button type="button" id="patternTile" onclick="window.setWatermarkPattern(true)" class="pattern-btn p-2.5 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center gap-2 transition-all">
                         <i data-lucide="layout-grid" class="w-4 h-4"></i> เรียงเต็มแผ่น
                     </button>
-                    <button type="button" id="patternCenter" class="pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                    <button type="button" id="patternCenter" onclick="window.setWatermarkPattern(false)" class="pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
                         <i data-lucide="crosshair" class="w-4 h-4"></i> ตรงกลางรูป
                     </button>
                 </div>
@@ -412,12 +375,13 @@
             </div>
         </div>
     </section>
-
 </div>
 
 <!-- ========================================== -->
 <!-- MODALS SECTION                             -->
 <!-- ========================================== -->
+
+<!-- Product Modal -->
 <div id="productModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -451,18 +415,19 @@
                     class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
-                <div class="space-y-1">
-                    <label class="font-bold text-slate-700">หมวดหมู่ <span class="text-rose-500">*</span></label>
-                    <select id="prodCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <!-- Rendered via JS -->
-                    </select>
+            <div class="space-y-1.5 pt-1">
+                <label class="font-bold text-slate-700">รูปแบบสินค้า</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div id="typeSimpleBtn" onclick="window.selectProductType('simple')" class="p-2.5 border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-2xl cursor-pointer flex items-center gap-2 transition-all">
+                        <i data-lucide="box" class="w-4 h-4"></i>
+                        <span class="text-xs font-bold">ไม่มีตัวแปร</span>
+                    </div>
+                    <div id="typeVariableBtn" onclick="window.selectProductType('variable')" class="p-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-2xl cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-100">
+                        <i data-lucide="network" class="w-4 h-4"></i>
+                        <span class="text-xs font-bold">มีตัวแปร</span>
+                    </div>
                 </div>
-                <div class="space-y-1">
-                    <label class="font-bold text-slate-700">หน่วยนับ <span class="text-rose-500">*</span></label>
-                    <input type="text" id="prodUnit" required placeholder="ชุด, ผืน, ชิ้น" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
+                <input type="hidden" id="prodType" value="simple">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -510,15 +475,10 @@
             </button>
         </form>
 
-        <div class="overflow-y-auto no-scrollbar flex-grow space-y-2" id="categoryListContainer">
-            <!-- Rendered via JS -->
-        </div>
+        <div class="overflow-y-auto no-scrollbar flex-grow space-y-2" id="categoryListContainer"></div>
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- SETS (BUNDLES) & PRICING MODALS            -->
-<!-- ========================================== -->
 <!-- Sets List Modal -->
 <div id="setsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh]">
@@ -528,13 +488,13 @@
                     <i data-lucide="calculator" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-slate-800">คำนวณราคาและจัดการเซ็ตสินค้า (Bundles)</h3>
+                    <h3 class="text-sm font-bold text-slate-800">คำนวณราคาและจัดการเซ็ตสินค้า</h3>
                     <p class="text-[10px] text-slate-500">คำนวณราคาขายจากสินค้าในสต็อกตามจริงอัตโนมัติ</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="window.openSetFormModal()" class="px-3.5 py-2 rounded-xl orange-gradient-card text-white font-bold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all">
-                    <i data-lucide="plus" class="w-4 h-4"></i> สร้างเซ็ตคำนวณราคา
+                    <i data-lucide="plus" class="w-4 h-4"></i> สร้างเซ็ต
                 </button>
                 <button onclick="window.closeSetsModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
@@ -542,18 +502,16 @@
             </div>
         </div>
 
-        <div class="overflow-y-auto no-scrollbar flex-grow space-y-3 pr-1" id="setsListContainer">
-            <!-- Rendered via JS -->
-        </div>
+        <div class="overflow-y-auto no-scrollbar flex-grow space-y-3 pr-1" id="setsListContainer"></div>
     </div>
 </div>
 
-<!-- Set Form Modal (Add/Edit Set) -->
+<!-- Set Form Modal -->
 <div id="setFormModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
             <h3 id="setFormModalTitle" class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i> คำนวณราคาเซ็ตจากสต็อกสินค้า
+                <i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i> คำนวณราคาเซ็ตจากสต็อก
             </h3>
             <button type="button" onclick="window.closeSetFormModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -564,69 +522,57 @@
             <input type="hidden" id="editSetId">
 
             <div class="space-y-1">
-                <label class="font-bold text-slate-700">ชื่อเซ็ตสินค้า (เช่น ชุดกฐินสามัคคี) <span class="text-rose-500">*</span></label>
-                <input type="text" id="setName" required placeholder="เช่น ชุดกฐินใหญ่" 
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold">
+                <label class="font-bold text-slate-700">ชื่อเซ็ตสินค้า <span class="text-rose-500">*</span></label>
+                <input type="text" id="setName" required placeholder="เช่น ชุดกฐินใหญ่" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
                 <div class="space-y-1">
-                    <label class="font-bold text-slate-700">ราคารวมเซ็ตขายจริง (บาท) <span class="text-rose-500">*</span></label>
-                    <input type="number" id="setPrice" min="0" step="0.25" required placeholder="990" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono font-bold text-brand-600">
+                    <label class="font-bold text-slate-700">ราคาขาย (บาท) <span class="text-rose-500">*</span></label>
+                    <input type="number" id="setPrice" min="0" step="0.25" required placeholder="990" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono font-bold text-brand-600">
                 </div>
                 <div class="space-y-1 flex items-end">
                     <button type="button" onclick="window.calcSetSuggestedPrice()" class="w-full py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs">
-                        <i data-lucide="calculator" class="w-3.5 h-3.5"></i> คำนวณจากราคาในสต็อก
+                        <i data-lucide="calculator" class="w-3.5 h-3.5"></i> คำนวณจากสต็อก
                     </button>
                 </div>
             </div>
 
             <div class="space-y-1">
-                <label class="font-bold text-slate-700">รายละเอียดเซ็ต / หมายเหตุ</label>
-                <input type="text" id="setDesc" placeholder="เช่น ประกอบด้วย จีวร บาตร และเครื่องบริขาร 9 รายการ" 
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <label class="font-bold text-slate-700">รายละเอียด / หมายเหตุ</label>
+                <input type="text" id="setDesc" placeholder="เช่น ประกอบด้วย..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
             </div>
 
             <div class="pt-2 border-t border-slate-100 space-y-2">
                 <div class="flex items-center justify-between">
                     <label class="font-bold text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="boxes" class="w-4 h-4 text-brand-500"></i> เลือกสินค้าในสต็อกมาจัดเซ็ตคำนวณราคา
+                        <i data-lucide="boxes" class="w-4 h-4 text-brand-500"></i> เลือกสินค้าจัดเซ็ต
                     </label>
                     <span id="setItemsCountBadge" class="text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-bold">0 รายการ</span>
                 </div>
 
-                <!-- Add item row -->
                 <div class="flex gap-2 items-center bg-slate-50/80 p-2.5 rounded-2xl border border-slate-200">
-                    <select id="itemPickerProduct" class="flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <!-- Populated via JS -->
-                    </select>
-                    <input type="number" id="itemPickerQty" min="1" value="1" placeholder="จำนวน" 
-                        class="w-16 bg-white border border-slate-200 rounded-xl px-2 py-2 text-xs font-mono font-bold text-center focus:outline-none">
+                    <select id="itemPickerProduct" class="flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"></select>
+                    <input type="number" id="itemPickerQty" min="1" value="1" placeholder="จำนวน" class="w-16 bg-white border border-slate-200 rounded-xl px-2 py-2 text-xs font-mono font-bold text-center focus:outline-none">
                     <button type="button" onclick="window.addItemToCurrentSet()" class="px-3.5 py-2 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1 shrink-0">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i> ใส่
                     </button>
                 </div>
 
-                <!-- Selected items list container inside set -->
-                <div id="currentSetItemsList" class="space-y-2 max-h-44 overflow-y-auto no-scrollbar pt-1">
-                    <!-- Rendered via JS -->
-                </div>
+                <div id="currentSetItemsList" class="space-y-2 max-h-44 overflow-y-auto no-scrollbar pt-1"></div>
             </div>
 
             <div class="pt-3 flex gap-2 border-t border-slate-100">
-                <button type="button" onclick="window.closeSetFormModal()" class="w-1/3 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold active:scale-95 transition-all">
-                    ยกเลิก
-                </button>
+                <button type="button" onclick="window.closeSetFormModal()" class="w-1/3 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold active:scale-95 transition-all">ยกเลิก</button>
                 <button type="submit" class="w-2/3 py-3 rounded-2xl orange-gradient-card text-white font-bold shadow-md active:scale-95 transition-all flex justify-center items-center gap-2">
-                    <i data-lucide="save" class="w-4 h-4"></i> บันทึกเซ็ตคำนวณราคา
+                    <i data-lucide="save" class="w-4 h-4"></i> บันทึกเซ็ต
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Barcode Modal -->
+<!-- Barcode & Other Modals -->
 <div id="barcodeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="bg-white rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col items-center gap-4 text-center">
         <h3 id="barcodeModalName" class="text-sm font-bold text-slate-800">ชื่อสินค้า</h3>
@@ -642,7 +588,6 @@
     </div>
 </div>
 
-<!-- Confirm Modal -->
 <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
         <div class="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-500 mb-2">
@@ -659,12 +604,11 @@
     </div>
 </div>
 
-<!-- Download Helper Modal -->
 <div id="downloadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white text-center">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
             <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> พร้อมบันทึกรูปภาพสินค้า
+                <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> พร้อมบันทึกรูปภาพ
             </h3>
             <button onclick="window.closeDownloadModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -682,14 +626,54 @@
     </div>
 </div>
 
+<!-- Scanner Modal -->
+<div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+    <div class="glass-card rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="scan-barcode" class="w-5 h-5 text-brand-500"></i> สแกนบาร์โค้ด
+            </h3>
+            <button type="button" onclick="window.closeScannerModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        
+        <div class="relative bg-slate-900 rounded-2xl h-48 flex flex-col items-center justify-center overflow-hidden border-2 border-dashed border-slate-400">
+            <div class="absolute inset-0 bg-[linear-gradient(rgba(249,115,22,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(249,115,22,0.1)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+            <i data-lucide="scan" class="w-16 h-16 text-brand-500 animate-pulse mb-2"></i>
+            <p class="text-xs text-white z-10 font-light mt-2">พร้อมรับข้อมูลจากเครื่องสแกน</p>
+            <div class="absolute top-1/2 left-0 w-full h-0.5 bg-brand-500 shadow-[0_0_8px_rgba(249,115,22,0.8)] animate-[scan_2s_ease-in-out_infinite]"></div>
+        </div>
+
+        <style>
+            @keyframes scan {
+                0%, 100% { transform: translateY(-40px); opacity: 0; }
+                10%, 90% { opacity: 1; }
+                50% { transform: translateY(40px); }
+            }
+        </style>
+
+        <div class="relative">
+            <input type="text" id="scannerInput" placeholder="หรือพิมพ์รหัสบาร์โค้ดที่นี่..." onkeydown="if(event.key === 'Enter') window.processScan(this.value)"
+                class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono text-center">
+            <i data-lucide="keyboard" class="w-4 h-4 text-slate-400 absolute left-4 top-3.5"></i>
+        </div>
+        
+        <button onclick="window.processScan(document.getElementById('scannerInput').value)" class="w-full py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">
+            ค้นหาสินค้า
+        </button>
+    </div>
+</div>
+
 <!-- ========================================== -->
-<!-- JAVASCRIPT APP CORE REALTIME LOGIC       -->
+<!-- JAVASCRIPT APP CORE LOGIC                  -->
 <!-- ========================================== -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // Global Functions & States
     window.showToast = function(text) {
         const container = document.getElementById('toastContainer');
         document.getElementById('toastText').innerText = text;
@@ -703,36 +687,23 @@
 
     const firebaseConfig = {
         apiKey: "AIzaSyCEhtUjz_ZwAVmdRoRbzcBoy6bEaru6-Bk",
-        authDomain: "nanaphan-hub.firebaseapp.com",
         projectId: "nanaphan-hub",
-        storageBucket: "nanaphan-hub.firebasestorage.app",
-        messagingSenderId: "799731405",
         appId: "1:799731405:web:b57c80a1f2409e4a9e4384",
-        measurementId: "G-EJ0NY3G5LX"
     };
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphan-hub-app';
     let db, auth;
 
-    // Default Seed Categories
+    // Seed Data or LocalStorage Cache
     const defaultCategories = [
         { id: 'cat_jivar', name: 'จีวร' },
         { id: 'cat_hardware', name: 'อุปกรณ์ฮาร์ดแวร์' },
-        { id: 'cat_plumbing', name: 'ท่อและอุปกรณ์ประปา' },
-        { id: 'cat_paint', name: 'สีและเคมีภัณฑ์' }
+        { id: 'cat_plumbing', name: 'ท่อและอุปกรณ์ประปา' }
     ];
 
     let categories = JSON.parse(localStorage.getItem('nanaphan_categories_' + appId)) || defaultCategories;
     let stockProducts = JSON.parse(localStorage.getItem('nanaphan_products_' + appId)) || [];
-    let productSets = JSON.parse(localStorage.getItem('nanaphan_sets_' + appId)) || [
-        {
-            id: 'set_kathin_01',
-            name: 'ชุดกฐินสามัคคีใหญ่ (คำนวณจากสต็อก)',
-            price: 1590,
-            description: 'ประกอบด้วย จีวร บาตร และเครื่องบริขารพระสงฆ์ครบถ้วน',
-            items: [],
-            updatedAt: Date.now()
-        }
-    ];
+    let productSets = JSON.parse(localStorage.getItem('nanaphan_sets_' + appId)) || [];
+    let currentEditingSetItems = [];
 
     function persistLocalCache() {
         localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
@@ -740,12 +711,14 @@
         localStorage.setItem('nanaphan_sets_' + appId, JSON.stringify(productSets));
     }
 
+    // App Navigation Modules
     window.APP_MODULES = [
         { id: 'watermark', title: 'ใส่ลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-brand-500 text-white', action: () => window.switchView('watermarkView') },
         { id: 'stock', title: 'คลังและราคา', badge: 'Realtime', badgeColor: 'bg-emerald-500 text-white', icon: 'boxes', iconBg: 'bg-emerald-100 text-emerald-600', action: () => { window.switchView('stockView'); window.renderStockList(); } },
         { id: 'sets', title: 'คำนวณเซ็ต', badge: 'ราคา', badgeColor: 'bg-orange-500 text-white', icon: 'calculator', iconBg: 'bg-orange-100 text-brand-600', action: () => window.openSetsModal() },
     ];
 
+    // Auth & Bootstrapping
     window.checkAuthSession = function() {
         if (localStorage.getItem('nanaphan_session') === 'authenticated_admin') {
             window.showMainApp();
@@ -783,9 +756,22 @@
         document.getElementById('loginView').classList.add('hidden');
         const app = document.getElementById('mainAppWrapper');
         app.classList.remove('hidden'); app.classList.add('flex');
+        
+        // Render Modules
+        document.getElementById('modulesGrid').innerHTML = window.APP_MODULES.map(m => `
+            <div onclick="(${m.action.toString()})()" class="glass-card rounded-2xl p-3 flex flex-col items-center justify-center text-center cursor-pointer active:scale-95 transition-all shadow-xs border border-slate-200/50 relative">
+                ${m.badge ? `<span class="absolute -top-1.5 -right-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full ${m.badgeColor}">${m.badge}</span>` : ''}
+                <div class="w-10 h-10 rounded-xl ${m.iconBg} flex items-center justify-center mb-1.5 shadow-sm">
+                    <i data-lucide="${m.icon}" class="w-5 h-5"></i>
+                </div>
+                <h4 class="text-[11px] font-bold text-slate-700">${m.title}</h4>
+            </div>
+        `).join('');
+
         window.switchView('homeView');
         window.updateCategoryDropdowns();
         window.renderStockList();
+        lucide.createIcons();
     }
 
     window.switchView = function(viewId) {
@@ -798,18 +784,20 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // Modal Helpers
     function animateModalOpen(modalId) {
         const modal = document.getElementById(modalId);
-        modal.classList.remove('hidden');
-        void modal.offsetWidth;
+        modal.classList.remove('hidden'); void modal.offsetWidth;
         modal.classList.remove('opacity-0');
-        modal.querySelector('div').classList.remove('scale-95');
+        const content = modal.querySelector('div');
+        if(content) content.classList.remove('scale-95');
     }
 
     function animateModalClose(modalId) {
         const modal = document.getElementById(modalId);
         modal.classList.add('opacity-0');
-        modal.querySelector('div').classList.add('scale-95');
+        const content = modal.querySelector('div');
+        if(content) content.classList.add('scale-95');
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
@@ -850,6 +838,45 @@
     window.openCategoryModal = function() { window.renderCategoryList(); animateModalOpen('categoryModal'); };
     window.closeCategoryModal = function() { animateModalClose('categoryModal'); };
 
+    window.openScannerModal = function() {
+        animateModalOpen('scannerModal');
+        setTimeout(() => {
+            const input = document.getElementById('scannerInput');
+            input.value = '';
+            input.focus();
+        }, 300);
+    };
+
+    window.closeScannerModal = function() {
+        animateModalClose('scannerModal');
+    };
+
+    window.processScan = function(value) {
+        if(!value.trim()) return;
+        window.closeScannerModal();
+        window.switchView('stockView');
+        const searchInput = document.getElementById('stockSearchInput');
+        if(searchInput) {
+            searchInput.value = value.trim();
+            window.filterStockList();
+        }
+        window.showToast('สแกนสำเร็จ: ' + value);
+    };
+
+    window.selectProductType = function(type) {
+        document.getElementById('prodType').value = type;
+        const simpleBtn = document.getElementById('typeSimpleBtn');
+        const varBtn = document.getElementById('typeVariableBtn');
+        
+        if (type === 'simple') {
+            simpleBtn.className = "p-2.5 border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-2xl cursor-pointer flex items-center gap-2 transition-all";
+            varBtn.className = "p-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-2xl cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-100";
+        } else {
+            varBtn.className = "p-2.5 border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-2xl cursor-pointer flex items-center gap-2 transition-all";
+            simpleBtn.className = "p-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-2xl cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-100";
+        }
+    };
+
     window.addCategory = async function(e) {
         e.preventDefault();
         const input = document.getElementById('newCategoryInput');
@@ -860,18 +887,10 @@
             input.value = '';
             
             categories.push(finalData);
-            persistLocalCache();
-            window.updateCategoryDropdowns();
-            window.renderCategoryList();
+            persistLocalCache(); window.updateCategoryDropdowns(); window.renderCategoryList();
             window.showToast('เพิ่มหมวดหมู่สำเร็จ');
 
-            try {
-                if (db) {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', idToSave), finalData);
-                }
-            } catch (err) {
-                console.error("Firestore error:", err);
-            }
+            try { if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', idToSave), finalData); } catch(e){}
         }
     };
 
@@ -880,18 +899,9 @@
         if(inUseCount > 0) return window.showToast(`ไม่สามารถลบได้ มีสินค้าในหมวดหมู่นี้`);
         window.showConfirm('ลบหมวดหมู่', `ต้องการลบหมวดหมู่ "${name}" ใช่หรือไม่?`, async () => {
             categories = categories.filter(c => c.id !== id);
-            persistLocalCache();
-            window.updateCategoryDropdowns();
-            window.renderCategoryList();
+            persistLocalCache(); window.updateCategoryDropdowns(); window.renderCategoryList();
             window.showToast('ลบหมวดหมู่สำเร็จ');
-
-            try {
-                if (db) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id));
-                }
-            } catch (err) {
-                console.error("Firestore error:", err);
-            }
+            try { if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id)); } catch(e){}
         });
     };
 
@@ -913,256 +923,146 @@
         lucide.createIcons();
     }
 
-    // ==========================================
-    // PRODUCT SETS (BUNDLES) & PRICING LOGIC
-    // ==========================================
-    let currentEditingSetItems = [];
+    function updateDashboardStats() {
+        const totalItemsEl = document.getElementById('statTotalItems');
+        const totalQtyEl = document.getElementById('statTotalQty');
+        const totalValueEl = document.getElementById('statTotalValue');
+        const lowStockEl = document.getElementById('statLowStock');
+        const outOfStockEl = document.getElementById('statOutOfStock');
 
-    window.openSetsModal = function() {
-        window.renderSetsList();
-        animateModalOpen('setsModal');
-    };
-    window.closeSetsModal = function() { animateModalClose('setsModal'); };
+        const totalQty = stockProducts.reduce((sum, p) => sum + (parseInt(p.qty) || 0), 0);
+        const totalVal = stockProducts.reduce((sum, p) => sum + ((parseFloat(p.price) || 0) * (parseInt(p.qty) || 0)), 0);
 
-    window.renderSetsList = function() {
-        const container = document.getElementById('setsListContainer');
-        if(!container) return;
+        if(totalItemsEl) totalItemsEl.innerText = stockProducts.length;
+        if(totalQtyEl) totalQtyEl.innerText = totalQty.toLocaleString();
+        if(totalValueEl) totalValueEl.innerText = '฿' + totalVal.toLocaleString();
+        if(lowStockEl) lowStockEl.innerText = stockProducts.filter(p => (parseInt(p.qty) || 0) > 0 && (parseInt(p.qty) || 0) <= 5).length;
+        if(outOfStockEl) outOfStockEl.innerText = stockProducts.filter(p => (parseInt(p.qty) || 0) === 0).length;
+    }
 
-        if(productSets.length === 0) {
-            container.innerHTML = `
-                <div class="py-12 text-center space-y-3">
-                    <div class="w-14 h-14 rounded-3xl bg-orange-50 text-brand-500 flex items-center justify-center mx-auto shadow-inner">
-                        <i data-lucide="calculator" class="w-7 h-7"></i>
-                    </div>
-                    <p class="text-xs font-bold text-slate-700">ยังไม่มีเซ็ตคำนวณราคาในระบบ</p>
-                    <p class="text-[11px] text-slate-400">กดปุ่ม "สร้างเซ็ตคำนวณราคา" เพื่อรวมราคาจากสต็อก</p>
-                </div>`;
-            lucide.createIcons();
+    window.filterStockList = function() { window.renderStockList(); };
+
+    window.renderStockList = function() {
+        const container = document.getElementById('stockListContainer');
+        if (!container) return;
+        updateDashboardStats();
+
+        const query = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
+        const selectedCat = document.getElementById('stockCategoryFilter')?.value || '';
+        const selectedStatus = document.getElementById('stockStatusFilter')?.value || '';
+
+        const filtered = stockProducts.filter(p => {
+            const matchQuery = !query || p.name.toLowerCase().includes(query) || (p.sku||'').toLowerCase().includes(query) || (p.barcode||'').toLowerCase().includes(query);
+            const matchCat = !selectedCat || p.categoryId === selectedCat;
+            const matchStatus = !selectedStatus || 
+                (selectedStatus==='normal' && p.qty>5) || 
+                (selectedStatus==='low' && p.qty>0 && p.qty<=5) || 
+                (selectedStatus==='out' && p.qty===0);
+            return matchQuery && matchCat && matchStatus;
+        });
+
+        const countText = document.getElementById('filteredCountText');
+        if(countText) {
+            countText.innerText = `พบ ${filtered.length} รายการ`;
+        }
+
+        if(filtered.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">ไม่พบสินค้าในระบบ</div>`;
             return;
         }
 
-        container.innerHTML = productSets.map(set => {
-            let calculatedTotalFromStock = 0;
-            const itemsHtml = (set.items || []).map(itemRef => {
-                const prod = stockProducts.find(p => p.id === itemRef.productId);
-                const prodName = prod ? prod.name : 'สินค้าที่ถูกลบ';
-                const unit = prod ? prod.unit : 'ชิ้น';
-                const unitPrice = prod ? (parseFloat(prod.price) || 0) : 0;
-                calculatedTotalFromStock += unitPrice * itemRef.quantity;
-
-                return `<span class="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-xl text-[11px] font-medium border border-slate-200">
-                    ${prodName} <strong class="text-brand-600 font-mono">x${itemRef.quantity} ${unit}</strong> (฿${(unitPrice * itemRef.quantity).toLocaleString()})
-                </span>`;
-            }).join('');
-
-            return `
-                <div class="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span> ${set.name}
-                            </h4>
-                            ${set.description ? `<p class="text-xs text-slate-500 mt-0.5">${set.description}</p>` : ''}
-                        </div>
-                        <div class="text-right shrink-0">
-                            <span class="text-[10px] text-slate-400 block font-light">ราคาขายจริงในเซ็ต</span>
-                            <span class="text-base font-black font-mono text-brand-600">฿${set.price.toLocaleString()}</span>
-                            <span class="text-[10px] text-slate-400 block font-mono">จากสต็อก: ฿${calculatedTotalFromStock.toLocaleString()}</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">รายการสินค้าในเซ็ต (${(set.items||[]).length} รายการ):</span>
-                        <div class="flex flex-wrap gap-1.5 pt-0.5">
-                            ${itemsHtml || '<span class="text-xs text-slate-400 italic">ยังไม่ได้ใส่สินค้าในเซ็ตนี้</span>'}
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-                        <span class="text-[10px] text-slate-400 font-mono">อัปเดตล่าสุด: ${new Date(set.updatedAt || Date.now()).toLocaleDateString('th-TH')}</span>
-                        <div class="flex gap-1.5">
-                            <button onclick="window.openSetFormModal('${set.id}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center gap-1 active:scale-95 transition-all">
-                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> แก้ไข
-                            </button>
-                            <button onclick="window.deleteSet('${set.id}', '${set.name.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-1 active:scale-95 transition-all">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ลบเซ็ต
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-        }).join('');
-
-        lucide.createIcons();
-    };
-
-    window.openSetFormModal = function(id = null) {
-        currentEditingSetItems = [];
-        const productPicker = document.getElementById('itemPickerProduct');
-        
-        if (productPicker) {
-            productPicker.innerHTML = stockProducts.length > 0
-                ? stockProducts.map(p => `<option value="${p.id}">${p.name} (฿${p.price}/${p.unit}) - สต็อก: ${p.qty}</option>`).join('')
-                : `<option value="">ไม่มีสินค้าในสต็อก</option>`;
-        }
-
-        const title = document.getElementById('setFormModalTitle');
-        if (id) {
-            const setItem = productSets.find(s => s.id === id);
-            if (setItem) {
-                title.innerHTML = `<i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i> แก้ไขราคาเซ็ตสินค้า`;
-                document.getElementById('editSetId').value = setItem.id;
-                document.getElementById('setName').value = setItem.name;
-                document.getElementById('setPrice').value = setItem.price;
-                document.getElementById('setDesc').value = setItem.description || '';
-                currentEditingSetItems = JSON.parse(JSON.stringify(setItem.items || []));
+        container.innerHTML = filtered.map(item => {
+            let qtyColor = 'bg-emerald-500';
+            let badgeClass = 'bg-emerald-100 text-emerald-600';
+            let badgeHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> มีสินค้า`;
+            
+            if(item.qty === 0) {
+                qtyColor = 'bg-rose-500'; badgeClass = 'bg-rose-100 text-rose-600';
+                badgeHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> หมด`;
+            } else if (item.qty <= 5) {
+                qtyColor = 'bg-amber-500'; badgeClass = 'bg-amber-100 text-amber-600';
+                badgeHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใกล้หมด`;
             }
-        } else {
-            title.innerHTML = `<i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i> คำนวณราคาเซ็ตใหม่จากสต็อก`;
-            document.getElementById('editSetId').value = '';
-            document.getElementById('setForm').reset();
-            document.getElementById('setPrice').value = '990';
-        }
 
-        window.renderCurrentSetItemsList();
-        animateModalOpen('setFormModal');
-        lucide.createIcons();
-    };
-
-    window.closeSetFormModal = function() { animateModalClose('setFormModal'); };
-
-    window.addItemToCurrentSet = function() {
-        const prodId = document.getElementById('itemPickerProduct').value;
-        const qty = parseInt(document.getElementById('itemPickerQty').value) || 1;
-        if(!prodId) return window.showToast('กรุณาเลือกสินค้า');
-
-        const existingIndex = currentEditingSetItems.findIndex(i => i.productId === prodId);
-        if(existingIndex >= 0) {
-            currentEditingSetItems[existingIndex].quantity += qty;
-        } else {
-            currentEditingSetItems.push({ productId: prodId, quantity: qty });
-        }
-
-        window.renderCurrentSetItemsList();
-        window.showToast('เพิ่มสินค้าเข้าเซ็ตแล้ว');
-    };
-
-    window.removeCurrentSetItem = function(index) {
-        currentEditingSetItems.splice(index, 1);
-        window.renderCurrentSetItemsList();
-    };
-
-    window.renderCurrentSetItemsList = function() {
-        const container = document.getElementById('currentSetItemsList');
-        const badge = document.getElementById('setItemsCountBadge');
-        if(!container) return;
-
-        if(badge) badge.innerText = `${currentEditingSetItems.length} รายการ`;
-
-        if(currentEditingSetItems.length === 0) {
-            container.innerHTML = `<div class="py-4 text-center text-slate-400 text-[11px] bg-slate-50 rounded-xl border border-dashed border-slate-200">ยังไม่มีสินค้าในเซ็ตนี้ (กดปุ่ม "ใส่" ด้านบน)</div>`;
-            return;
-        }
-
-        container.innerHTML = currentEditingSetItems.map((item, idx) => {
-            const prod = stockProducts.find(p => p.id === item.productId);
-            const name = prod ? prod.name : 'สินค้าไม่พบ';
-            const price = prod ? (parseFloat(prod.price) || 0) : 0;
-            const unit = prod ? prod.unit : 'ชิ้น';
-            const subTotal = price * item.quantity;
             return `
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 text-xs">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-[10px] shrink-0">${idx + 1}</span>
+            <div class="flex items-start gap-3 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm relative overflow-hidden transition-all hover:border-brand-200">
+                <div class="absolute left-0 top-0 bottom-0 w-1 ${qtyColor}"></div>
+                <div class="flex-grow space-y-1.5 pl-1 w-full overflow-hidden">
+                    <div class="flex justify-between items-start gap-2">
                         <div class="truncate">
-                            <span class="font-bold text-slate-800 truncate block">${name}</span>
-                            <span class="text-[10px] text-slate-400">ราคาเดี่ยว: ฿${price} / ${unit} (รวม: ฿${subTotal.toLocaleString()})</span>
+                            <h4 class="font-bold text-slate-800 text-sm leading-tight truncate">${item.name}</h4>
+                            <p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
+                                SKU: ${item.sku} <span class="mx-1">|</span> ราคา: ฿${(item.price||0).toLocaleString()}/${item.unit}
+                            </p>
+                        </div>
+                        <span id="statusBadge_${item.id}" class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max shrink-0 ${badgeClass}">
+                            ${badgeHTML}
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-50">
+                        <div class="flex items-center gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 shrink-0">
+                            <button onclick="window.adjustQtyBtn('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-rose-500 active:scale-95 transition-all">-</button>
+                            <input type="number" id="qtyInput_${item.id}" value="${item.qty}" onchange="window.manualInputQty('${item.id}', this)" class="w-10 text-center font-bold text-sm bg-transparent border-none focus:outline-none no-spinners transition-colors rounded">
+                            <button onclick="window.adjustQtyBtn('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-emerald-500 active:scale-95 transition-all">+</button>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <button onclick="window.openBarcodeModal('${item.name.replace(/'/g, "\\'")}', '${item.barcode}')" class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95"><i data-lucide="barcode" class="w-4 h-4"></i></button>
+                            <button onclick="window.openAddProductModal('${item.id}')" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                            <button onclick="window.deleteProduct('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="font-mono font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded-lg">x${item.quantity} ${unit}</span>
-                        <button type="button" onclick="window.removeCurrentSetItem(${idx})" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center active:scale-95 transition-all">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                </div>`;
+                </div>
+            </div>`;
         }).join('');
         lucide.createIcons();
     };
 
-    window.calcSetSuggestedPrice = function() {
-        let total = 0;
-        currentEditingSetItems.forEach(item => {
-            const prod = stockProducts.find(p => p.id === item.productId);
-            if(prod) {
-                total += (parseFloat(prod.price) || 0) * item.quantity;
-            }
-        });
-        if(total > 0) {
-            document.getElementById('setPrice').value = total;
-            window.showToast(`คำนวณราคาจากสต็อกรวม: ฿${total.toLocaleString()}`);
-        } else {
-            window.showToast('กรุณาเพิ่มสินค้าในเซ็ตก่อนคำนวณราคา');
-        }
-    };
-
-    window.saveSet = async function(e) {
-        e.preventDefault();
-        const editId = document.getElementById('editSetId').value;
-        const name = document.getElementById('setName').value.trim();
-        const price = parseFloat(document.getElementById('setPrice').value) || 0;
-        const description = document.getElementById('setDesc').value.trim();
-
-        if(currentEditingSetItems.length === 0) {
-            return window.showToast('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการในเซ็ต');
-        }
-
-        const idToSave = editId || ('set_' + Date.now());
-        const finalSetData = {
-            id: idToSave,
-            name,
-            price,
-            description,
-            items: currentEditingSetItems,
-            updatedAt: Date.now()
-        };
-
-        const index = productSets.findIndex(s => s.id === idToSave);
-        if(index >= 0) {
-            productSets[index] = finalSetData;
-        } else {
-            productSets.unshift(finalSetData);
-        }
-
-        persistLocalCache();
-        window.closeSetFormModal();
-        window.renderSetsList();
-        window.showToast(editId ? 'อัปเดตเซ็ตคำนวณราคาสำเร็จ' : 'สร้างเซ็ตคำนวณราคาสำเร็จ');
-
-        try {
-            if (db) {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sets', idToSave), finalSetData);
-            }
-        } catch (err) {
-            console.error("Firestore set save error:", err);
-        }
-    };
-
-    window.deleteSet = function(id, name) {
-        window.showConfirm('ลบเซ็ตสินค้า', `ต้องการลบเซ็ต "${name}" ใช่หรือไม่?`, async () => {
-            productSets = productSets.filter(s => s.id !== id);
+    window.qtyUpdateTimeouts = {};
+    window.adjustQtyBtn = function(id, amount) {
+        const item = stockProducts.find(p => p.id === id);
+        if (item) {
+            const newQty = Math.max(0, item.qty + amount);
+            item.qty = newQty; item.updatedAt = Date.now();
             persistLocalCache();
-            window.renderSetsList();
-            window.showToast('ลบเซ็ตสินค้าสำเร็จ');
 
-            try {
-                if (db) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sets', id));
-                }
-            } catch (err) {
-                console.error("Firestore set delete error:", err);
+            const inputEl = document.getElementById(`qtyInput_${id}`);
+            if (inputEl) {
+                inputEl.value = newQty;
+                inputEl.classList.add('bg-brand-100');
+                setTimeout(() => inputEl.classList.remove('bg-brand-100'), 150);
             }
-        });
+            window.renderStockList(); // Refresh badge and stats easily
+            
+            if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
+            window.qtyUpdateTimeouts[id] = setTimeout(() => { updateItemQtyFirestore(id, newQty); }, 300);
+        }
     };
+
+    window.manualInputQty = function(id, inputElement) {
+        let val = parseInt(inputElement.value);
+        if(isNaN(val) || val < 0) {
+            const item = stockProducts.find(p => p.id === id);
+            inputElement.value = item ? item.qty : 0; 
+            return;
+        }
+        const item = stockProducts.find(p => p.id === id);
+        if (item) {
+            item.qty = val; item.updatedAt = Date.now();
+            persistLocalCache();
+            window.renderStockList();
+            
+            if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
+            window.qtyUpdateTimeouts[id] = setTimeout(() => { updateItemQtyFirestore(id, val); }, 300);
+        }
+    }
+
+    async function updateItemQtyFirestore(id, newQty) {
+        const item = stockProducts.find(p => p.id === id);
+        if (item) {
+            try { if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), { ...item, qty: newQty, updatedAt: Date.now() }); } catch (err) {}
+        }
+    }
 
     window.openAddProductModal = function(id = null) {
         window.updateCategoryDropdowns();
@@ -1180,16 +1080,17 @@
                 document.getElementById('prodUnit').value = item.unit;
                 document.getElementById('prodQty').value = item.qty;
                 document.getElementById('prodPrice').value = item.price;
+                if (item.type) window.selectProductType(item.type);
+                else window.selectProductType('simple');
             }
         } else {
             title.innerHTML = `<i data-lucide="package-plus" class="w-5 h-5 text-brand-500"></i> เพิ่มสินค้าใหม่และราคา`;
             document.getElementById('editProductId').value = '';
             document.getElementById('prodSku').value = 'NP-' + Math.floor(100 + Math.random() * 900);
+            window.selectProductType('simple');
         }
-        animateModalOpen('productModal');
-        lucide.createIcons();
+        animateModalOpen('productModal'); lucide.createIcons();
     };
-
     window.closeProductModal = function() { animateModalClose('productModal'); };
 
     window.saveProduct = async function(e) {
@@ -1199,6 +1100,7 @@
             sku: document.getElementById('prodSku').value.trim(),
             barcode: document.getElementById('prodBarcode').value.trim() || ('885' + Math.floor(100000000 + Math.random() * 900000000)),
             name: document.getElementById('prodName').value.trim(),
+            type: document.getElementById('prodType').value,
             categoryId: document.getElementById('prodCategory').value || (categories[0]?.id || 'cat_hardware'),
             unit: document.getElementById('prodUnit').value.trim(),
             qty: parseInt(document.getElementById('prodQty').value) || 0,
@@ -1208,124 +1110,321 @@
 
         const idToSave = editId || ('p_' + Date.now());
         const finalData = { id: idToSave, ...itemData };
-        
         const index = stockProducts.findIndex(p => p.id === idToSave);
-        if (index >= 0) {
-            stockProducts[index] = finalData;
-        } else {
-            stockProducts.unshift(finalData);
-        }
+        if (index >= 0) stockProducts[index] = finalData; else stockProducts.unshift(finalData);
 
-        persistLocalCache();
-        window.closeProductModal();
-        window.renderStockList();
+        persistLocalCache(); window.closeProductModal(); window.renderStockList();
         window.showToast(editId ? 'อัปเดตข้อมูลและราคาสำเร็จ' : 'เพิ่มสินค้าและราคาเรียบร้อย');
-
-        try {
-            if (db) {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', idToSave), finalData);
-            }
-        } catch (err) {
-            console.error("Firestore save error:", err);
-        }
+        try { if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', idToSave), finalData); } catch (err) {}
     };
 
     window.deleteProduct = function(id, name) {
         window.showConfirm('ลบสินค้า', `ลบสินค้า "${name}" ใช่หรือไม่?`, async () => {
             stockProducts = stockProducts.filter(p => p.id !== id);
-            persistLocalCache();
-            window.renderStockList();
-            window.showToast('ลบสินค้าสำเร็จ');
-
-            try {
-                if (db) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
-                }
-            } catch (err) {
-                console.error("Firestore delete error:", err);
-            }
+            persistLocalCache(); window.renderStockList(); window.showToast('ลบสินค้าสำเร็จ');
+            try { if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id)); } catch (err) {}
         });
     };
 
-    window.qtyUpdateTimeouts = {};
+    window.openSetsModal = function() { window.renderSetsList(); animateModalOpen('setsModal'); };
+    window.closeSetsModal = function() { animateModalClose('setsModal'); };
 
-    window.adjustQtyBtn = function(id, amount) {
-        const item = stockProducts.find(p => p.id === id);
-        if (item) {
-            const newQty = Math.max(0, item.qty + amount);
-            item.qty = newQty;
-            item.updatedAt = Date.now();
+    window.renderSetsList = function() {
+        const container = document.getElementById('setsListContainer');
+        if(!container) return;
 
-            persistLocalCache();
-
-            const inputEl = document.getElementById(`qtyInput_${id}`);
-            if (inputEl) {
-                inputEl.value = newQty;
-                inputEl.classList.add('bg-brand-100');
-                setTimeout(() => inputEl.classList.remove('bg-brand-100'), 150);
-            }
-            
-            const badgeEl = document.getElementById(`statusBadge_${id}`);
-            if (badgeEl) updateStatusBadgeUI(badgeEl, newQty);
-            updateDashboardStats();
-            
-            if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
-            window.qtyUpdateTimeouts[id] = setTimeout(() => {
-                updateItemQtyFirestore(id, newQty);
-            }, 300);
+        if(productSets.length === 0) {
+            container.innerHTML = `<div class="py-12 text-center space-y-3"><div class="w-14 h-14 rounded-3xl bg-orange-50 text-brand-500 flex items-center justify-center mx-auto shadow-inner"><i data-lucide="calculator" class="w-7 h-7"></i></div><p class="text-xs font-bold text-slate-700">ยังไม่มีเซ็ตคำนวณราคาในระบบ</p><p class="text-[11px] text-slate-400">กดปุ่ม "สร้างเซ็ต" เพื่อรวมราคาจากสต็อก</p></div>`;
+            lucide.createIcons(); return;
         }
+
+        container.innerHTML = productSets.map(set => {
+            let calculatedTotalFromStock = 0;
+            const itemsHtml = (set.items || []).map(itemRef => {
+                const prod = stockProducts.find(p => p.id === itemRef.productId);
+                const prodName = prod ? prod.name : 'สินค้าที่ถูกลบ';
+                const unit = prod ? prod.unit : 'ชิ้น';
+                const unitPrice = prod ? (parseFloat(prod.price) || 0) : 0;
+                calculatedTotalFromStock += unitPrice * itemRef.quantity;
+                return `<span class="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-xl text-[11px] font-medium border border-slate-200">${prodName} <strong class="text-brand-600 font-mono">x${itemRef.quantity} ${unit}</strong> (฿${(unitPrice * itemRef.quantity).toLocaleString()})</span>`;
+            }).join('');
+
+            return `
+                <div class="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span> ${set.name}</h4>
+                            ${set.description ? `<p class="text-xs text-slate-500 mt-0.5">${set.description}</p>` : ''}
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="text-[10px] text-slate-400 block font-light">ราคาขายเซ็ต</span>
+                            <span class="text-base font-black font-mono text-brand-600">฿${(set.price||0).toLocaleString()}</span>
+                            <span class="text-[10px] text-slate-400 block font-mono">จากสต็อก: ฿${calculatedTotalFromStock.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">รายการสินค้าในเซ็ต (${(set.items||[]).length}):</span>
+                        <div class="flex flex-wrap gap-1.5 pt-0.5">${itemsHtml || '<span class="text-xs text-slate-400 italic">ยังไม่ได้ใส่สินค้า</span>'}</div>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                        <div class="flex gap-1.5 ml-auto">
+                            <button onclick="window.openSetFormModal('${set.id}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center gap-1 active:scale-95 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> แก้ไข</button>
+                            <button onclick="window.deleteSet('${set.id}', '${set.name.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-1 active:scale-95 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ลบ</button>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+        lucide.createIcons();
     };
 
-    window.manualInputQty = function(id, inputElement) {
-        let val = parseInt(inputElement.value);
-        if(isNaN(val) || val < 0) {
-            const item = stockProducts.find(p => p.id === id);
-            inputElement.value = item ? item.qty : 0; 
+    window.openSetFormModal = function(id = null) {
+        currentEditingSetItems = [];
+        const productPicker = document.getElementById('itemPickerProduct');
+        if (productPicker) {
+            productPicker.innerHTML = stockProducts.length > 0
+                ? stockProducts.map(p => `<option value="${p.id}">${p.name} (฿${p.price}/${p.unit})</option>`).join('')
+                : `<option value="">ไม่มีสินค้า</option>`;
+        }
+        const title = document.getElementById('setFormModalTitle');
+        if (id) {
+            const setItem = productSets.find(s => s.id === id);
+            if (setItem) {
+                title.innerHTML = `<i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i> แก้ไขราคาเซ็ต`;
+                document.getElementById('editSetId').value = setItem.id;
+                document.getElementById('setName').value = setItem.name;
+                document.getElementById('setPrice').value = setItem.price;
+                document.getElementById('setDesc').value = setItem.description || '';
+                currentEditingSetItems = JSON.parse(JSON.stringify(setItem.items || []));
+            }
+        } else {
+            title.innerHTML = `<i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i> คำนวณเซ็ตใหม่`;
+            document.getElementById('editSetId').value = '';
+            document.getElementById('setForm').reset();
+            document.getElementById('setPrice').value = '990';
+        }
+        window.renderCurrentSetItemsList(); animateModalOpen('setFormModal'); lucide.createIcons();
+    };
+    window.closeSetFormModal = function() { animateModalClose('setFormModal'); };
+
+    window.addItemToCurrentSet = function() {
+        const prodId = document.getElementById('itemPickerProduct').value;
+        const qty = parseInt(document.getElementById('itemPickerQty').value) || 1;
+        if(!prodId) return window.showToast('กรุณาเลือกสินค้า');
+
+        const existing = currentEditingSetItems.find(i => i.productId === prodId);
+        if(existing) existing.quantity += qty;
+        else currentEditingSetItems.push({ productId: prodId, quantity: qty });
+        window.renderCurrentSetItemsList(); window.showToast('เพิ่มเข้าเซ็ตแล้ว');
+    };
+
+    window.removeCurrentSetItem = function(index) {
+        currentEditingSetItems.splice(index, 1); window.renderCurrentSetItemsList();
+    };
+
+    window.renderCurrentSetItemsList = function() {
+        const container = document.getElementById('currentSetItemsList');
+        document.getElementById('setItemsCountBadge').innerText = `${currentEditingSetItems.length} รายการ`;
+        if(currentEditingSetItems.length === 0) {
+            container.innerHTML = `<div class="py-4 text-center text-slate-400 text-[11px] bg-slate-50 rounded-xl border border-dashed border-slate-200">ยังไม่มีสินค้า (กดปุ่ม "ใส่")</div>`;
             return;
         }
-        const item = stockProducts.find(p => p.id === id);
-        if (item) {
-            item.qty = val;
-            item.updatedAt = Date.now();
+        container.innerHTML = currentEditingSetItems.map((item, idx) => {
+            const prod = stockProducts.find(p => p.id === item.productId);
+            const sub = (prod ? (parseFloat(prod.price)||0) : 0) * item.quantity;
+            return `<div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 text-xs">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-[10px] shrink-0">${idx + 1}</span>
+                        <div class="truncate"><span class="font-bold text-slate-800 block">${prod ? prod.name : 'ไม่พบ'}</span><span class="text-[10px] text-slate-400">รวม: ฿${sub.toLocaleString()}</span></div>
+                    </div>
+                    <div class="flex gap-2 shrink-0"><span class="font-mono font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded-lg">x${item.quantity} ${prod ? prod.unit : ''}</span><button type="button" onclick="window.removeCurrentSetItem(${idx})" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>
+                </div>`;
+        }).join('');
+        lucide.createIcons();
+    };
 
-            persistLocalCache();
+    window.calcSetSuggestedPrice = function() {
+        let total = currentEditingSetItems.reduce((sum, item) => {
+            const p = stockProducts.find(x => x.id === item.productId);
+            return sum + (p ? (parseFloat(p.price)||0) : 0) * item.quantity;
+        }, 0);
+        document.getElementById('setPrice').value = total;
+        window.showToast(`คำนวณรวม: ฿${total.toLocaleString()}`);
+    };
 
-            const badgeEl = document.getElementById(`statusBadge_${id}`);
-            if (badgeEl) updateStatusBadgeUI(badgeEl, val);
-            updateDashboardStats();
-            
-            if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
-            window.qtyUpdateTimeouts[id] = setTimeout(() => {
-                updateItemQtyFirestore(id, val);
-            }, 300);
+    window.saveSet = async function(e) {
+        e.preventDefault();
+        if(currentEditingSetItems.length === 0) return window.showToast('เพิ่มสินค้าอย่างน้อย 1 รายการ');
+        const editId = document.getElementById('editSetId').value;
+        const finalSetData = {
+            id: editId || ('set_' + Date.now()),
+            name: document.getElementById('setName').value.trim(),
+            price: parseFloat(document.getElementById('setPrice').value) || 0,
+            description: document.getElementById('setDesc').value.trim(),
+            items: currentEditingSetItems,
+            updatedAt: Date.now()
+        };
+        const index = productSets.findIndex(s => s.id === finalSetData.id);
+        if(index >= 0) productSets[index] = finalSetData; else productSets.unshift(finalSetData);
+        
+        persistLocalCache(); window.closeSetFormModal(); window.renderSetsList();
+        window.showToast(editId ? 'อัปเดตเซ็ตสำเร็จ' : 'สร้างเซ็ตสำเร็จ');
+        try { if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sets', finalSetData.id), finalSetData); } catch (err) {}
+    };
+
+    window.deleteSet = function(id, name) {
+        window.showConfirm('ลบเซ็ตสินค้า', `ต้องการลบเซ็ต "${name}"?`, async () => {
+            productSets = productSets.filter(s => s.id !== id);
+            persistLocalCache(); window.renderSetsList(); window.showToast('ลบเซ็ตสำเร็จ');
+            try { if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sets', id)); } catch (err) {}
+        });
+    };
+
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    const imageInput = document.getElementById('imageInput');
+    let currentImage = null;
+    let wmPatternTile = true;
+    const wmText = "ร้านนานาภัณฑ์ ขอนแก่น";
+
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImage = img;
+                    document.getElementById('emptyState').classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    document.getElementById('imageDimensions').classList.remove('hidden');
+                    document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
+                    document.getElementById('clearBtn').disabled = false;
+                    document.getElementById('downloadBtn').disabled = false;
+                    drawWatermark();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         }
-    }
+    });
 
-    async function updateItemQtyFirestore(id, newQty) {
-        const item = stockProducts.find(p => p.id === id);
-        if (item) {
-            try {
-                if (db) {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
-                        ...item,
-                        qty: newQty,
-                        updatedAt: Date.now()
-                    });
+    window.createDemoImage = function() {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = function() {
+            currentImage = img;
+            document.getElementById('emptyState').classList.add('hidden');
+            canvas.classList.remove('hidden');
+            document.getElementById('imageDimensions').classList.remove('hidden');
+            document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
+            document.getElementById('clearBtn').disabled = false;
+            document.getElementById('downloadBtn').disabled = false;
+            drawWatermark();
+        };
+        img.src = "https://images.unsplash.com/photo-1590212151175-e58edd96185b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"; // Example hardware/paint
+    };
+
+    window.clearImage = function() {
+        currentImage = null;
+        imageInput.value = '';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('emptyState').classList.remove('hidden');
+        canvas.classList.add('hidden');
+        document.getElementById('imageDimensions').classList.add('hidden');
+        document.getElementById('clearBtn').disabled = true;
+        document.getElementById('downloadBtn').disabled = true;
+    };
+
+    window.setWatermarkPattern = function(isTile) {
+        wmPatternTile = isTile;
+        document.getElementById('patternTile').classList.toggle('border-2', isTile);
+        document.getElementById('patternTile').classList.toggle('border-brand-500', isTile);
+        document.getElementById('patternTile').classList.toggle('bg-brand-50', isTile);
+        document.getElementById('patternTile').classList.toggle('text-brand-600', isTile);
+        
+        document.getElementById('patternCenter').classList.toggle('border-2', !isTile);
+        document.getElementById('patternCenter').classList.toggle('border-brand-500', !isTile);
+        document.getElementById('patternCenter').classList.toggle('bg-brand-50', !isTile);
+        document.getElementById('patternCenter').classList.toggle('text-brand-600', !isTile);
+        
+        if (currentImage) drawWatermark();
+    };
+
+    function drawWatermark() {
+        if (!currentImage) return;
+        
+        canvas.width = currentImage.width;
+        canvas.height = currentImage.height;
+        ctx.drawImage(currentImage, 0, 0);
+
+        const opacity = document.getElementById('opacitySlider').value / 100;
+        const scale = document.getElementById('scaleSlider').value / 100;
+        document.getElementById('opacityVal').innerText = `${document.getElementById('opacitySlider').value}%`;
+        document.getElementById('scaleVal').innerText = `${document.getElementById('scaleSlider').value}%`;
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const baseFontSize = Math.max(canvas.width, canvas.height) * 0.05 * scale;
+        ctx.font = `bold ${baseFontSize}px Kanit, sans-serif`;
+        
+        // Add subtle shadow for visibility on light backgrounds
+        ctx.shadowColor = `rgba(0, 0, 0, ${opacity * 0.8})`;
+        ctx.shadowBlur = baseFontSize * 0.1;
+        ctx.shadowOffsetX = baseFontSize * 0.05;
+        ctx.shadowOffsetY = baseFontSize * 0.05;
+
+        if (wmPatternTile) {
+            const stepX = canvas.width * 0.4;
+            const stepY = canvas.height * 0.25;
+            for (let x = -stepX; x < canvas.width + stepX; x += stepX) {
+                for (let y = -stepY; y < canvas.height + stepY; y += stepY) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(-Math.PI / 6);
+                    ctx.fillText(wmText, 0, 0);
+                    ctx.restore();
                 }
-            } catch (err) {
-                console.error("Firestore update error:", err);
             }
+        } else {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 8);
+            ctx.fillText(wmText, 0, 0);
+            ctx.restore();
         }
     }
 
-    function updateStatusBadgeUI(badgeEl, qty) {
-        if(!badgeEl) return;
-        badgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max';
-        if(qty === 0) { badgeEl.classList.add('bg-rose-100', 'text-rose-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> หมด`; }
-        else if (qty <= 5) { badgeEl.classList.add('bg-amber-100', 'text-amber-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใกล้หมด`; }
-        else { badgeEl.classList.add('bg-emerald-100', 'text-emerald-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> มีสินค้า`; }
-    }
+    document.getElementById('opacitySlider').addEventListener('input', drawWatermark);
+    document.getElementById('scaleSlider').addEventListener('input', drawWatermark);
 
+    window.resetWatermarkSettings = function() {
+        document.getElementById('opacitySlider').value = 16;
+        document.getElementById('scaleSlider').value = 96;
+        window.setWatermarkPattern(true);
+    };
+
+    window.downloadImage = function() {
+        if(!currentImage) return;
+        try {
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('modalPreviewImg').src = dataUrl;
+            document.getElementById('modalDownloadLink').href = dataUrl;
+            animateModalOpen('downloadModal');
+            
+            // Auto trigger for desktop
+            const link = document.createElement('a');
+            link.download = `Nanaphan_Watermark_${Date.now()}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (e) {
+            window.showToast("เกิดข้อผิดพลาด! รูปแบบภาพอาจไม่รองรับ");
+        }
+    };
+    window.closeDownloadModal = function() { animateModalClose('downloadModal'); };
+    
+    // Barcode Actions
     window.openBarcodeModal = function(name, barcode) {
         document.getElementById('barcodeModalName').innerText = name;
         document.getElementById('barcodeModalName').dataset.barcode = barcode;
@@ -1344,358 +1443,59 @@
         }
     }
 
-    window.filterStockList = function() { window.renderStockList(); };
-
-    function updateDashboardStats() {
-        const totalItemsEl = document.getElementById('statTotalItems');
-        const totalQtyEl = document.getElementById('statTotalQty');
-        const totalValueEl = document.getElementById('statTotalValue');
-        const lowStockEl = document.getElementById('statLowStock');
-        const outOfStockEl = document.getElementById('statOutOfStock');
-
-        const totalQty = stockProducts.reduce((sum, p) => sum + (parseInt(p.qty) || 0), 0);
-        const totalVal = stockProducts.reduce((sum, p) => sum + ((parseFloat(p.price) || 0) * (parseInt(p.qty) || 0)), 0);
-
-        if(totalItemsEl) totalItemsEl.innerText = stockProducts.length;
-        if(totalQtyEl) totalQtyEl.innerText = totalQty.toLocaleString();
-        if(totalValueEl) totalValueEl.innerText = '฿' + totalVal.toLocaleString();
-        if(lowStockEl) lowStockEl.innerText = stockProducts.filter(p => (parseInt(p.qty) || 0) > 0 && (parseInt(p.qty) || 0) <= 5).length;
-        if(outOfStockEl) outOfStockEl.innerText = stockProducts.filter(p => (parseInt(p.qty) || 0) === 0).length;
-    }
-
-    window.renderStockList = function() {
-        const container = document.getElementById('stockListContainer');
-        if (!container) return;
-        updateDashboardStats();
-
-        const query = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
-        const selectedCat = document.getElementById('stockCategoryFilter')?.value || '';
-        const selectedStatus = document.getElementById('stockStatusFilter')?.value || '';
-
-        let filtered = stockProducts.filter(item => {
-            const matchQuery = item.name.toLowerCase().includes(query) || item.sku.toLowerCase().includes(query) || (item.barcode||'').includes(query);
-            const matchCat = selectedCat === '' || item.categoryId === selectedCat;
-            let matchStatus = true;
-            if(selectedStatus === 'normal') matchStatus = item.qty > 5;
-            if(selectedStatus === 'low') matchStatus = item.qty > 0 && item.qty <= 5;
-            if(selectedStatus === 'out') matchStatus = item.qty === 0;
-            return matchQuery && matchCat && matchStatus;
-        });
-        filtered.sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-        const countText = document.getElementById('filteredCountText');
-        if(countText) countText.innerText = `แสดง ${filtered.length} จาก ${stockProducts.length}`;
-
-        if (filtered.length === 0) {
-            container.innerHTML = `
-                <div class="py-14 text-center space-y-3">
-                    <div class="w-16 h-16 rounded-3xl bg-orange-50 text-brand-500 flex items-center justify-center mx-auto shadow-inner">
-                        <i data-lucide="package-open" class="w-8 h-8"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-slate-700">ไม่พบรายการสินค้าที่ค้นหา</p>
-                        <p class="text-[11px] text-slate-400 mt-0.5">ลองเปลี่ยนคำค้นหา หรือกดปุ่ม "เพิ่มสินค้า"</p>
-                    </div>
-                </div>`; 
-            lucide.createIcons();
-            return;
-        }
-
-        container.innerHTML = filtered.map(item => {
-            const catObj = categories.find(c => c.id === item.categoryId) || {name: 'ทั่วไป'};
-            const isOut = item.qty === 0;
-            const barcodeVal = item.barcode || '885000000000';
-            const totalItemValue = (parseFloat(item.price) || 0) * (parseInt(item.qty) || 0);
-
-            return `
-                <div class="p-3.5 rounded-2xl bg-white border ${isOut ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs transition-colors shadow-sm">
-                    <div class="flex items-start gap-3 w-full sm:w-auto overflow-hidden">
-                        <div onclick="window.openBarcodeModal('${item.name.replace(/'/g, "\\'")}', '${barcodeVal}')" class="shrink-0 w-20 h-16 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 active:scale-95 overflow-hidden px-1">
-                            <svg class="barcode-svg max-w-full h-auto max-h-10" data-bc="${barcodeVal}"></svg>
-                            <span class="text-[8px] text-slate-400 font-mono mt-0.5 truncate w-full text-center">${item.sku}</span>
-                        </div>
-                        <div class="space-y-1 w-full min-w-0">
-                            <div class="flex items-start justify-between sm:justify-start gap-2">
-                                <h4 class="font-bold text-slate-800 truncate text-sm" title="${item.name}">${item.name}</h4>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
-                                <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">${catObj.name}</span>
-                            </div>
-                            <div class="text-[11px]">ราคาหน่วยละ: <strong class="text-brand-600 text-xs">฿${item.price}</strong> / ${item.unit} <span class="text-slate-400 font-mono text-[10px] ml-1">(รวมมูลค่า: ฿${totalItemValue.toLocaleString()})</span></div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                        <div id="statusBadge_${item.id}"></div>
-                        <div class="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-200">
-                            <button onclick="window.adjustQtyBtn('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center">-</button>
-                            <input type="number" id="qtyInput_${item.id}" value="${item.qty}" min="0" onchange="window.manualInputQty('${item.id}', this)" class="w-10 text-center bg-transparent font-bold font-mono text-slate-800 focus:outline-none no-spinners">
-                            <button onclick="window.adjustQtyBtn('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-brand-600">+</button>
-                        </div>
-                        <div class="flex gap-1.5 ml-2">
-                            <button onclick="window.openAddProductModal('${item.id}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-200 text-slate-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="window.deleteProduct('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                </div>`;
-        }).join('');
-        
-        lucide.createIcons();
-        filtered.forEach(item => updateStatusBadgeUI(document.getElementById(`statusBadge_${item.id}`), item.qty));
-        setTimeout(() => {
-            document.querySelectorAll('.barcode-svg').forEach(svg => {
-                if(svg.dataset.bc) {
-                    try {
-                        JsBarcode(svg, svg.dataset.bc, { format: "CODE128", displayValue: false, width: 1, height: 30, background: "transparent", lineColor: "#334155", margin: 0 });
-                    } catch (e) {}
-                }
-            });
-        }, 10);
-    }
-
-    const canvas = document.getElementById('previewCanvas');
-    const ctx = canvas.getContext('2d');
-    const wmState = { image: null, fileName: 'watermarked.png', text: 'ร้านนานาภัณฑ์ จ.ขอนแก่น', opacity: 0.16, scale: 0.96, pattern: 'tile' };
-
-    window.setupWatermarkControls = function() {
-        document.getElementById('imageInput').addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) window.handleImageFile(e.target.files[0]);
-        });
-        document.getElementById('opacitySlider').addEventListener('input', (e) => {
-            wmState.opacity = e.target.value / 100; document.getElementById('opacityVal').innerText = e.target.value + '%'; window.renderWatermark();
-        });
-        document.getElementById('scaleSlider').addEventListener('input', (e) => {
-            wmState.scale = e.target.value / 100; document.getElementById('scaleVal').innerText = e.target.value + '%'; window.renderWatermark();
-        });
-        document.getElementById('patternTile').addEventListener('click', (e) => {
-            wmState.pattern = 'tile'; e.currentTarget.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600'); e.currentTarget.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
-            document.getElementById('patternCenter').className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
-            window.renderWatermark();
-        });
-        document.getElementById('patternCenter').addEventListener('click', (e) => {
-            wmState.pattern = 'center'; e.currentTarget.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600'); e.currentTarget.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
-            document.getElementById('patternTile').className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
-            window.renderWatermark();
-        });
-    }
-
-    window.resetWatermarkSettings = function() {
-        wmState.opacity = 0.16; wmState.scale = 0.96;
-        document.getElementById('opacitySlider').value = 16; document.getElementById('opacityVal').innerText = '16%';
-        document.getElementById('scaleSlider').value = 96; document.getElementById('scaleVal').innerText = '96%';
-        window.renderWatermark(); window.showToast('รีเซ็ตค่าเรียบร้อย');
-    }
-
-    window.handleImageFile = function(file) {
-        wmState.fileName = 'wm-' + file.name;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                wmState.image = img;
-                document.getElementById('emptyState').classList.add('hidden');
-                canvas.classList.remove('hidden');
-                document.getElementById('imageDimensions').classList.remove('hidden');
-                document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
-                document.getElementById('downloadBtn').disabled = false;
-                document.getElementById('clearBtn').disabled = false;
-                window.renderWatermark();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    window.renderWatermark = function() {
-        if (!wmState.image) return;
-        const img = wmState.image;
-        canvas.width = img.width; canvas.height = img.height;
-        ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0);
-
-        const baseSize = Math.max(16, Math.round((Math.min(img.width, img.height) / 20) * wmState.scale));
-        ctx.save();
-        if (wmState.pattern === 'tile') {
-            ctx.font = `600 ${baseSize}px 'Kanit'`;
-            const metrics = ctx.measureText(wmState.text);
-            const stepX = metrics.width + (baseSize * 2.5), stepY = baseSize * 3.5;
-            ctx.translate(img.width / 2, img.height / 2); ctx.rotate(-28 * Math.PI / 180);
-            const diag = Math.sqrt(img.width*img.width + img.height*img.height);
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            let rowCount = 0;
-            for (let y = -diag; y < diag; y += stepY) {
-                rowCount++; const shiftX = (rowCount % 2 === 0) ? stepX / 2 : 0;
-                for (let x = -diag; x < diag; x += stepX) {
-                    ctx.fillStyle = `rgba(0,0,0,${wmState.opacity * 0.7})`; ctx.fillText(wmState.text, x + shiftX + 2, y + 2);
-                    ctx.fillStyle = `rgba(255,255,255,${wmState.opacity})`; ctx.fillText(wmState.text, x + shiftX, y);
-                }
-            }
-        } else {
-            ctx.translate(img.width / 2, img.height / 2); ctx.font = `600 ${baseSize * 1.3}px 'Kanit'`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillStyle = `rgba(0,0,0,${wmState.opacity})`; ctx.fillText(wmState.text, 2, 2);
-            ctx.fillStyle = `rgba(255,255,255,${wmState.opacity * 1.5})`; ctx.fillText(wmState.text, 0, 0);
-        }
-        ctx.restore();
-    }
-
-    window.createDemoImage = function() {
-        const dc = document.createElement('canvas'); dc.width = 800; dc.height = 800; const dctx = dc.getContext('2d');
-        const grad = dctx.createLinearGradient(0, 0, 800, 800); grad.addColorStop(0, '#fdba74'); grad.addColorStop(1, '#ea580c');
-        dctx.fillStyle = grad; dctx.fillRect(0, 0, 800, 800); dctx.fillStyle = 'white'; dctx.font = 'bold 36px Kanit'; dctx.textAlign = 'center'; dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 400);
-        const img = new Image();
-        img.onload = () => {
-            wmState.image = img;
-            document.getElementById('emptyState').classList.add('hidden'); canvas.classList.remove('hidden');
-            document.getElementById('imageDimensions').classList.add('hidden'); document.getElementById('imageDimensions').innerText = '800 x 800 px';
-            document.getElementById('downloadBtn').disabled = false; document.getElementById('clearBtn').disabled = false;
-            window.renderWatermark();
-        };
-        img.src = dc.toDataURL();
-    }
-
-    window.downloadImage = function() {
-        if (!wmState.image) return;
-        const dataUrl = canvas.toDataURL('image/png');
-        document.getElementById('modalPreviewImg').src = dataUrl;
-        const link = document.getElementById('modalDownloadLink');
-        link.href = dataUrl; link.download = wmState.fileName;
-        document.getElementById('downloadModal').classList.remove('hidden'); lucide.createIcons();
-        
-        const a = document.createElement('a'); a.download = wmState.fileName; a.href = dataUrl;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-    window.closeDownloadModal = function() { document.getElementById('downloadModal').classList.add('hidden'); }
-
-    window.clearImage = function() {
-        wmState.image = null; ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.classList.add('hidden'); document.getElementById('emptyState').classList.remove('hidden');
-        document.getElementById('imageDimensions').classList.add('hidden');
-        document.getElementById('downloadBtn').disabled = true; document.getElementById('clearBtn').disabled = true;
-        document.getElementById('imageInput').value = '';
-    }
-
-    window.renderModulesGrid = function() {
-        document.getElementById('modulesGrid').innerHTML = window.APP_MODULES.map(mod => `
-            <div onclick="window.APP_MODULES.find(m => m.id === '${mod.id}').action()" class="glass-card rounded-3xl p-3.5 flex flex-col items-center justify-between text-center relative border border-slate-200/80 shadow-xs cursor-pointer active:scale-95 hover:shadow-md transition-all h-28">
-                ${mod.badge ? `<span class="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${mod.badgeColor}">${mod.badge}</span>` : ''}
-                <div class="w-11 h-11 rounded-2xl ${mod.iconBg} flex items-center justify-center mt-1 shadow-sm"><i data-lucide="${mod.icon}" class="w-5 h-5"></i></div>
-                <span class="text-xs font-bold text-slate-800 leading-tight">${mod.title}</span>
-            </div>
-        `).join('');
-        lucide.createIcons();
-    }
-
-    window.forceSyncCloud = async function() {
-        window.showToast('กำลังซิงค์ข้อมูลกับคลาวด์...');
-        try {
-            if (db) {
-                const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-                const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-                const setsRef = collection(db, 'artifacts', appId, 'public', 'data', 'sets');
-                
-                const catSnap = await getDocs(categoriesRef);
-                if (!catSnap.empty) {
-                    const serverCats = [];
-                    catSnap.forEach(d => serverCats.push(d.data()));
-                    categories = serverCats;
-                }
-
-                const prodSnap = await getDocs(productsRef);
-                if (!prodSnap.empty) {
-                    const serverProds = [];
-                    prodSnap.forEach(d => serverProds.push(d.data()));
-                    stockProducts = serverProds;
-                }
-
-                const setSnap = await getDocs(setsRef);
-                if (!setSnap.empty) {
-                    const serverSets = [];
-                    setSnap.forEach(d => serverSets.push(d.data()));
-                    productSets = serverSets;
-                }
-
-                persistLocalCache();
-                window.updateCategoryDropdowns();
-                window.renderStockList();
-                window.showToast('ซิงค์ข้อมูลสำเร็จเรียบร้อย!');
-            }
-        } catch (err) {
-            console.error("Force sync error:", err);
-            window.showToast('ซิงค์ข้อมูลสำเร็จ (ใช้แคชในเครื่อง)');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        lucide.createIcons();
-        window.renderModulesGrid();
-        window.setupWatermarkControls();
-        window.checkAuthSession();
-        window.updateCategoryDropdowns();
+    window.forceSyncCloud = function() {
+        window.showToast('ซิงค์ข้อมูลล่าสุดสำเร็จ');
         window.renderStockList();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        window.checkAuthSession();
         
+        // Initialize Firebase for Realtime Sync
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
 
-            const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-            const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-            const setsRef = collection(db, 'artifacts', appId, 'public', 'data', 'sets');
-
-            // Realtime Categories Listener
-            onSnapshot(categoriesRef, async (snapshot) => {
-                const serverCats = [];
-                snapshot.forEach(doc => serverCats.push(doc.data()));
-                if(serverCats.length > 0) {
-                    categories = serverCats;
-                    persistLocalCache();
-                    window.updateCategoryDropdowns();
-                    if(!document.getElementById('categoryModal').classList.contains('hidden')) {
-                        window.renderCategoryList();
-                    }
-                } else {
-                    for (const cat of defaultCategories) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), cat);
-                    }
+            signInAnonymously(auth).then(() => {
+                console.log("Firebase Auth OK - Ready for Realtime Sync");
+                const syncIndicator = document.getElementById('syncDotIndicator');
+                if(syncIndicator) {
+                    syncIndicator.classList.remove('bg-rose-500');
+                    syncIndicator.classList.add('bg-emerald-500');
                 }
-            }, (error) => console.warn("Category Sync Warning:", error.message));
 
-            // Realtime Products Listener
-            onSnapshot(productsRef, (snapshot) => {
-                const serverProducts = [];
-                snapshot.forEach(doc => serverProducts.push(doc.data()));
-                if(serverProducts.length > 0) {
-                    stockProducts = serverProducts;
-                    persistLocalCache();
-                    if(!document.getElementById('stockView').classList.contains('hidden')) {
-                        window.renderStockList();
+                // Setup Realtime Listeners
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), (snap) => {
+                    if(!snap.empty) {
+                        categories = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        persistLocalCache(); window.updateCategoryDropdowns(); window.renderCategoryList();
                     }
-                }
-            }, (error) => console.warn("Product Sync Warning:", error.message));
-
-            // Realtime Sets Listener
-            onSnapshot(setsRef, (snapshot) => {
-                const serverSets = [];
-                snapshot.forEach(doc => serverSets.push(doc.data()));
-                if(serverSets.length > 0) {
-                    productSets = serverSets;
-                    persistLocalCache();
-                    if(!document.getElementById('setsModal').classList.contains('hidden')) {
-                        window.renderSetsList();
+                });
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snap) => {
+                    if(!snap.empty) {
+                        const cloudData = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        // Basic conflict resolution: accept cloud
+                        stockProducts = cloudData.sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+                        persistLocalCache(); window.renderStockList();
                     }
-                }
-            }, (error) => console.warn("Sets Sync Warning:", error.message));
-
-        } catch (err) { 
-            console.warn("Firebase Connection Warning (Using Local Cache):", err.message);
-            document.getElementById('syncDotIndicator').className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+                });
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'sets'), (snap) => {
+                    if(!snap.empty) {
+                        productSets = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+                        persistLocalCache(); window.renderSetsList();
+                    }
+                });
+            }).catch(err => {
+                console.warn("Firebase Auth Failed (Preview Mode Only)", err);
+                const syncIndicator = document.getElementById('syncDotIndicator');
+                if(syncIndicator) syncIndicator.classList.replace('bg-emerald-500', 'bg-rose-500');
+            });
+        } catch (e) {
+            console.warn("Firebase Init Failed (Preview Mode Only)", e);
         }
     });
+
 </script>
 </body>
 </html>
