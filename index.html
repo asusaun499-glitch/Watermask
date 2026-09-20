@@ -69,8 +69,9 @@
         .no-spinners { -moz-appearance: textfield; }
     </style>
 </head>
-<body>
+<body class="flex flex-col min-h-full">
 
+<!-- Notification Toast -->
 <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] pointer-events-none transition-all duration-300 transform -translate-y-10 opacity-0">
     <div id="toastMessage" class="glass-card shadow-xl rounded-2xl px-5 py-3 border border-slate-200 text-sm font-medium flex items-center gap-2.5 text-slate-800">
         <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
@@ -129,12 +130,13 @@
     </div>
 </section>
 
-<div id="mainAppWrapper" class="hidden min-h-screen flex-col w-full">
-    <!-- ========================================== -->
-    <!-- VIEW 2: MAIN ADMIN HOME DASHBOARD          -->
-    <!-- ========================================== -->
+<!-- ========================================== -->
+<!-- MAIN APPLICATION WRAPPER                    -->
+<!-- ========================================== -->
+<div id="mainAppWrapper" class="hidden flex-col w-full min-h-screen">
+    
+    <!-- VIEW 2: HOME DASHBOARD -->
     <main id="homeView" class="max-w-lg mx-auto w-full px-4 py-5 space-y-4 flex-grow">
-        
         <div class="orange-gradient-card rounded-3xl p-5 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
             <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
             
@@ -145,7 +147,7 @@
                         <p class="text-[11px] text-orange-100 font-light">ระบบหลังบ้าน & คำนวณราคา (Admin)</p>
                         <h2 class="text-base font-bold leading-tight">ร้านนานาภัณฑ์ จ.ขอนแก่น</h2>
                         <span class="inline-block mt-0.5 px-2 py-0.2 text-[10px] bg-white/20 rounded-full font-medium text-white backdrop-blur-sm">
-                            ฐานข้อมูล: nanaphan-hub (Realtime Sync)
+                            ฐานข้อมูล: Cloud Realtime Sync
                         </span>
                     </div>
                 </div>
@@ -197,16 +199,13 @@
                 </span>
             </div>
             <div id="modulesGrid" class="grid grid-cols-3 gap-3">
-                <!-- Dynamic Modules populated via JS -->
+                <!-- Populated dynamically -->
             </div>
         </div>
     </main>
 
-    <!-- ========================================== -->
-    <!-- VIEW 3: INVENTORY STOCK MANAGEMENT         -->
-    <!-- ========================================== -->
+    <!-- VIEW 3: INVENTORY STOCK MANAGEMENT -->
     <section id="stockView" class="hidden max-w-4xl mx-auto px-4 py-4 w-full flex-grow">
-        
         <div class="flex items-center justify-between mb-3 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs flex-wrap gap-2">
             <div class="flex items-center gap-2">
                 <button onclick="window.switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
@@ -220,9 +219,6 @@
             </div>
 
             <div class="flex items-center gap-2 ml-auto flex-wrap">
-                <button onclick="window.forceSyncCloud()" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">ซิงค์</span>
-                </button>
                 <button onclick="window.openSetsModal()" class="px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-brand-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
                     <i data-lucide="calculator" class="w-4 h-4"></i> <span class="hidden sm:inline">คำนวณเซ็ตราคา</span>
                 </button>
@@ -260,7 +256,7 @@
 
         <div class="glass-card rounded-3xl p-3 mb-4 shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-2">
             <div class="relative flex-grow">
-                <input type="text" id="stockSearchInput" oninput="window.filterStockList()" placeholder="ค้นหาชื่อสินค้า, SKU, บาร์โค้ด..." 
+                <input type="text" id="stockSearchInput" oninput="window.filterStockList()" placeholder="ค้นหาชื่อสินค้า, SKU, บาร์โค้ด, หรือตัวแปร (เช่น สีส้ม)..." 
                     class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 pl-9 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
             </div>
@@ -280,20 +276,18 @@
         <div class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 text-brand-500"></i> รายการสินค้าและราคาตามสต็อก (Realtime)
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-brand-500"></i> รายการสินค้า ตัวแปร และราคาตามสต็อก
                 </h3>
                 <span id="filteredCountText" class="text-[11px] font-medium bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-200">🟢 Connected</span>
             </div>
 
-            <div id="stockListContainer" class="space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar pb-10">
-                <!-- Dynamic Stock Cards Rendered by JS -->
+            <div id="stockListContainer" class="space-y-3 max-h-[520px] overflow-y-auto no-scrollbar pb-10">
+                <!-- Rendered dynamically -->
             </div>
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- VIEW 4: WATERMARK MODULE                   -->
-    <!-- ========================================== -->
+    <!-- VIEW 4: WATERMARK MODULE -->
     <section id="watermarkView" class="hidden max-w-lg mx-auto w-full px-4 py-4 flex-col space-y-4 flex-grow">
         <div class="flex items-center justify-between mb-2 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs">
             <button onclick="window.switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
@@ -354,7 +348,7 @@
                     <span>ความโปร่งแสง (Opacity)</span>
                     <span id="opacityVal" class="text-brand-600 font-mono">16%</span>
                 </div>
-                <input type="range" id="opacitySlider" min="5" max="50" value="16" class="w-full">
+                <input type="range" id="opacitySlider" min="5" max="50" value="16" class="w-full" oninput="window.drawWatermark()">
             </div>
 
             <div class="space-y-1.5">
@@ -362,7 +356,7 @@
                     <span>ขนาดตัวอักษร (Scale)</span>
                     <span id="scaleVal" class="text-brand-600 font-mono">96%</span>
                 </div>
-                <input type="range" id="scaleSlider" min="50" max="200" value="96" class="w-full">
+                <input type="range" id="scaleSlider" min="50" max="200" value="96" class="w-full" oninput="window.drawWatermark()">
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-2">
@@ -381,10 +375,10 @@
 <!-- MODALS SECTION                             -->
 <!-- ========================================== -->
 
-<!-- Product Modal -->
+<!-- Product Add/Edit Modal (With Optional Variants Support) -->
 <div id="productModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
-    <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
             <h3 id="productModalTitle" class="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <i data-lucide="package-plus" class="w-5 h-5 text-brand-500"></i> เพิ่มสินค้าใหม่
             </h3>
@@ -393,7 +387,7 @@
             </button>
         </div>
 
-        <form id="productForm" onsubmit="window.saveProduct(event)" class="space-y-3 text-xs">
+        <form id="productForm" onsubmit="window.saveProduct(event)" class="space-y-3 text-xs overflow-y-auto no-scrollbar pr-1 flex-grow">
             <input type="hidden" id="editProductId">
 
             <div class="grid grid-cols-2 gap-2">
@@ -403,47 +397,69 @@
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
                 </div>
                 <div class="space-y-1">
-                    <label class="font-bold text-slate-700">บาร์โค้ด (ถ้ามี)</label>
-                    <input type="text" id="prodBarcode" placeholder="สร้างอัตโนมัติ" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    <label class="font-bold text-slate-700">หมวดหมู่สินค้า <span class="text-rose-500">*</span></label>
+                    <select id="prodCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold text-slate-700"></select>
                 </div>
             </div>
 
-            <div class="space-y-1">
-                <label class="font-bold text-slate-700">ชื่อสินค้า <span class="text-rose-500">*</span></label>
-                <input type="text" id="prodName" required placeholder="เช่น จีวรพระสงฆ์ครบชุด" 
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <div class="grid grid-cols-2 gap-2">
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-700">ชื่อสินค้า <span class="text-rose-500">*</span></label>
+                    <input type="text" id="prodName" required placeholder="เช่น จีวรพระสงฆ์ หรือ สีทาบ้าน" 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-700">หน่วยนับ</label>
+                    <input type="text" id="prodUnit" value="ผืน" required placeholder="ผืน / ชุด / กระป๋อง / กล่อง" 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
             </div>
 
             <div class="space-y-1.5 pt-1">
-                <label class="font-bold text-slate-700">รูปแบบสินค้า</label>
+                <label class="font-bold text-slate-700">ประเภทสินค้า</label>
                 <div class="grid grid-cols-2 gap-2">
                     <div id="typeSimpleBtn" onclick="window.selectProductType('simple')" class="p-2.5 border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-2xl cursor-pointer flex items-center gap-2 transition-all">
                         <i data-lucide="box" class="w-4 h-4"></i>
-                        <span class="text-xs font-bold">ไม่มีตัวแปร</span>
+                        <span class="text-xs font-bold">ไม่มีตัวแปร (ราคาเดียว)</span>
                     </div>
                     <div id="typeVariableBtn" onclick="window.selectProductType('variable')" class="p-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-2xl cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-100">
                         <i data-lucide="network" class="w-4 h-4"></i>
-                        <span class="text-xs font-bold">มีตัวแปร</span>
+                        <span class="text-xs font-bold">มีตัวแปร (แยกสี/ราคา)</span>
                     </div>
                 </div>
                 <input type="hidden" id="prodType" value="simple">
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
+            <!-- Simple product fields -->
+            <div id="simpleProductFields" class="grid grid-cols-2 gap-2">
                 <div class="space-y-1">
-                    <label class="font-bold text-slate-700">จำนวนเริ่มต้น <span class="text-rose-500">*</span></label>
-                    <input type="number" id="prodQty" min="0" required value="10" 
+                    <label class="font-bold text-slate-700">จำนวนเริ่มต้น</label>
+                    <input type="number" id="prodQty" min="0" value="10" 
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
                 </div>
                 <div class="space-y-1">
-                    <label class="font-bold text-slate-700">ราคาขาย (บาท) <span class="text-rose-500">*</span></label>
-                    <input type="number" id="prodPrice" min="0" step="0.25" required value="450" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    <label class="font-bold text-slate-700">ราคาขาย (บาท)</label>
+                    <input type="number" id="prodPrice" min="0" step="0.25" value="450" 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono font-bold text-brand-600">
                 </div>
             </div>
 
-            <div class="pt-2 flex gap-2">
+            <!-- Variable product fields (Variants with custom names/colors & individual prices) -->
+            <div id="variableProductFields" class="hidden space-y-2 pt-2 border-t border-slate-100">
+                <div class="flex items-center justify-between">
+                    <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="layers" class="w-4 h-4 text-brand-500"></i> ตัวแปรสินค้า (เช่น สี, ขนาด, เกรด และราคาของแต่ละตัว)
+                    </label>
+                    <button type="button" onclick="window.addVariantRow()" class="px-3 py-1 rounded-xl bg-brand-50 text-brand-600 font-bold text-[11px] flex items-center gap-1 active:scale-95 transition-all">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> เพิ่มตัวแปร
+                    </button>
+                </div>
+                <div id="variantsRowsContainer" class="space-y-2 max-h-44 overflow-y-auto no-scrollbar">
+                    <!-- Dynamic variant rows -->
+                </div>
+            </div>
+
+            <div class="pt-3 flex gap-2 border-t border-slate-100">
                 <button type="button" onclick="window.closeProductModal()" class="w-1/3 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold active:scale-95 transition-all">
                     ยกเลิก
                 </button>
@@ -572,12 +588,12 @@
     </div>
 </div>
 
-<!-- Barcode & Other Modals -->
+<!-- Barcode Modal -->
 <div id="barcodeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
-    <div class="bg-white rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col items-center gap-4 text-center">
+    <div class="bg-white rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col items-center gap-4 text-center max-w-sm w-full">
         <h3 id="barcodeModalName" class="text-sm font-bold text-slate-800">ชื่อสินค้า</h3>
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-            <svg id="largeBarcode"></svg>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 w-full flex justify-center">
+            <svg id="largeBarcode" class="max-w-full"></svg>
         </div>
         <div class="flex gap-2 w-full">
             <button onclick="window.closeBarcodeModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ปิด</button>
@@ -588,6 +604,7 @@
     </div>
 </div>
 
+<!-- Confirmation Modal -->
 <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
         <div class="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-500 mb-2">
@@ -601,28 +618,6 @@
             <button id="confirmCancelBtn" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ยกเลิก</button>
             <button id="confirmOkBtn" class="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs active:scale-95 transition-all shadow-md shadow-rose-500/30">ยืนยัน</button>
         </div>
-    </div>
-</div>
-
-<div id="downloadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
-    <div class="glass-card rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-white text-center">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> พร้อมบันทึกรูปภาพ
-            </h3>
-            <button onclick="window.closeDownloadModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-        </div>
-        <p class="text-xs text-slate-600">
-            หากมือถือไม่ดาวน์โหลดอัตโนมัติ ให้ <span class="font-bold text-brand-600">กดค้างที่รูปภาพด้านล่าง</span> แล้วเลือก <span class="font-bold text-slate-800">"บันทึกรูปภาพ"</span>
-        </p>
-        <div class="rounded-2xl overflow-hidden bg-slate-900 p-2 max-h-56 flex items-center justify-center border border-slate-200">
-            <img id="modalPreviewImg" src="" alt="Preview" class="max-h-48 object-contain rounded-xl shadow-md">
-        </div>
-        <a id="modalDownloadLink" href="#" download="nanaphan-product.png" class="w-full py-3 rounded-xl orange-gradient-card text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
-            <i data-lucide="download" class="w-4 h-4"></i> บันทึกรูปลงเครื่องอีกครั้ง
-        </a>
     </div>
 </div>
 
@@ -666,14 +661,13 @@
 </div>
 
 <!-- ========================================== -->
-<!-- JAVASCRIPT APP CORE LOGIC                  -->
+<!-- JAVASCRIPT APPLICATION CORE LOGIC         -->
 <!-- ========================================== -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Global Functions & States
     window.showToast = function(text) {
         const container = document.getElementById('toastContainer');
         document.getElementById('toastText').innerText = text;
@@ -685,25 +679,87 @@
         }, 3000);
     }
 
-    const firebaseConfig = {
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
         apiKey: "AIzaSyCEhtUjz_ZwAVmdRoRbzcBoy6bEaru6-Bk",
         projectId: "nanaphan-hub",
         appId: "1:799731405:web:b57c80a1f2409e4a9e4384",
     };
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphan-hub-app';
+    
     let db, auth;
+    try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+        } else {
+            signInAnonymously(auth).catch(() => {});
+        }
+    } catch(e) {
+        console.warn('Offline mode enabled');
+    }
 
-    // Seed Data or LocalStorage Cache
     const defaultCategories = [
-        { id: 'cat_jivar', name: 'จีวร' },
-        { id: 'cat_hardware', name: 'อุปกรณ์ฮาร์ดแวร์' },
+        { id: 'cat_jivar', name: 'จีวรและผ้าสังฆทาน' },
+        { id: 'cat_hardware', name: 'อุปกรณ์ฮาร์ดแวร์และสี' },
         { id: 'cat_plumbing', name: 'ท่อและอุปกรณ์ประปา' }
     ];
 
+    const defaultProducts = [
+        {
+            id: 'p_demo_1',
+            sku: 'NP-001',
+            barcode: '8851234567890',
+            name: 'จีวรพระสงฆ์ครบชุด (เนื้อผ้ามิซูริน)',
+            categoryId: 'cat_jivar',
+            unit: 'ชุด',
+            type: 'variable',
+            qty: 15,
+            price: 750,
+            variants: [
+                { id: 'v_1', name: 'สีแก่นบวร', qty: 8, price: 790 },
+                { id: 'v_2', name: 'สีราชاو', qty: 7, price: 750 }
+            ],
+            updatedAt: Date.now()
+        },
+        {
+            id: 'p_demo_2',
+            sku: 'NP-002',
+            barcode: '8859876543210',
+            name: 'สีน้ำทาอาคารภายนอก (กล่องกึ่งเงา)',
+            categoryId: 'cat_hardware',
+            unit: 'กระป๋อง',
+            type: 'variable',
+            qty: 12,
+            price: 520,
+            variants: [
+                { id: 'v_3', name: 'สีขาวคลาสสิก', qty: 5, price: 500 },
+                { id: 'v_4', name: 'สีเทาโมเดิร์น', qty: 4, price: 520 },
+                { id: 'v_5', name: 'สีฟ้าพาสเทล', qty: 3, price: 550 }
+            ],
+            updatedAt: Date.now()
+        },
+        {
+            id: 'p_demo_3',
+            sku: 'NP-003',
+            barcode: '8850011223344',
+            name: 'ข้อต่อท่อประปา PVC เกลียวใน',
+            categoryId: 'cat_plumbing',
+            unit: 'ตัว',
+            type: 'simple',
+            qty: 45,
+            price: 25,
+            variants: [],
+            updatedAt: Date.now()
+        }
+    ];
+
     let categories = JSON.parse(localStorage.getItem('nanaphan_categories_' + appId)) || defaultCategories;
-    let stockProducts = JSON.parse(localStorage.getItem('nanaphan_products_' + appId)) || [];
+    let stockProducts = JSON.parse(localStorage.getItem('nanaphan_products_' + appId)) || defaultProducts;
     let productSets = JSON.parse(localStorage.getItem('nanaphan_sets_' + appId)) || [];
     let currentEditingSetItems = [];
+    let currentVariants = [];
 
     function persistLocalCache() {
         localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
@@ -711,14 +767,51 @@
         localStorage.setItem('nanaphan_sets_' + appId, JSON.stringify(productSets));
     }
 
-    // App Navigation Modules
+    if (db) {
+        try {
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), (snapshot) => {
+                if (!snapshot.empty) {
+                    const cloudCats = [];
+                    snapshot.forEach(docSnap => cloudCats.push(docSnap.data()));
+                    if (cloudCats.length > 0) {
+                        categories = cloudCats;
+                        persistLocalCache();
+                        window.updateCategoryDropdowns();
+                    }
+                }
+            }, (err) => {});
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snapshot) => {
+                if (!snapshot.empty) {
+                    const cloudProds = [];
+                    snapshot.forEach(docSnap => cloudProds.push(docSnap.data()));
+                    if (cloudProds.length > 0) {
+                        stockProducts = cloudProds;
+                        persistLocalCache();
+                        window.renderStockList();
+                    }
+                }
+            }, (err) => {});
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'sets'), (snapshot) => {
+                if (!snapshot.empty) {
+                    const cloudSets = [];
+                    snapshot.forEach(docSnap => cloudSets.push(docSnap.data()));
+                    if (cloudSets.length > 0) {
+                        productSets = cloudSets;
+                        persistLocalCache();
+                    }
+                }
+            }, (err) => {});
+        } catch(e) {}
+    }
+
     window.APP_MODULES = [
-        { id: 'watermark', title: 'ใส่ลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-brand-500 text-white', action: () => window.switchView('watermarkView') },
+        { id: 'watermark', title: 'สร้างลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-brand-500 text-white', action: () => window.switchView('watermarkView') },
         { id: 'stock', title: 'คลังและราคา', badge: 'Realtime', badgeColor: 'bg-emerald-500 text-white', icon: 'boxes', iconBg: 'bg-emerald-100 text-emerald-600', action: () => { window.switchView('stockView'); window.renderStockList(); } },
         { id: 'sets', title: 'คำนวณเซ็ต', badge: 'ราคา', badgeColor: 'bg-orange-500 text-white', icon: 'calculator', iconBg: 'bg-orange-100 text-brand-600', action: () => window.openSetsModal() },
     ];
 
-    // Auth & Bootstrapping
     window.checkAuthSession = function() {
         if (localStorage.getItem('nanaphan_session') === 'authenticated_admin') {
             window.showMainApp();
@@ -757,7 +850,6 @@
         const app = document.getElementById('mainAppWrapper');
         app.classList.remove('hidden'); app.classList.add('flex');
         
-        // Render Modules
         document.getElementById('modulesGrid').innerHTML = window.APP_MODULES.map(m => `
             <div onclick="(${m.action.toString()})()" class="glass-card rounded-2xl p-3 flex flex-col items-center justify-center text-center cursor-pointer active:scale-95 transition-all shadow-xs border border-slate-200/50 relative">
                 ${m.badge ? `<span class="absolute -top-1.5 -right-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full ${m.badgeColor}">${m.badge}</span>` : ''}
@@ -784,7 +876,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Modal Helpers
     function animateModalOpen(modalId) {
         const modal = document.getElementById(modalId);
         modal.classList.remove('hidden'); void modal.offsetWidth;
@@ -867,14 +958,71 @@
         document.getElementById('prodType').value = type;
         const simpleBtn = document.getElementById('typeSimpleBtn');
         const varBtn = document.getElementById('typeVariableBtn');
+        const simpleFields = document.getElementById('simpleProductFields');
+        const variableFields = document.getElementById('variableProductFields');
         
         if (type === 'simple') {
             simpleBtn.className = "p-2.5 border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-2xl cursor-pointer flex items-center gap-2 transition-all";
             varBtn.className = "p-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-2xl cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-100";
+            simpleFields.classList.remove('hidden');
+            variableFields.classList.add('hidden');
         } else {
             varBtn.className = "p-2.5 border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-2xl cursor-pointer flex items-center gap-2 transition-all";
             simpleBtn.className = "p-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-2xl cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-100";
+            simpleFields.classList.add('hidden');
+            variableFields.classList.remove('hidden');
+            if(currentVariants.length === 0) {
+                currentVariants = [
+                    { id: 'v_' + Date.now() + '_1', name: 'สีส้ม', qty: 10, price: 450 },
+                    { id: 'v_' + Date.now() + '_2', name: 'สีน้ำเงิน', qty: 10, price: 480 }
+                ];
+            }
+            window.renderVariantRows();
         }
+    };
+
+    window.addVariantRow = function() {
+        currentVariants.push({
+            id: 'v_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+            name: 'ตัวแปรใหม่ (เช่น สีแดง)',
+            qty: 10,
+            price: 500
+        });
+        window.renderVariantRows();
+    };
+
+    window.removeVariantRow = function(index) {
+        currentVariants.splice(index, 1);
+        window.renderVariantRows();
+    };
+
+    window.renderVariantRows = function() {
+        const container = document.getElementById('variantsRowsContainer');
+        if(!container) return;
+        if(currentVariants.length === 0) {
+            container.innerHTML = `<div class="text-center py-2 text-slate-400 text-[11px]">ยังไม่มีตัวแปรสินค้า กรุณากดเพิ่มตัวแปรด้านบน</div>`;
+            return;
+        }
+        container.innerHTML = currentVariants.map((v, i) => `
+            <div class="flex items-center gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200 text-xs">
+                <input type="text" value="${v.name}" placeholder="ชื่อตัวแปร / สี" oninput="currentVariants[${i}].name = this.value" 
+                    class="flex-grow bg-white border border-slate-200 rounded-xl px-3 py-1.5 font-medium focus:outline-none focus:ring-1 focus:ring-brand-500">
+                <div class="flex items-center gap-1 w-20">
+                    <span class="text-[10px] text-slate-400">จำนวน</span>
+                    <input type="number" value="${v.qty}" min="0" oninput="currentVariants[${i}].qty = parseInt(this.value)||0" 
+                        class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 font-mono font-bold text-center focus:outline-none">
+                </div>
+                <div class="flex items-center gap-1 w-24">
+                    <span class="text-[10px] text-slate-400">ราคา</span>
+                    <input type="number" value="${v.price}" min="0" step="0.25" oninput="currentVariants[${i}].price = parseFloat(this.value)||0" 
+                        class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 font-mono font-bold text-brand-600 text-center focus:outline-none">
+                </div>
+                <button type="button" onclick="window.removeVariantRow(${i})" class="p-1.5 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 active:scale-95 transition-all">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        `).join('');
+        lucide.createIcons();
     };
 
     window.addCategory = async function(e) {
@@ -930,14 +1078,32 @@
         const lowStockEl = document.getElementById('statLowStock');
         const outOfStockEl = document.getElementById('statOutOfStock');
 
-        const totalQty = stockProducts.reduce((sum, p) => sum + (parseInt(p.qty) || 0), 0);
-        const totalVal = stockProducts.reduce((sum, p) => sum + ((parseFloat(p.price) || 0) * (parseInt(p.qty) || 0)), 0);
+        let totalQty = 0;
+        let totalVal = 0;
+        let lowCount = 0;
+        let outCount = 0;
+
+        stockProducts.forEach(p => {
+            if(p.type === 'variable' && p.variants && p.variants.length > 0) {
+                p.variants.forEach(v => {
+                    totalQty += (parseInt(v.qty) || 0);
+                    totalVal += (parseFloat(v.price) || 0) * (parseInt(v.qty) || 0);
+                    if((parseInt(v.qty)||0) === 0) outCount++;
+                    else if((parseInt(v.qty)||0) <= 5) lowCount++;
+                });
+            } else {
+                totalQty += (parseInt(p.qty) || 0);
+                totalVal += (parseFloat(p.price) || 0) * (parseInt(p.qty) || 0);
+                if((parseInt(p.qty)||0) === 0) outCount++;
+                else if((parseInt(p.qty)||0) <= 5) lowCount++;
+            }
+        });
 
         if(totalItemsEl) totalItemsEl.innerText = stockProducts.length;
         if(totalQtyEl) totalQtyEl.innerText = totalQty.toLocaleString();
         if(totalValueEl) totalValueEl.innerText = '฿' + totalVal.toLocaleString();
-        if(lowStockEl) lowStockEl.innerText = stockProducts.filter(p => (parseInt(p.qty) || 0) > 0 && (parseInt(p.qty) || 0) <= 5).length;
-        if(outOfStockEl) outOfStockEl.innerText = stockProducts.filter(p => (parseInt(p.qty) || 0) === 0).length;
+        if(lowStockEl) lowStockEl.innerText = lowCount;
+        if(outOfStockEl) outOfStockEl.innerText = outCount;
     }
 
     window.filterStockList = function() { window.renderStockList(); };
@@ -952,19 +1118,28 @@
         const selectedStatus = document.getElementById('stockStatusFilter')?.value || '';
 
         const filtered = stockProducts.filter(p => {
-            const matchQuery = !query || p.name.toLowerCase().includes(query) || (p.sku||'').toLowerCase().includes(query) || (p.barcode||'').toLowerCase().includes(query);
+            const matchName = p.name.toLowerCase().includes(query) || (p.sku||'').toLowerCase().includes(query) || (p.barcode||'').toLowerCase().includes(query);
+            const matchVariant = p.variants && p.variants.some(v => v.name.toLowerCase().includes(query));
+            const matchQuery = !query || matchName || matchVariant;
             const matchCat = !selectedCat || p.categoryId === selectedCat;
-            const matchStatus = !selectedStatus || 
-                (selectedStatus==='normal' && p.qty>5) || 
-                (selectedStatus==='low' && p.qty>0 && p.qty<=5) || 
-                (selectedStatus==='out' && p.qty===0);
-            return matchQuery && matchCat && matchStatus;
+
+            let hasStatusMatch = true;
+            if(selectedStatus) {
+                if(p.type === 'variable' && p.variants) {
+                    if(selectedStatus === 'normal') hasStatusMatch = p.variants.some(v => v.qty > 5);
+                    if(selectedStatus === 'low') hasStatusMatch = p.variants.some(v => v.qty > 0 && v.qty <= 5);
+                    if(selectedStatus === 'out') hasStatusMatch = p.variants.some(v => v.qty === 0);
+                } else {
+                    if(selectedStatus === 'normal') hasStatusMatch = p.qty > 5;
+                    if(selectedStatus === 'low') hasStatusMatch = p.qty > 0 && p.qty <= 5;
+                    if(selectedStatus === 'out') hasStatusMatch = p.qty === 0;
+                }
+            }
+            return matchQuery && matchCat && hasStatusMatch;
         });
 
         const countText = document.getElementById('filteredCountText');
-        if(countText) {
-            countText.innerText = `พบ ${filtered.length} รายการ`;
-        }
+        if(countText) countText.innerText = `พบ ${filtered.length} รายการ`;
 
         if(filtered.length === 0) {
             container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">ไม่พบสินค้าในระบบ</div>`;
@@ -972,45 +1147,95 @@
         }
 
         container.innerHTML = filtered.map(item => {
+            const isVariable = item.type === 'variable' && item.variants && item.variants.length > 0;
+            
+            let totalItemQty = 0;
+            let minPrice = 0;
+            let maxPrice = 0;
+
+            if (isVariable) {
+                totalItemQty = item.variants.reduce((sum, v) => sum + (parseInt(v.qty)||0), 0);
+                const prices = item.variants.map(v => parseFloat(v.price) || 0);
+                minPrice = Math.min(...prices);
+                maxPrice = Math.max(...prices);
+            } else {
+                totalItemQty = item.qty || 0;
+                minPrice = item.price || 0;
+                maxPrice = item.price || 0;
+            }
+
             let qtyColor = 'bg-emerald-500';
             let badgeClass = 'bg-emerald-100 text-emerald-600';
             let badgeHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> มีสินค้า`;
             
-            if(item.qty === 0) {
+            if(totalItemQty === 0) {
                 qtyColor = 'bg-rose-500'; badgeClass = 'bg-rose-100 text-rose-600';
                 badgeHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> หมด`;
-            } else if (item.qty <= 5) {
+            } else if (totalItemQty <= 5) {
                 qtyColor = 'bg-amber-500'; badgeClass = 'bg-amber-100 text-amber-600';
                 badgeHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใกล้หมด`;
             }
 
-            return `
-            <div class="flex items-start gap-3 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm relative overflow-hidden transition-all hover:border-brand-200">
-                <div class="absolute left-0 top-0 bottom-0 w-1 ${qtyColor}"></div>
-                <div class="flex-grow space-y-1.5 pl-1 w-full overflow-hidden">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="truncate">
-                            <h4 class="font-bold text-slate-800 text-sm leading-tight truncate">${item.name}</h4>
-                            <p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
-                                SKU: ${item.sku} <span class="mx-1">|</span> ราคา: ฿${(item.price||0).toLocaleString()}/${item.unit}
-                            </p>
-                        </div>
-                        <span id="statusBadge_${item.id}" class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max shrink-0 ${badgeClass}">
-                            ${badgeHTML}
-                        </span>
+            const priceDisplay = minPrice === maxPrice ? `฿${minPrice.toLocaleString()}` : `฿${minPrice.toLocaleString()} - ฿${maxPrice.toLocaleString()}`;
+
+            // Render variants breakdown if variable product
+            let variantsHtml = '';
+            if (isVariable) {
+                variantsHtml = `<div class="mt-2.5 pt-2 border-t border-slate-100 space-y-1.5 bg-slate-50/70 p-2.5 rounded-xl border border-slate-200/60">
+                    <span class="text-[10px] font-bold text-slate-500 block mb-1 flex items-center gap-1"><i data-lucide="layers" class="w-3 h-3 text-brand-500"></i> ตัวแปรและราคาแยกแต่ละรายการ:</span>
+                    <div class="space-y-1.5">
+                        ${item.variants.map((v, vIdx) => `
+                            <div class="flex items-center justify-between text-xs bg-white p-2 rounded-lg border border-slate-200 shadow-2xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full ${v.qty === 0 ? 'bg-rose-500' : (v.qty <= 5 ? 'bg-amber-500' : 'bg-emerald-500')}"></span>
+                                    <span class="font-bold text-slate-800">${v.name}</span>
+                                    <span class="text-[10px] text-slate-500 font-mono">(฿${(v.price||0).toLocaleString()})</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="window.adjustVariantQty('${item.id}', '${v.id}', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-rose-50 hover:text-rose-600 font-bold flex items-center justify-center text-slate-600 active:scale-95 transition-all">-</button>
+                                    <span class="w-8 text-center font-bold font-mono text-xs text-brand-600">${v.qty}</span>
+                                    <button onclick="window.adjustVariantQty('${item.id}', '${v.id}', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-emerald-50 hover:text-emerald-600 font-bold flex items-center justify-center text-slate-600 active:scale-95 transition-all">+</button>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                    
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-50">
+                </div>`;
+            }
+
+            return `
+            <div class="flex flex-col p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm relative overflow-hidden transition-all hover:border-brand-200 space-y-2">
+                <div class="absolute left-0 top-0 bottom-0 w-1 ${qtyColor}"></div>
+                
+                <div class="flex justify-between items-start gap-2 pl-1">
+                    <div class="truncate">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-slate-900 text-sm leading-tight truncate">${item.name}</h4>
+                            ${isVariable ? '<span class="px-2 py-0.2 bg-brand-50 text-brand-600 text-[9px] font-bold rounded-full border border-brand-100">มีตัวแปร</span>' : ''}
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
+                            SKU: ${item.sku} <span class="mx-1">|</span> ราคา: ${priceDisplay}/${item.unit} <span class="mx-1">|</span> รวม: ${totalItemQty} ${item.unit}
+                        </p>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max shrink-0 ${badgeClass}">
+                        ${badgeHTML}
+                    </span>
+                </div>
+
+                ${variantsHtml}
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100 pl-1">
+                    ${!isVariable ? `
                         <div class="flex items-center gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 shrink-0">
                             <button onclick="window.adjustQtyBtn('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-rose-500 active:scale-95 transition-all">-</button>
-                            <input type="number" id="qtyInput_${item.id}" value="${item.qty}" onchange="window.manualInputQty('${item.id}', this)" class="w-10 text-center font-bold text-sm bg-transparent border-none focus:outline-none no-spinners transition-colors rounded">
+                            <input type="number" id="qtyInput_${item.id}" value="${item.qty}" onchange="window.manualInputQty('${item.id}', this)" class="w-10 text-center font-bold text-sm bg-transparent border-none focus:outline-none no-spinners">
                             <button onclick="window.adjustQtyBtn('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-emerald-500 active:scale-95 transition-all">+</button>
                         </div>
-                        <div class="flex gap-1 shrink-0">
-                            <button onclick="window.openBarcodeModal('${item.name.replace(/'/g, "\\'")}', '${item.barcode}')" class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95"><i data-lucide="barcode" class="w-4 h-4"></i></button>
-                            <button onclick="window.openAddProductModal('${item.id}')" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="window.deleteProduct('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
+                    ` : '<span class="text-[11px] text-slate-400 font-medium">จัดการสต็อกแยกตามตัวแปรด้านบน</span>'}
+
+                    <div class="flex gap-1 shrink-0 ml-auto">
+                        <button onclick="window.openBarcodeModal('${item.name.replace(/'/g, "\\'")}', '${item.barcode}')" class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95"><i data-lucide="barcode" class="w-4 h-4"></i></button>
+                        <button onclick="window.openAddProductModal('${item.id}')" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                        <button onclick="window.deleteProduct('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
             </div>`;
@@ -1024,49 +1249,50 @@
         if (item) {
             const newQty = Math.max(0, item.qty + amount);
             item.qty = newQty; item.updatedAt = Date.now();
-            persistLocalCache();
-
-            const inputEl = document.getElementById(`qtyInput_${id}`);
-            if (inputEl) {
-                inputEl.value = newQty;
-                inputEl.classList.add('bg-brand-100');
-                setTimeout(() => inputEl.classList.remove('bg-brand-100'), 150);
-            }
-            window.renderStockList(); // Refresh badge and stats easily
+            persistLocalCache(); window.renderStockList();
             
             if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
-            window.qtyUpdateTimeouts[id] = setTimeout(() => { updateItemQtyFirestore(id, newQty); }, 300);
+            window.qtyUpdateTimeouts[id] = setTimeout(() => { updateItemFirestore(id); }, 300);
         }
     };
 
     window.manualInputQty = function(id, inputElement) {
         let val = parseInt(inputElement.value);
-        if(isNaN(val) || val < 0) {
-            const item = stockProducts.find(p => p.id === id);
-            inputElement.value = item ? item.qty : 0; 
-            return;
-        }
+        if(isNaN(val) || val < 0) return;
         const item = stockProducts.find(p => p.id === id);
         if (item) {
             item.qty = val; item.updatedAt = Date.now();
-            persistLocalCache();
-            window.renderStockList();
-            
+            persistLocalCache(); window.renderStockList();
             if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
-            window.qtyUpdateTimeouts[id] = setTimeout(() => { updateItemQtyFirestore(id, val); }, 300);
+            window.qtyUpdateTimeouts[id] = setTimeout(() => { updateItemFirestore(id); }, 300);
         }
     }
 
-    async function updateItemQtyFirestore(id, newQty) {
+    window.adjustVariantQty = function(productId, variantId, amount) {
+        const item = stockProducts.find(p => p.id === productId);
+        if (item && item.variants) {
+            const v = item.variants.find(x => x.id === variantId);
+            if (v) {
+                v.qty = Math.max(0, v.qty + amount);
+                item.updatedAt = Date.now();
+                persistLocalCache(); window.renderStockList();
+                if (window.qtyUpdateTimeouts[productId]) clearTimeout(window.qtyUpdateTimeouts[productId]);
+                window.qtyUpdateTimeouts[productId] = setTimeout(() => { updateItemFirestore(productId); }, 300);
+            }
+        }
+    };
+
+    async function updateItemFirestore(id) {
         const item = stockProducts.find(p => p.id === id);
         if (item) {
-            try { if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), { ...item, qty: newQty, updatedAt: Date.now() }); } catch (err) {}
+            try { if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), item); } catch (err) {}
         }
     }
 
     window.openAddProductModal = function(id = null) {
         window.updateCategoryDropdowns();
         document.getElementById('productForm').reset();
+        currentVariants = [];
         const title = document.getElementById('productModalTitle');
         if (id) {
             const item = stockProducts.find(p => p.id === id);
@@ -1074,14 +1300,20 @@
                 title.innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-brand-500"></i> แก้ไขข้อมูลสินค้าและราคา`;
                 document.getElementById('editProductId').value = item.id;
                 document.getElementById('prodSku').value = item.sku;
-                document.getElementById('prodBarcode').value = item.barcode || '';
                 document.getElementById('prodName').value = item.name;
                 document.getElementById('prodCategory').value = item.categoryId;
-                document.getElementById('prodUnit').value = item.unit;
-                document.getElementById('prodQty').value = item.qty;
-                document.getElementById('prodPrice').value = item.price;
-                if (item.type) window.selectProductType(item.type);
-                else window.selectProductType('simple');
+                document.getElementById('prodUnit').value = item.unit || 'ชิ้น';
+                
+                const pType = item.type || 'simple';
+                window.selectProductType(pType);
+
+                if(pType === 'variable' && item.variants) {
+                    currentVariants = JSON.parse(JSON.stringify(item.variants));
+                    window.renderVariantRows();
+                } else {
+                    document.getElementById('prodQty').value = item.qty || 0;
+                    document.getElementById('prodPrice').value = item.price || 0;
+                }
             }
         } else {
             title.innerHTML = `<i data-lucide="package-plus" class="w-5 h-5 text-brand-500"></i> เพิ่มสินค้าใหม่และราคา`;
@@ -1096,17 +1328,28 @@
     window.saveProduct = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('editProductId').value;
-        const itemData = {
+        const pType = document.getElementById('prodType').value;
+        
+        let itemData = {
             sku: document.getElementById('prodSku').value.trim(),
-            barcode: document.getElementById('prodBarcode').value.trim() || ('885' + Math.floor(100000000 + Math.random() * 900000000)),
+            barcode: '885' + Math.floor(100000000 + Math.random() * 900000000),
             name: document.getElementById('prodName').value.trim(),
-            type: document.getElementById('prodType').value,
+            type: pType,
             categoryId: document.getElementById('prodCategory').value || (categories[0]?.id || 'cat_hardware'),
-            unit: document.getElementById('prodUnit').value.trim(),
-            qty: parseInt(document.getElementById('prodQty').value) || 0,
-            price: parseFloat(document.getElementById('prodPrice').value) || 0,
+            unit: document.getElementById('prodUnit').value.trim() || 'ชิ้น',
             updatedAt: Date.now()
         };
+
+        if (pType === 'variable') {
+            if (currentVariants.length === 0) return window.showToast('กรุณาเพิ่มตัวแปรสินค้าอย่างน้อย 1 รายการ');
+            itemData.variants = currentVariants;
+            itemData.qty = currentVariants.reduce((s, v) => s + v.qty, 0);
+            itemData.price = currentVariants[0].price; // Base price reference
+        } else {
+            itemData.qty = parseInt(document.getElementById('prodQty').value) || 0;
+            itemData.price = parseFloat(document.getElementById('prodPrice').value) || 0;
+            itemData.variants = [];
+        }
 
         const idToSave = editId || ('p_' + Date.now());
         const finalData = { id: idToSave, ...itemData };
@@ -1159,7 +1402,7 @@
                         <div class="text-right shrink-0">
                             <span class="text-[10px] text-slate-400 block font-light">ราคาขายเซ็ต</span>
                             <span class="text-base font-black font-mono text-brand-600">฿${(set.price||0).toLocaleString()}</span>
-                            <span class="text-[10px] text-slate-400 block font-mono">จากสต็อก: ฿${calculatedTotalFromStock.toLocaleString()}</span>
+                            <span class="text-[10px] text-slate-400 block font-mono">ต้นทุน/สต็อก: ฿${calculatedTotalFromStock.toLocaleString()}</span>
                         </div>
                     </div>
                     <div class="space-y-1">
@@ -1279,6 +1522,25 @@
         });
     };
 
+    window.openBarcodeModal = function(name, barcode) {
+        document.getElementById('barcodeModalName').innerText = name;
+        animateModalOpen('barcodeModal');
+        try {
+            JsBarcode("#largeBarcode", barcode || "8851234567890", {
+                format: "CODE128", lineColor: "#1e293b", width: 2.2, height: 70, displayValue: true, fontSize: 14
+            });
+        } catch(e) {}
+    };
+    window.closeBarcodeModal = function() { animateModalClose('barcodeModal'); };
+
+    window.copyBarcodeText = function() {
+        const text = document.querySelector('#largeBarcode').getAttribute('data-barcode') || '8851234567890';
+        const temp = document.createElement('textarea');
+        temp.value = text; document.body.appendChild(temp); temp.select();
+        document.execCommand('copy'); document.body.removeChild(temp);
+        window.showToast('คัดลอกบาร์โค้ดแล้ว');
+    };
+
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
     const imageInput = document.getElementById('imageInput');
@@ -1300,7 +1562,7 @@
                     document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
                     document.getElementById('clearBtn').disabled = false;
                     document.getElementById('downloadBtn').disabled = false;
-                    drawWatermark();
+                    window.drawWatermark();
                 };
                 img.src = event.target.result;
             };
@@ -1319,9 +1581,9 @@
             document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
             document.getElementById('clearBtn').disabled = false;
             document.getElementById('downloadBtn').disabled = false;
-            drawWatermark();
+            window.drawWatermark();
         };
-        img.src = "https://images.unsplash.com/photo-1590212151175-e58edd96185b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"; // Example hardware/paint
+        img.src = "https://images.unsplash.com/photo-1590212151175-e58edd96185b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
     };
 
     window.clearImage = function() {
@@ -1347,10 +1609,10 @@
         document.getElementById('patternCenter').classList.toggle('bg-brand-50', !isTile);
         document.getElementById('patternCenter').classList.toggle('text-brand-600', !isTile);
         
-        if (currentImage) drawWatermark();
+        if (currentImage) window.drawWatermark();
     };
 
-    function drawWatermark() {
+    window.drawWatermark = function() {
         if (!currentImage) return;
         
         canvas.width = currentImage.width;
@@ -1369,20 +1631,19 @@
         const baseFontSize = Math.max(canvas.width, canvas.height) * 0.05 * scale;
         ctx.font = `bold ${baseFontSize}px Kanit, sans-serif`;
         
-        // Add subtle shadow for visibility on light backgrounds
         ctx.shadowColor = `rgba(0, 0, 0, ${opacity * 0.8})`;
         ctx.shadowBlur = baseFontSize * 0.1;
         ctx.shadowOffsetX = baseFontSize * 0.05;
         ctx.shadowOffsetY = baseFontSize * 0.05;
 
         if (wmPatternTile) {
-            const stepX = canvas.width * 0.4;
-            const stepY = canvas.height * 0.25;
-            for (let x = -stepX; x < canvas.width + stepX; x += stepX) {
-                for (let y = -stepY; y < canvas.height + stepY; y += stepY) {
+            const stepX = canvas.width / 3;
+            const stepY = canvas.height / 3;
+            for (let x = stepX / 2; x < canvas.width; x += stepX) {
+                for (let y = stepY / 2; y < canvas.height; y += stepY) {
                     ctx.save();
                     ctx.translate(x, y);
-                    ctx.rotate(-Math.PI / 6);
+                    ctx.rotate(-Math.PI / 12);
                     ctx.fillText(wmText, 0, 0);
                     ctx.restore();
                 }
@@ -1390,14 +1651,10 @@
         } else {
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-Math.PI / 8);
             ctx.fillText(wmText, 0, 0);
             ctx.restore();
         }
-    }
-
-    document.getElementById('opacitySlider').addEventListener('input', drawWatermark);
-    document.getElementById('scaleSlider').addEventListener('input', drawWatermark);
+    };
 
     window.resetWatermarkSettings = function() {
         document.getElementById('opacitySlider').value = 16;
@@ -1406,96 +1663,22 @@
     };
 
     window.downloadImage = function() {
-        if(!currentImage) return;
-        try {
-            const dataUrl = canvas.toDataURL('image/png');
-            document.getElementById('modalPreviewImg').src = dataUrl;
-            document.getElementById('modalDownloadLink').href = dataUrl;
-            animateModalOpen('downloadModal');
-            
-            // Auto trigger for desktop
-            const link = document.createElement('a');
-            link.download = `Nanaphan_Watermark_${Date.now()}.png`;
-            link.href = dataUrl;
-            link.click();
-        } catch (e) {
-            window.showToast("เกิดข้อผิดพลาด! รูปแบบภาพอาจไม่รองรับ");
-        }
+        if (!currentImage) return;
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = 'nanaphan-watermark.png';
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.showToast('ดาวน์โหลดรูปภาพสำเร็จ!');
     };
-    window.closeDownloadModal = function() { animateModalClose('downloadModal'); };
-    
-    // Barcode Actions
-    window.openBarcodeModal = function(name, barcode) {
-        document.getElementById('barcodeModalName').innerText = name;
-        document.getElementById('barcodeModalName').dataset.barcode = barcode;
-        JsBarcode("#largeBarcode", barcode || '885000000000', { format: "CODE128", lineColor: "#1e293b", width: 2, height: 80, displayValue: true, fontSize: 16, fontOptions: "bold", font: "Kanit" });
-        animateModalOpen('barcodeModal');
-    }
-    window.closeBarcodeModal = function() { animateModalClose('barcodeModal'); }
-    
-    window.copyBarcodeText = function() {
-        const bc = document.getElementById('barcodeModalName').dataset.barcode;
-        if(bc) {
-            navigator.clipboard.writeText(bc).catch(() => {
-                let ta = document.createElement("textarea"); ta.value = bc; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-            });
-            window.showToast('คัดลอก Barcode: ' + bc);
-        }
-    }
 
-    window.forceSyncCloud = function() {
-        window.showToast('ซิงค์ข้อมูลล่าสุดสำเร็จ');
-        window.renderStockList();
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
+    window.onload = function() {
         window.checkAuthSession();
-        
-        // Initialize Firebase for Realtime Sync
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            signInAnonymously(auth).then(() => {
-                console.log("Firebase Auth OK - Ready for Realtime Sync");
-                const syncIndicator = document.getElementById('syncDotIndicator');
-                if(syncIndicator) {
-                    syncIndicator.classList.remove('bg-rose-500');
-                    syncIndicator.classList.add('bg-emerald-500');
-                }
-
-                // Setup Realtime Listeners
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), (snap) => {
-                    if(!snap.empty) {
-                        categories = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                        persistLocalCache(); window.updateCategoryDropdowns(); window.renderCategoryList();
-                    }
-                });
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snap) => {
-                    if(!snap.empty) {
-                        const cloudData = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                        // Basic conflict resolution: accept cloud
-                        stockProducts = cloudData.sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
-                        persistLocalCache(); window.renderStockList();
-                    }
-                });
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'sets'), (snap) => {
-                    if(!snap.empty) {
-                        productSets = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
-                        persistLocalCache(); window.renderSetsList();
-                    }
-                });
-            }).catch(err => {
-                console.warn("Firebase Auth Failed (Preview Mode Only)", err);
-                const syncIndicator = document.getElementById('syncDotIndicator');
-                if(syncIndicator) syncIndicator.classList.replace('bg-emerald-500', 'bg-rose-500');
-            });
-        } catch (e) {
-            console.warn("Firebase Init Failed (Preview Mode Only)", e);
-        }
-    });
-
+        lucide.createIcons();
+    }
 </script>
+
 </body>
 </html>
