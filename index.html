@@ -190,14 +190,14 @@
                 </button>
             </div>
 
-            <div onclick="window.switchView('watermarkView')" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
+            <div onclick="window.openScanBarcodeModal()" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-md">
-                        <i data-lucide="stamp" class="w-5 h-5"></i>
+                        <i data-lucide="scan-line" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold text-white">ระบบใส่ลายน้ำสินค้า</h3>
-                        <p class="text-[11px] text-orange-100">ใส่ลายน้ำภาพสินค้าก่อนโพสต์ขาย</p>
+                        <h3 class="text-xs font-bold text-white">สแกนบาร์โค้ดสินค้า</h3>
+                        <p class="text-[11px] text-orange-100">กดเพื่อเปิดกล้องสแกนสินค้า</p>
                     </div>
                 </div>
                 <span class="px-3 py-1 rounded-full bg-white text-brand-600 text-xs font-bold flex items-center gap-1 shadow-sm">
@@ -673,6 +673,52 @@
             <button onclick="window.copyBarcodeText()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all flex justify-center items-center gap-2">
                 <i data-lucide="copy" class="w-4 h-4"></i> คัดลอก
             </button>
+        </div>
+    </div>
+</div>
+
+<div id="scanBarcodeModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+    <div class="bg-white rounded-3xl p-5 shadow-2xl transform scale-95 transition-transform duration-300 w-full max-w-sm">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="scan-line" class="w-4 h-4 text-brand-500"></i> สแกนบาร์โค้ด
+            </h3>
+            <button type="button" onclick="window.closeScanBarcodeModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 mb-3">
+            <video id="scanVideoPreview" autoplay playsinline muted class="w-full h-44 object-cover hidden"></video>
+            <div id="scanFallbackBox" class="w-full h-44 flex items-center justify-center text-center p-4 text-[11px] text-slate-500">
+                เปิดกล้องเพื่อสแกนบาร์โค้ดหรือกรอกด้านล่าง
+            </div>
+        </div>
+
+        <form onsubmit="window.handleBarcodeScanSubmit(event)">
+            <label class="block text-[11px] font-bold text-slate-700 mb-2">ใส่หรือสแกนบาร์โค้ด</label>
+            <input id="scanBarcodeInput" type="text" autocomplete="off" autofocus placeholder="เช่น 885... หรือ 880..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <div class="mt-4 flex gap-2">
+                <button type="button" onclick="window.closeScanBarcodeModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ยกเลิก</button>
+                <button type="submit" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">ค้นหา</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="scanResultModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[75] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+    <div class="bg-white rounded-3xl p-5 shadow-2xl transform scale-95 transition-transform duration-300 w-full max-w-sm">
+        <div class="text-center">
+            <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto text-emerald-500 mb-3">
+                <i data-lucide="check-circle-2" class="w-7 h-7"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-800">พบสินค้า</h3>
+            <p id="scanResultName" class="mt-2 text-base font-bold text-slate-800">ชื่อสินค้า</p>
+            <p id="scanResultMeta" class="mt-1 text-[11px] text-slate-500">SKU • ราคา</p>
+        </div>
+        <div class="mt-4 flex gap-2">
+            <button type="button" onclick="window.closeScanResultModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ปิด</button>
+            <button type="button" onclick="window.addScannedProductToCurrentList()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">เพิ่มลงรายการ</button>
         </div>
     </div>
 </div>
@@ -1514,6 +1560,173 @@
             window.showToast('คัดลอก Barcode: ' + bc);
         }
     }
+
+    window.currentScanItems = [];
+    window.pendingScanResult = null;
+    window.scanStream = null;
+
+    async function startCameraScanPreview() {
+        const video = document.getElementById('scanVideoPreview');
+        const fallback = document.getElementById('scanFallbackBox');
+        if (!video || !fallback) return;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            fallback.classList.remove('hidden');
+            video.classList.add('hidden');
+            return;
+        }
+
+        try {
+            window.scanStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+            video.srcObject = window.scanStream;
+            video.classList.remove('hidden');
+            fallback.classList.add('hidden');
+            video.play().catch(() => {});
+        } catch (err) {
+            fallback.classList.remove('hidden');
+            video.classList.add('hidden');
+        }
+    }
+
+    function stopCameraScanPreview() {
+        const video = document.getElementById('scanVideoPreview');
+        if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+        if (window.scanStream) {
+            window.scanStream.getTracks().forEach(track => track.stop());
+            window.scanStream = null;
+        }
+    }
+
+    function findBarcodeInProducts(code) {
+        const normalized = String(code || '').trim();
+        if (!normalized) return null;
+
+        for (const item of stockProducts) {
+            if ((item.barcode || '').trim() === normalized) {
+                return { product: item, variant: null, type: 'product' };
+            }
+
+            if (Array.isArray(item.variants)) {
+                const variant = item.variants.find(v => (v.barcode || '').trim() === normalized);
+                if (variant) {
+                    return { product: item, variant, type: 'variant' };
+                }
+            }
+        }
+
+        return null;
+    }
+
+    window.openScanBarcodeModal = function() {
+        const input = document.getElementById('scanBarcodeInput');
+        if (input) {
+            input.value = '';
+            setTimeout(() => input.focus(), 50);
+        }
+
+        const modal = document.getElementById('scanBarcodeModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.classList.remove('opacity-0'));
+        }
+
+        startCameraScanPreview();
+    };
+
+    window.closeScanBarcodeModal = function() {
+        const modal = document.getElementById('scanBarcodeModal');
+        if (modal) {
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        stopCameraScanPreview();
+    };
+
+    window.openScanResultModal = function(payload) {
+        window.pendingScanResult = payload;
+        const resultName = document.getElementById('scanResultName');
+        const resultMeta = document.getElementById('scanResultMeta');
+        if (resultName) resultName.innerText = payload.name;
+        if (resultMeta) resultMeta.innerText = `${payload.sku || 'SKU'} • ฿${Number(payload.price || 0).toLocaleString()} / ${payload.unit || 'ชิ้น'}`;
+
+        const modal = document.getElementById('scanResultModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.classList.remove('opacity-0'));
+        }
+        window.closeScanBarcodeModal();
+    };
+
+    window.closeScanResultModal = function() {
+        const modal = document.getElementById('scanResultModal');
+        if (modal) {
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        window.pendingScanResult = null;
+    };
+
+    window.addScannedProductToCurrentList = function() {
+        const payload = window.pendingScanResult;
+        if (!payload) return;
+
+        const existingIndex = window.currentScanItems.findIndex(item => item.id === payload.id && item.variantId === (payload.variantId || null));
+        if (existingIndex >= 0) {
+            window.currentScanItems[existingIndex].qty += 1;
+        } else {
+            window.currentScanItems.push({
+                id: payload.id,
+                variantId: payload.variantId || null,
+                name: payload.name,
+                sku: payload.sku || '',
+                price: Number(payload.price || 0),
+                unit: payload.unit || 'ชิ้น',
+                qty: 1
+            });
+        }
+
+        window.closeScanResultModal();
+        window.showToast('เพิ่มลงรายการสแกนแล้ว');
+    };
+
+    window.handleBarcodeScanSubmit = function(event) {
+        event.preventDefault();
+        const input = document.getElementById('scanBarcodeInput');
+        const code = (input ? input.value : '').trim();
+
+        if (!code) {
+            alert('กรุณาใส่หรือสแกนบาร์โค้ดก่อนค้นหา');
+            return;
+        }
+
+        const found = findBarcodeInProducts(code);
+        if (!found) {
+            alert('ไม่พบบาร์โค้ดนี้ในระบบ หรือยังไม่มี QR / Barcode ในคลังสินค้า');
+            return;
+        }
+
+        const product = found.product;
+        const variant = found.variant;
+        const name = variant ? (variant.fullName || product.name) : product.name;
+        const price = variant ? Number(variant.price || 0) : Number(product.price || 0);
+        const sku = product.sku || 'SKU';
+        const unit = variant ? (variant.unit || product.unit || 'ชิ้น') : (product.unit || 'ชิ้น');
+
+        window.openScanResultModal({
+            id: product.id,
+            variantId: variant ? variant.id : null,
+            name,
+            sku,
+            price,
+            unit
+        });
+    };
 
     window.filterStockList = function() { window.renderStockList(); };
     window.expandedProductIds = new Set();
