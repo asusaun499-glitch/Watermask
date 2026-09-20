@@ -206,6 +206,53 @@
             </div>
         </div>
 
+        <div id="receiptCard" class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3 hidden">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center">
+                        <i data-lucide="receipt" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-[11px] font-bold text-slate-800">ใบเสร็จรับเงิน</h3>
+                        <p class="text-[9px] text-slate-500">MiniMart สาขาหลัก</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.openScanBarcodeModal()" class="px-2.5 py-1.5 rounded-xl bg-brand-50 text-brand-600 text-[10px] font-bold active:scale-95 transition-all">
+                    + เพิ่ม
+                </button>
+            </div>
+
+            <div id="receiptItemsList" class="space-y-2.5"></div>
+
+            <div class="pt-2 border-t border-slate-100 space-y-2 text-[11px] text-slate-700">
+                <div class="flex items-center justify-between">
+                    <span>ยอดรวมสินค้า</span>
+                    <span id="receiptSubtotal" class="font-bold text-slate-800">0.00 ฿</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span>ส่วนลด 5%</span>
+                    <span id="receiptDiscount5" class="text-emerald-600 font-bold">-0.00 ฿</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span>ภาษีมูลค่าเพิ่ม 7%</span>
+                    <span id="receiptTax7" class="text-emerald-600 font-bold">+0.00 ฿</span>
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 text-sm font-black text-slate-900">
+                    <span>ยอดสุทธิ</span>
+                    <span id="receiptTotal" class="text-brand-600">0.00 ฿</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" onclick="window.clearReceiptItems()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">
+                    รีเซ็ต
+                </button>
+                <button type="button" onclick="window.printReceiptAndReduceStock()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">
+                    พิมพ์
+                </button>
+            </div>
+        </div>
+
         <div class="grid grid-cols-12 gap-3">
             <div onclick="window.switchView('stockView'); window.renderStockList();" class="col-span-8 glass-card rounded-3xl p-4 flex items-center gap-3 shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
                 <div class="w-10 h-10 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center shrink-0">
@@ -1565,6 +1612,109 @@
     window.pendingScanResult = null;
     window.scanStream = null;
 
+    function calculateReceiptTotals() {
+        const subtotal = window.currentScanItems.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.qty || 0)), 0);
+        const discount5 = subtotal * 0.05;
+        const tax7 = (subtotal - discount5) * 0.07;
+        const total = subtotal - discount5 + tax7;
+        return { subtotal, discount5, tax7, total };
+    }
+
+    function renderReceiptList() {
+        const container = document.getElementById('receiptItemsList');
+        const card = document.getElementById('receiptCard');
+        const subtotalEl = document.getElementById('receiptSubtotal');
+        const discount5El = document.getElementById('receiptDiscount5');
+        const tax7El = document.getElementById('receiptTax7');
+        const totalEl = document.getElementById('receiptTotal');
+
+        if (!container || !card || !subtotalEl || !discount5El || !tax7El || !totalEl) return;
+
+        if (!window.currentScanItems.length) {
+            card.classList.add('hidden');
+            container.innerHTML = '';
+            subtotalEl.innerText = '0.00 ฿';
+            discount5El.innerText = '-0.00 ฿';
+            tax7El.innerText = '+0.00 ฿';
+            totalEl.innerText = '0.00 ฿';
+            return;
+        }
+
+        card.classList.remove('hidden');
+        const totals = calculateReceiptTotals();
+        subtotalEl.innerText = `${totals.subtotal.toFixed(2)} ฿`;
+        discount5El.innerText = `-${totals.discount5.toFixed(2)} ฿`;
+        tax7El.innerText = `+${totals.tax7.toFixed(2)} ฿`;
+        totalEl.innerText = `${totals.total.toFixed(2)} ฿`;
+
+        container.innerHTML = window.currentScanItems.map((item, index) => `
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[9px] font-bold text-slate-500">#${index + 1}</span>
+                            <span class="text-[11px] font-bold text-slate-800 truncate">${item.name}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">${item.price.toFixed(2)} ฿ / ${item.unit || 'ชิ้น'}</div>
+                    </div>
+                    <div class="text-[11px] font-bold text-brand-600">${(Number(item.price || 0) * Number(item.qty || 0)).toFixed(2)} ฿</div>
+                </div>
+                <div class="mt-2 flex items-center justify-between gap-2">
+                    <button type="button" onclick="window.adjustReceiptQty('${item.id}', '${item.variantId || ''}', -1)" class="w-7 h-7 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold active:scale-95 transition-all">-</button>
+                    <span class="min-w-8 text-center text-[11px] font-bold text-slate-800">${item.qty}</span>
+                    <button type="button" onclick="window.adjustReceiptQty('${item.id}', '${item.variantId || ''}', 1)" class="w-7 h-7 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold active:scale-95 transition-all">+</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.adjustReceiptQty = function(productId, variantId, delta) {
+        const index = window.currentScanItems.findIndex(item => item.id === productId && (item.variantId || '') === (variantId || ''));
+        if (index < 0) return;
+
+        const nextQty = Number(window.currentScanItems[index].qty || 0) + Number(delta);
+        if (nextQty <= 0) {
+            window.currentScanItems.splice(index, 1);
+        } else {
+            window.currentScanItems[index].qty = nextQty;
+        }
+
+        renderReceiptList();
+    };
+
+    window.clearReceiptItems = function() {
+        window.currentScanItems = [];
+        renderReceiptList();
+    };
+
+    window.printReceiptAndReduceStock = function() {
+        if (!window.currentScanItems.length) {
+            window.showToast('ไม่มีรายการในใบเสร็จ');
+            return;
+        }
+
+        for (const item of window.currentScanItems) {
+            const product = stockProducts.find(p => p.id === item.id);
+            if (!product) continue;
+
+            if (product.type === 'variable') {
+                const targetVariant = (product.variants || []).find(v => v.id === item.variantId);
+                if (targetVariant) {
+                    targetVariant.stock = Math.max(0, Number(targetVariant.stock || 0) - Number(item.qty || 0));
+                }
+                product.qty = (product.variants || []).reduce((sum, v) => sum + (Number(v.stock || 0)), 0);
+            } else {
+                product.qty = Math.max(0, Number(product.qty || 0) - Number(item.qty || 0));
+            }
+        }
+
+        persistLocalCache();
+        window.renderStockList();
+        window.currentScanItems = [];
+        renderReceiptList();
+        window.showToast('พิมพ์ใบเสร็จและลดสต็อกเรียบร้อย');
+    };
+
     async function startCameraScanPreview() {
         const video = document.getElementById('scanVideoPreview');
         const fallback = document.getElementById('scanFallbackBox');
@@ -1691,6 +1841,7 @@
             });
         }
 
+        renderReceiptList();
         window.closeScanResultModal();
         window.showToast('เพิ่มลงรายการสแกนแล้ว');
     };
