@@ -1720,6 +1720,11 @@
         const fallback = document.getElementById('scanFallbackBox');
         if (!video || !fallback) return;
 
+        if (window.scanDetectionTimer) {
+            clearTimeout(window.scanDetectionTimer);
+            window.scanDetectionTimer = null;
+        }
+
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             fallback.classList.remove('hidden');
             video.classList.add('hidden');
@@ -1735,6 +1740,37 @@
             video.classList.remove('hidden');
             fallback.classList.add('hidden');
             video.play().catch(() => {});
+
+            const runAutoBarcodeCheck = async () => {
+                const modal = document.getElementById('scanBarcodeModal');
+                if (!modal || modal.classList.contains('hidden')) {
+                    return;
+                }
+
+                try {
+                    if ('BarcodeDetector' in window && video.readyState >= 2) {
+                        const detector = new BarcodeDetector({
+                            formats: ['code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code']
+                        });
+                        const codes = await detector.detect(video);
+                        if (codes && codes.length) {
+                            const detectedCode = (codes[0].rawValue || '').trim();
+                            if (detectedCode) {
+                                const input = document.getElementById('scanBarcodeInput');
+                                if (input) input.value = detectedCode;
+                                const resolved = window.resolveBarcodeToProduct(detectedCode, true);
+                                if (resolved) return;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    // Ignore camera detection errors and continue looping.
+                }
+
+                window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 700);
+            };
+
+            window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 700);
         } catch (err) {
             fallback.classList.remove('hidden');
             video.classList.add('hidden');
@@ -1743,6 +1779,10 @@
 
     function stopCameraScanPreview() {
         const video = document.getElementById('scanVideoPreview');
+        if (window.scanDetectionTimer) {
+            clearTimeout(window.scanDetectionTimer);
+            window.scanDetectionTimer = null;
+        }
         if (video && video.srcObject) {
             video.srcObject.getTracks().forEach(track => track.stop());
             video.srcObject = null;
@@ -1752,6 +1792,42 @@
             window.scanStream = null;
         }
     }
+
+    window.resolveBarcodeToProduct = function(code, silent = false) {
+        const normalized = String(code || '').trim();
+        if (!normalized) {
+            if (!silent) alert('กรุณาใส่หรือสแกนบาร์โค้ดก่อนค้นหา');
+            return false;
+        }
+
+        const found = findBarcodeInProducts(normalized);
+        if (!found) {
+            if (!silent) {
+                alert('ไม่พบบาร์โค้ดนี้ในระบบ หรือยังไม่มี QR / Barcode ในคลังสินค้า');
+            } else {
+                const input = document.getElementById('scanBarcodeInput');
+                if (input) input.value = normalized;
+            }
+            return false;
+        }
+
+        const product = found.product;
+        const variant = found.variant;
+        const name = variant ? (variant.fullName || product.name) : product.name;
+        const price = variant ? Number(variant.price || 0) : Number(product.price || 0);
+        const sku = product.sku || 'SKU';
+        const unit = variant ? (variant.unit || product.unit || 'ชิ้น') : (product.unit || 'ชิ้น');
+
+        window.openScanResultModal({
+            id: product.id,
+            variantId: variant ? variant.id : null,
+            name,
+            sku,
+            price,
+            unit
+        });
+        return true;
+    };
 
     function findBarcodeInProducts(code) {
         const normalized = String(code || '').trim();
@@ -1850,33 +1926,7 @@
         event.preventDefault();
         const input = document.getElementById('scanBarcodeInput');
         const code = (input ? input.value : '').trim();
-
-        if (!code) {
-            alert('กรุณาใส่หรือสแกนบาร์โค้ดก่อนค้นหา');
-            return;
-        }
-
-        const found = findBarcodeInProducts(code);
-        if (!found) {
-            alert('ไม่พบบาร์โค้ดนี้ในระบบ หรือยังไม่มี QR / Barcode ในคลังสินค้า');
-            return;
-        }
-
-        const product = found.product;
-        const variant = found.variant;
-        const name = variant ? (variant.fullName || product.name) : product.name;
-        const price = variant ? Number(variant.price || 0) : Number(product.price || 0);
-        const sku = product.sku || 'SKU';
-        const unit = variant ? (variant.unit || product.unit || 'ชิ้น') : (product.unit || 'ชิ้น');
-
-        window.openScanResultModal({
-            id: product.id,
-            variantId: variant ? variant.id : null,
-            name,
-            sku,
-            price,
-            unit
-        });
+        window.resolveBarcodeToProduct(code, false);
     };
 
     window.filterStockList = function() { window.renderStockList(); };
