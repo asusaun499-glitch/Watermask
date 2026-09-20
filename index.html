@@ -1726,6 +1726,7 @@
         }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            fallback.innerText = 'อุปกรณ์นี้ไม่รองรับกล้องสแกนบาร์โค้ด กรุณาใส่บาร์โค้ดด้วยมือ';
             fallback.classList.remove('hidden');
             video.classList.add('hidden');
             return;
@@ -1764,14 +1765,15 @@
                         }
                     }
                 } catch (err) {
-                    // Ignore camera detection errors and continue looping.
+                    // Ignore detection errors and keep retrying; mobile browsers often need a small delay before the first read.
                 }
 
                 window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 700);
             };
 
-            window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 700);
+            window.scanDetectionTimer = setTimeout(runAutoBarcodeCheck, 800);
         } catch (err) {
+            fallback.innerText = 'ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์กล้อง หรือกรอกบาร์โค้ดด้วยมือ';
             fallback.classList.remove('hidden');
             video.classList.add('hidden');
         }
@@ -1817,6 +1819,11 @@
         const price = variant ? Number(variant.price || 0) : Number(product.price || 0);
         const sku = product.sku || 'SKU';
         const unit = variant ? (variant.unit || product.unit || 'ชิ้น') : (product.unit || 'ชิ้น');
+
+        if (navigator.vibrate) {
+            navigator.vibrate([90, 60, 120]);
+        }
+        window.showToast('สแกนบาร์โค้ดสำเร็จ');
 
         window.openScanResultModal({
             id: product.id,
