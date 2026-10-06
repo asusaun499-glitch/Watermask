@@ -652,20 +652,6 @@
                 </div>
             </section>
         </div>
-
-        <!-- Recent Sold Items / Bills -->
-        <section class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 mt-5">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-                <div>
-                    <h3 class="font-black text-slate-800 text-xl">ขายออกแล้ว</h3>
-                    <p class="text-sm text-slate-400">รายการสินค้าที่ขายออกจากหน้าร้านแบบ Realtime</p>
-                </div>
-                <span id="posSalesHistoryCount" class="text-sm bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full font-bold">0 บิล</span>
-            </div>
-            <div id="posSalesHistoryList" class="space-y-3 max-h-[420px] overflow-y-auto no-scrollbar">
-                <div class="py-10 text-center text-slate-400 text-base">ยังไม่มีรายการขาย</div>
-            </div>
-        </section>
     </section>
 
 </div>
@@ -1183,7 +1169,6 @@
         realtimeUnsubs.push(onSnapshot(query(collection(db, 'nanaphan_sales'), orderBy('createdAt', 'desc'), limit(500)), snap => {
             realtimeSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderSummaryDashboard();
-            window.renderPOSSalesHistory();
         }, err => setSyncState(false, err.message)));
 
         realtimeUnsubs.push(onSnapshot(query(collection(db, 'nanaphan_cash_transactions'), orderBy('createdAt', 'desc'), limit(500)), snap => {
@@ -1595,7 +1580,6 @@
         if (badge) badge.innerText = role === 'ADMIN' ? 'ADMIN' : 'USER';
         if (label) label.innerText = role === 'ADMIN' ? 'กลับหลังบ้าน' : 'ออกจากระบบ';
         syncPOSProductsFromStock();
-        window.renderPOSSalesHistory();
         setTimeout(() => window.focusPOSBarcode(), 60);
         lucide.createIcons();
     };
@@ -1703,39 +1687,6 @@
             return `<button type="button" class="pos-key text-left bg-white border border-slate-200 rounded-2xl p-3 hover:border-orange-200" onclick="window.addPOSScanned('${code}')"><div class="text-[10px] text-slate-400 font-mono">${posEsc(p.sku || '')}</div><div class="text-xs font-bold text-slate-800 mt-1">${posEsc(p.name || '')}</div><div class="text-[10px] text-brand-600 font-bold mt-1">฿${posMoney(p.price)}</div></button>`;
         }).join('');
         lucide.createIcons();
-    };
-
-    window.renderPOSSalesHistory = function() {
-        const list = document.getElementById('posSalesHistoryList');
-        const badge = document.getElementById('posSalesHistoryCount');
-        if (!list) return;
-        const sales = Array.isArray(realtimeSales) ? realtimeSales.slice(0, 50) : [];
-        if (badge) badge.innerText = sales.length.toLocaleString() + ' บิล';
-        if (!sales.length) {
-            list.innerHTML = '<div class="py-10 text-center text-slate-400 text-base">ยังไม่มีรายการขาย</div>';
-            return;
-        }
-        list.innerHTML = sales.map((sale, index) => {
-            const date = new Date(Number(sale.createdAt || Date.now()));
-            const when = date.toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
-            const items = Array.isArray(sale.items) ? sale.items : [];
-            const itemText = items.length
-                ? items.map(it => `${posEsc(it.name)} ×${Number(it.qty || 0)}`).join(' · ')
-                : 'ไม่ระบุรายการ';
-            return `<div class="rounded-3xl bg-slate-50 border border-slate-200 p-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                        <div class="text-base font-black text-slate-800">${posEsc(sale.billNo || 'บิล #' + (index + 1))}</div>
-                        <div class="text-sm text-slate-400 mt-1">${when} · ${Number(items.reduce((n, it) => n + Number(it.qty || 0), 0))} ชิ้น · ${posEsc(sale.operatorRole || 'USER')}</div>
-                        <div class="text-sm text-slate-700 font-semibold mt-2 leading-6">${itemText}</div>
-                    </div>
-                    <div class="text-right shrink-0">
-                        <div class="text-2xl font-black text-brand-600">฿${posMoney(sale.total)}</div>
-                        <div class="text-sm text-emerald-600 font-bold mt-1">เงินสด</div>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
     };
 
     window.renderPOSCart = function() {
