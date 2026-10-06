@@ -678,8 +678,10 @@
                 </div>
                 <div class="space-y-1">
                     <label class="font-bold text-slate-700">บาร์โค้ด (ถ้ามี)</label>
-                    <input type="text" id="prodBarcode" placeholder="สร้างอัตโนมัติ" 
+                    <input type="text" id="prodBarcode" autocomplete="off" inputmode="numeric" placeholder="ยิงบาร์โค้ดตรงนี้..."
+                        oninput="window.lookupExistingProductByBarcode(this.value)"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    <div id="prodBarcodeLookupStatus" class="min-h-[16px] text-[9px] mt-1 font-semibold"></div>
                 </div>
             </div>
 
@@ -2543,10 +2545,120 @@
         });
     });
 
+    // ==========================================
+    // EXISTING BARCODE AUTO-FILL
+    // ==========================================
+    let lastBarcodeLookupCode = '';
+
+    window.lookupExistingProductByBarcode = function(rawCode) {
+        const code = String(rawCode || '').trim();
+        const status = document.getElementById('prodBarcodeLookupStatus');
+
+        if (status) {
+            status.textContent = '';
+            status.className = 'min-h-[16px] text-[9px] mt-1 font-semibold';
+        }
+
+        if (!code) {
+            lastBarcodeLookupCode = '';
+            return;
+        }
+
+        // รอให้เครื่องสแกนส่งข้อมูลครบก่อนค้นหา
+        if (code.length < 6) return;
+
+        const normalized = code.toLowerCase();
+
+        const match = stockProducts.find(product => {
+            const productBarcode = String(product.barcode || '').trim().toLowerCase();
+            if (productBarcode === normalized) return true;
+
+            return Array.isArray(product.variants) && product.variants.some(variant =>
+                String(variant.barcode || '').trim().toLowerCase() === normalized
+            );
+        });
+
+        if (!match) {
+            if (status) {
+                status.textContent = 'ไม่พบสินค้านี้ในสต็อก — สามารถกรอกสินค้าใหม่ได้';
+                status.classList.add('text-slate-400');
+            }
+            return;
+        }
+
+        // ถ้าหมายเลขนี้เคยค้นหาไปแล้ว ไม่ต้องเติม/แจ้งซ้ำทุก input event
+        if (lastBarcodeLookupCode === normalized) return;
+        lastBarcodeLookupCode = normalized;
+
+        const variant = Array.isArray(match.variants)
+            ? match.variants.find(v => String(v.barcode || '').trim().toLowerCase() === normalized)
+            : null;
+
+        document.getElementById('editProductId').value = match.id;
+        document.getElementById('prodSku').value = match.sku || '';
+        document.getElementById('prodBarcode').value = code;
+        document.getElementById('prodName').value = match.name || '';
+        document.getElementById('prodCategory').value = match.categoryId || (categories[0]?.id || '');
+
+        if (variant) {
+            window.productTypeState = 'variable';
+            window.productVariantDraft = JSON.parse(JSON.stringify(match.variants || []));
+            window.updateProductTypeUI();
+            window.renderProductVariantDraft();
+
+            document.getElementById('prodUnit').value = variant.unit || match.unit || '';
+            document.getElementById('prodQty').value = Number(variant.stock || 0);
+            document.getElementById('prodPrice').value = Number(variant.price || 0);
+        } else {
+            window.productTypeState = 'simple';
+            window.productVariantDraft = [];
+            window.updateProductTypeUI();
+            window.renderProductVariantDraft();
+
+            document.getElementById('prodUnit').value = match.unit || '';
+            document.getElementById('prodQty').value = Number(match.qty || 0);
+            document.getElementById('prodPrice').value = Number(match.price || 0);
+        }
+
+        const title = document.getElementById('productModalTitle');
+        if (title) {
+            title.innerHTML = `<i data-lucide="scan-search" class="w-5 h-5 text-brand-500"></i> พบสินค้าเดิม — แก้ไขข้อมูล`;
+        }
+
+        if (status) {
+            status.textContent = variant
+                ? `พบสินค้าเดิม: ${match.name} / ตัวเลือก: ${variant.optionName || '-'} — เติมข้อมูลให้อัตโนมัติแล้ว`
+                : `พบสินค้าเดิม: ${match.name} — เติมข้อมูลให้อัตโนมัติแล้ว`;
+            status.classList.add('text-emerald-600');
+        }
+
+        lucide.createIcons();
+        window.showToast('พบสินค้าเดิมและเติมข้อมูลอัตโนมัติแล้ว');
+    };
+
+    window.handleProductBarcodeEnter = function(e) {
+        if (e.key !== 'Enter') return;
+
+        e.preventDefault();
+        const input = document.getElementById('prodBarcode');
+        if (input) {
+            window.lookupExistingProductByBarcode(input.value);
+            input.select();
+        }
+    };
+
+    const productBarcodeInput = document.getElementById('prodBarcode');
+    if (productBarcodeInput) {
+        productBarcodeInput.addEventListener('keydown', window.handleProductBarcodeEnter);
+    }
+
     window.openAddProductModal = function(id = null) {
         window.updateCategoryDropdowns();
         document.getElementById('productForm').reset();
         const title = document.getElementById('productModalTitle');
+        const lookupStatus = document.getElementById('prodBarcodeLookupStatus');
+        lastBarcodeLookupCode = '';
+        if (lookupStatus) lookupStatus.textContent = '';
         window.productTypeState = 'simple';
         window.productVariantDraft = [];
         window.updateProductTypeUI();
@@ -2576,6 +2688,12 @@
         }
         animateModalOpen('productModal');
         lucide.createIcons();
+
+        // เปิดหน้าสร้างสินค้าใหม่แล้ว พร้อมรอเครื่องยิงบาร์โค้ดทันที
+        setTimeout(() => {
+            const barcodeInput = document.getElementById('prodBarcode');
+            if (barcodeInput && !id) barcodeInput.focus();
+        }, 180);
     };
 
     window.closeProductModal = function() { animateModalClose('productModal'); };
