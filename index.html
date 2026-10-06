@@ -103,9 +103,19 @@
     .no-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .no-spinners { -moz-appearance: textfield; }
 
-    .pos-key { transition: transform .08s ease, background .12s ease; }
-    .pos-key:active { transform: scale(.94); }
-    #posBarcodeInput { box-shadow: 0 0 0 3px rgba(249,115,22,.10); }
+    .pos-key { transition: transform .08s ease, background .12s ease; min-height: 72px; font-size: 1.05rem; }
+    .pos-key:active { transform: scale(.96); }
+    #posView .pos-num-key { min-height: 92px; font-size: 1.75rem; font-weight: 900; }
+    #posView .pos-action-key { min-height: 82px; font-size: 1.15rem; }
+    #posView .pos-card-title { font-size: 1.25rem; }
+    #posView .pos-subtitle { font-size: .9rem; }
+    #posBarcodeInput { box-shadow: 0 0 0 4px rgba(249,115,22,.10); font-size: 1.35rem; min-height: 82px; caret-color: transparent; }
+    #posBarcodeInput[readonly] { cursor: default; user-select: none; }
+    @media (min-width: 1280px) {
+        #posView { max-width: 1600px; }
+        #posView .pos-key { min-height: 86px; }
+        #posView .pos-num-key { min-height: 100px; font-size: 2rem; }
+    }
 </style>
 </head>
 <body class="h-full flex flex-col">
@@ -588,19 +598,18 @@
                         </div>
                         <span class="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-bold">● Scanner Ready</span>
                     </div>
-                    <input id="posBarcodeInput" type="text" inputmode="none" autocomplete="off" autofocus
+                    <input id="posBarcodeInput" type="text" inputmode="none" autocomplete="off" readonly tabindex="-1"
                         class="w-full bg-white border-2 border-brand-300 rounded-2xl px-4 py-4 text-lg font-mono font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-brand-500"
-                        placeholder="ยิงบาร์โค้ดได้เลย...">
+                        placeholder="พร้อมรับการสแกนบาร์โค้ด...">
                     <div id="posScanMessage" class="mt-2 min-h-4 text-[10px] text-slate-400"></div>
                 </div>
 
                 <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.focusPOSBarcode()"><i data-lucide="scan-line" class="w-5 h-5 mx-auto mb-1 text-brand-500"></i>สแกน</button>
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(-1)"><i data-lucide="minus" class="w-5 h-5 mx-auto mb-1"></i>ลด</button>
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(1)"><i data-lucide="plus" class="w-5 h-5 mx-auto mb-1"></i>เพิ่ม</button>
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.clearPOSCart()"><i data-lucide="trash-2" class="w-5 h-5 mx-auto mb-1 text-rose-500"></i>ล้าง</button>
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.openPOSCash('in')"><i data-lucide="arrow-down-to-line" class="w-5 h-5 mx-auto mb-1 text-blue-600"></i>รับเงิน</button>
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.openPOSCash('out')"><i data-lucide="arrow-up-from-line" class="w-5 h-5 mx-auto mb-1 text-rose-500"></i>ถอนเงิน</button>
+                    <button type="button" class="pos-key pos-action-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.focusPOSBarcode()"><i data-lucide="scan-line" class="w-5 h-5 mx-auto mb-1 text-brand-500"></i>สแกน</button>
+                    <button type="button" class="pos-key pos-action-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(-1)"><i data-lucide="minus" class="w-5 h-5 mx-auto mb-1"></i>ลด</button>
+                    <button type="button" class="pos-key pos-action-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(1)"><i data-lucide="plus" class="w-5 h-5 mx-auto mb-1"></i>เพิ่ม</button>
+                    <button type="button" class="pos-key pos-action-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.clearPOSCart()"><i data-lucide="trash-2" class="w-5 h-5 mx-auto mb-1 text-rose-500"></i>ล้าง</button>
+
                 </div>
 
                 <div class="glass-card rounded-3xl p-4 shadow-sm border border-slate-200">
@@ -622,7 +631,6 @@
                 <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
                     <div class="flex justify-between"><span class="text-slate-500">ยอดสินค้า</span><b id="posSubtotal">฿0.00</b></div>
                     <div class="flex items-center justify-between gap-2"><span class="text-slate-500">ส่วนลด</span><div class="flex items-center gap-1.5"><select id="posDiscountType" onchange="window.renderPOSCart()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 text-[10px]"><option value="percent">%</option><option value="amount">บาท</option></select><input id="posDiscountValue" oninput="window.renderPOSCart()" type="number" min="0" value="0" class="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 text-right text-[10px]"></div></div>
-                    <div class="flex justify-between"><span class="text-slate-500">ภาษี 7%</span><b id="posTax">฿0.00</b></div>
                     <div class="flex justify-between pt-2 border-t border-slate-100 text-base font-black"><span>ยอดสุทธิ</span><span id="posTotal" class="text-brand-600">฿0.00</span></div>
                 </div>
 
@@ -632,10 +640,10 @@
                 </div>
 
                 <div class="grid grid-cols-3 gap-2 mt-3">
-                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('7')">7</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('8')">8</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('9')">9</button>
-                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('4')">4</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('5')">5</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('6')">6</button>
-                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('1')">1</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('2')">2</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('3')">3</button>
-                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('00')">00</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('0')">0</button><button type="button" class="pos-key bg-rose-50 text-rose-600 rounded-2xl py-3 font-bold" onclick="window.clearPOSNumpad()">C</button>
+                    <button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('7')">7</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('8')">8</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('9')">9</button>
+                    <button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('4')">4</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('5')">5</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('6')">6</button>
+                    <button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('1')">1</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('2')">2</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('3')">3</button>
+                    <button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('00')">00</button><button type="button" class="pos-key pos-num-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('0')">0</button><button type="button" class="pos-key pos-num-key bg-rose-50 text-rose-600 rounded-2xl py-3 font-bold" onclick="window.clearPOSNumpad()">C</button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 mt-3">
@@ -644,6 +652,20 @@
                 </div>
             </section>
         </div>
+
+        <!-- Recent Sold Items / Bills -->
+        <section class="glass-card rounded-3xl p-5 shadow-lg border border-slate-200 mt-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div>
+                    <h3 class="font-black text-slate-800 text-xl">ขายออกแล้ว</h3>
+                    <p class="text-sm text-slate-400">รายการสินค้าที่ขายออกจากหน้าร้านแบบ Realtime</p>
+                </div>
+                <span id="posSalesHistoryCount" class="text-sm bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full font-bold">0 บิล</span>
+            </div>
+            <div id="posSalesHistoryList" class="space-y-3 max-h-[420px] overflow-y-auto no-scrollbar">
+                <div class="py-10 text-center text-slate-400 text-base">ยังไม่มีรายการขาย</div>
+            </div>
+        </section>
     </section>
 
 </div>
@@ -960,16 +982,35 @@
 </div>
 
 
-<!-- POS Cash Drawer Modal -->
-<div id="posCashModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[85] items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl">
-        <div class="flex items-center justify-between mb-3">
-            <h3 id="posCashTitle" class="text-sm font-bold text-slate-800">รับเงินเข้าลิ้นชัก</h3>
-            <button type="button" onclick="window.closePOSCash()" class="w-8 h-8 rounded-xl bg-slate-100 text-slate-500">×</button>
+<!-- POS Payment / Change Modal -->
+<div id="posPaymentModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[90] items-center justify-center p-5">
+    <div class="bg-white rounded-[2rem] w-full max-w-lg p-7 shadow-2xl border border-slate-200">
+        <div class="text-center">
+            <div class="mx-auto w-16 h-16 rounded-2xl bg-orange-50 text-brand-600 flex items-center justify-center mb-3">
+                <i data-lucide="banknote" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-900">เงินทอน</h3>
+            <p class="text-sm text-slate-400 mt-1">ตรวจสอบยอดก่อนปิดบิล</p>
         </div>
-        <input id="posCashAmount" type="number" min="0" step="0.01" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 font-mono text-xl font-black" placeholder="0.00">
-        <input id="posCashNote" type="text" class="w-full mt-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs" placeholder="หมายเหตุ (ถ้ามี)">
-        <button type="button" onclick="window.submitPOSCash()" class="w-full mt-3 orange-gradient-card text-white rounded-2xl py-3 font-bold">บันทึก</button>
+        <div class="mt-6 grid grid-cols-2 gap-3">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-center">
+                <div class="text-sm text-slate-400">ยอดสุทธิ</div>
+                <div id="posPayTotal" class="text-3xl font-black text-slate-900 mt-1">฿0.00</div>
+            </div>
+            <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-center">
+                <div class="text-sm text-emerald-600">รับเงิน</div>
+                <div id="posPayReceived" class="text-3xl font-black text-emerald-700 mt-1">฿0.00</div>
+            </div>
+        </div>
+        <div class="mt-4 rounded-3xl bg-brand-50 border border-orange-100 p-6 text-center">
+            <div class="text-sm font-bold text-brand-700">เงินทอนลูกค้า</div>
+            <div id="posPayChange" class="text-5xl font-black text-brand-600 mt-2">฿0.00</div>
+        </div>
+        <div id="posPayStatus" class="text-center text-sm font-bold mt-3 min-h-5"></div>
+        <div class="grid grid-cols-2 gap-3 mt-5">
+            <button type="button" onclick="window.closePOSPaymentModal()" class="pos-key bg-slate-100 rounded-2xl py-4 font-black text-lg">กลับไปแก้ไข</button>
+            <button type="button" onclick="window.confirmPOSSale()" class="pos-key orange-gradient-card text-white rounded-2xl py-4 font-black text-lg shadow-md">ยืนยันปิดบิล</button>
+        </div>
     </div>
 </div>
 
@@ -1142,6 +1183,7 @@
         realtimeUnsubs.push(onSnapshot(query(collection(db, 'nanaphan_sales'), orderBy('createdAt', 'desc'), limit(500)), snap => {
             realtimeSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderSummaryDashboard();
+            window.renderPOSSalesHistory();
         }, err => setSyncState(false, err.message)));
 
         realtimeUnsubs.push(onSnapshot(query(collection(db, 'nanaphan_cash_transactions'), orderBy('createdAt', 'desc'), limit(500)), snap => {
@@ -1273,9 +1315,10 @@
                     const date = new Date(Number(sale.createdAt || Date.now()));
                     const when = date.toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
                     const count = (sale.items || []).reduce((s, x) => s + Number(x.qty || 0), 0);
-                    return `<div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
-                        <div class="min-w-0"><div class="text-xs font-bold text-slate-800">${sale.billNo || 'บิล #' + (i + 1)}</div><div class="text-[10px] text-slate-400">${when} · ${count} ชิ้น</div></div>
-                        <div class="text-right shrink-0"><div class="font-black font-mono text-brand-600">฿${money(sale.total)}</div><div class="text-[10px] text-slate-400">${sale.paymentMethod === 'cash' ? 'เงินสด' : sale.paymentMethod}</div></div>
+                    const itemText = (sale.items || []).map(x => `${x.name || 'สินค้า'} ×${Number(x.qty || 0)}`).join(' · ');
+                    return `<div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-3">
+                        <div class="min-w-0"><div class="text-sm font-black text-slate-800">${sale.billNo || 'บิล #' + (i + 1)}</div><div class="text-[10px] text-slate-400 mt-1">${when} · ${count} ชิ้น</div><div class="text-xs font-semibold text-slate-700 mt-2 leading-5">${itemText || 'ไม่ระบุรายการ'}</div></div>
+                        <div class="text-right shrink-0"><div class="font-black font-mono text-xl text-brand-600">฿${money(sale.total)}</div><div class="text-[10px] text-slate-400 mt-1">${sale.paymentMethod === 'cash' ? 'เงินสด' : sale.paymentMethod}</div></div>
                     </div>`;
                 }).join('');
             }
@@ -1552,6 +1595,7 @@
         if (badge) badge.innerText = role === 'ADMIN' ? 'ADMIN' : 'USER';
         if (label) label.innerText = role === 'ADMIN' ? 'กลับหลังบ้าน' : 'ออกจากระบบ';
         syncPOSProductsFromStock();
+        window.renderPOSSalesHistory();
         setTimeout(() => window.focusPOSBarcode(), 60);
         lucide.createIcons();
     };
@@ -1661,6 +1705,39 @@
         lucide.createIcons();
     };
 
+    window.renderPOSSalesHistory = function() {
+        const list = document.getElementById('posSalesHistoryList');
+        const badge = document.getElementById('posSalesHistoryCount');
+        if (!list) return;
+        const sales = Array.isArray(realtimeSales) ? realtimeSales.slice(0, 50) : [];
+        if (badge) badge.innerText = sales.length.toLocaleString() + ' บิล';
+        if (!sales.length) {
+            list.innerHTML = '<div class="py-10 text-center text-slate-400 text-base">ยังไม่มีรายการขาย</div>';
+            return;
+        }
+        list.innerHTML = sales.map((sale, index) => {
+            const date = new Date(Number(sale.createdAt || Date.now()));
+            const when = date.toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+            const items = Array.isArray(sale.items) ? sale.items : [];
+            const itemText = items.length
+                ? items.map(it => `${posEsc(it.name)} ×${Number(it.qty || 0)}`).join(' · ')
+                : 'ไม่ระบุรายการ';
+            return `<div class="rounded-3xl bg-slate-50 border border-slate-200 p-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="text-base font-black text-slate-800">${posEsc(sale.billNo || 'บิล #' + (index + 1))}</div>
+                        <div class="text-sm text-slate-400 mt-1">${when} · ${Number(items.reduce((n, it) => n + Number(it.qty || 0), 0))} ชิ้น · ${posEsc(sale.operatorRole || 'USER')}</div>
+                        <div class="text-sm text-slate-700 font-semibold mt-2 leading-6">${itemText}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-2xl font-black text-brand-600">฿${posMoney(sale.total)}</div>
+                        <div class="text-sm text-emerald-600 font-bold mt-1">เงินสด</div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    };
+
     window.renderPOSCart = function() {
         const c = document.getElementById('posCartList');
         if (!c) return;
@@ -1669,13 +1746,12 @@
         const rawDiscount = Math.max(0, Number(document.getElementById('posDiscountValue')?.value || 0));
         const discount = Math.min(subtotal, type === 'percent' ? subtotal * rawDiscount / 100 : rawDiscount);
         const taxable = Math.max(0, subtotal - discount);
-        const tax = taxable * 0.07;
-        const total = taxable + tax;
+        const tax = 0;
+        const total = taxable;
         const change = Math.max(0, posReceived - total);
 
         const set = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
         set('posSubtotal', '฿' + posMoney(subtotal));
-        set('posTax', '฿' + posMoney(tax));
         set('posTotal', '฿' + posMoney(total));
         set('posReceivedDisplay', '฿' + posMoney(posReceived));
         set('posChangeDisplay', '฿' + posMoney(change));
@@ -1729,21 +1805,63 @@
         window.renderPOSCart();
     };
 
-    window.completePOSSale = async function() {
+    window.completePOSSale = function() {
         if (!posCart.length) { window.showPOSMessage('ยังไม่มีสินค้าในบิล'); return; }
         const subtotal = posCart.reduce((s, x) => s + Number(x.price || 0) * Number(x.qty || 0), 0);
         const type = document.getElementById('posDiscountType')?.value || 'percent';
         const rawDiscount = Math.max(0, Number(document.getElementById('posDiscountValue')?.value || 0));
         const discount = Math.min(subtotal, type === 'percent' ? subtotal * rawDiscount / 100 : rawDiscount);
         const taxable = Math.max(0, subtotal - discount);
-        const tax = taxable * 0.07;
-        const total = taxable + tax;
-        if (posReceived < total) { window.showPOSMessage('ยอดรับเงินยังไม่พอ'); return; }
+        const tax = 0;
+        const total = taxable;
+        const change = posReceived - total;
+
+        const set = (id, value) => { const el = document.getElementById(id); if (el) el.innerText = value; };
+        set('posPayTotal', '฿' + posMoney(total));
+        set('posPayReceived', '฿' + posMoney(posReceived));
+        set('posPayChange', '฿' + posMoney(Math.max(0, change)));
+
+        const status = document.getElementById('posPayStatus');
+        if (status) {
+            if (posReceived < total) {
+                status.innerText = 'จำนวนเงินรับยังไม่พอ';
+                status.className = 'text-center text-sm font-bold mt-3 min-h-5 text-rose-600';
+            } else {
+                status.innerText = 'พร้อมปิดบิล';
+                status.className = 'text-center text-sm font-bold mt-3 min-h-5 text-emerald-600';
+            }
+        }
+
+        const modal = document.getElementById('posPaymentModal');
+        if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        lucide.createIcons();
+    };
+
+    window.closePOSPaymentModal = function() {
+        const modal = document.getElementById('posPaymentModal');
+        if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    };
+
+    window.confirmPOSSale = async function() {
+        if (!posCart.length) return;
+        const subtotal = posCart.reduce((s, x) => s + Number(x.price || 0) * Number(x.qty || 0), 0);
+        const type = document.getElementById('posDiscountType')?.value || 'percent';
+        const rawDiscount = Math.max(0, Number(document.getElementById('posDiscountValue')?.value || 0));
+        const discount = Math.min(subtotal, type === 'percent' ? subtotal * rawDiscount / 100 : rawDiscount);
+        const taxable = Math.max(0, subtotal - discount);
+        const tax = 0;
+        const total = taxable;
+
+        if (posReceived < total) {
+            window.showPOSMessage('ยอดรับเงินยังไม่พอ');
+            return;
+        }
 
         const payment = { method: 'cash', received: posReceived, change: Math.max(0, posReceived - total), role: posRole || currentRole || 'USER' };
         const recorded = await window.recordSale(posCart, { subtotal, discount, tax, total }, payment);
         if (!recorded) return;
 
+        window.closePOSPaymentModal();
         window.showPOSMessage(`ปิดบิลสำเร็จ · เงินทอน ฿${posMoney(payment.change)}`);
         posCart = [];
         posReceived = 0;
@@ -1753,33 +1871,9 @@
         window.focusPOSBarcode();
     };
 
-    window.openPOSCash = function(type) {
-        window.__posCashMode = type;
-        const title = document.getElementById('posCashTitle');
-        if (title) title.innerText = type === 'in' ? 'รับเงินเข้าลิ้นชัก' : 'ถอนเงิน / จ่ายเงินออก';
-        const amount = document.getElementById('posCashAmount'); if (amount) amount.value = '';
-        const note = document.getElementById('posCashNote'); if (note) note.value = '';
-        const modal = document.getElementById('posCashModal');
-        if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
-        setTimeout(() => amount?.focus(), 80);
-    };
-
-    window.closePOSCash = function() {
-        const modal = document.getElementById('posCashModal');
-        if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
-    };
-
-    window.submitPOSCash = async function() {
-        const amount = Number(document.getElementById('posCashAmount')?.value || 0);
-        const note = String(document.getElementById('posCashNote')?.value || '').trim();
-        const type = window.__posCashMode || 'in';
-        if (!amount) return;
-        const ok = await window.recordCashTransaction(type, amount, note + (note ? ' · ' : '') + `ผู้ใช้งาน ${posRole || currentRole || 'USER'}`);
-        if (ok) {
-            window.showPOSMessage((type === 'in' ? 'รับเงิน' : 'ถอนเงิน') + ' บันทึกแล้ว');
-            window.closePOSCash();
-        }
-    };
+    window.openPOSCash = function() { window.showPOSMessage('ใช้แป้นตัวเลขรับเงินแทน'); };
+    window.closePOSCash = function() {};
+    window.submitPOSCash = async function() { return false; };
 
     const existingHomeKeyHandler = document._nanaphanHomeScannerHandler;
     if (!existingHomeKeyHandler) {
@@ -1797,6 +1891,36 @@
             }
         });
     }
+
+    // Monitor-only scanner capture: no typing required. Physical barcode scanners behave like keyboards.
+    let posScannerBuffer = '';
+    let posScannerTimer = null;
+    document.addEventListener('keydown', function(e) {
+        const posVisible = !document.getElementById('posView')?.classList.contains('hidden');
+        if (!posVisible) return;
+        if (e.target && e.target.closest && e.target.closest('button, select')) return;
+        if (e.key === 'Enter') {
+            const code = posScannerBuffer.trim();
+            posScannerBuffer = '';
+            if (posScannerTimer) clearTimeout(posScannerTimer);
+            posScannerTimer = null;
+            if (code.length >= 4) window.addPOSScanned(code);
+            e.preventDefault();
+            return;
+        }
+        if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            posScannerBuffer += e.key;
+            if (posScannerTimer) clearTimeout(posScannerTimer);
+            posScannerTimer = setTimeout(() => {
+                if (posScannerBuffer.length >= 6) {
+                    const code = posScannerBuffer.trim();
+                    posScannerBuffer = '';
+                    window.addPOSScanned(code);
+                }
+                posScannerTimer = null;
+            }, 120);
+        }
+    });
 
     window.renderModulesGrid = function() {
         const grid = document.getElementById('modulesGrid');
@@ -2128,8 +2252,8 @@
         const subtotal = receiptItems.reduce((s, x) => s + Number(x.price || 0) * Number(x.qty || 0), 0);
         const discount = subtotal * 0.05;
         const taxable = subtotal - discount;
-        const tax = taxable * 0.07;
-        const total = taxable + tax;
+        const tax = 0;
+        const total = taxable;
 
         if (db) {
             const recorded = await window.recordSale(receiptItems, { subtotal, discount, tax, total }, { method:'cash', received:total, change:0 });
