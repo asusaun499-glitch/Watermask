@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NanaphanHub - ระบบบริหารจัดการสต็อก (Admin Realtime)</title>
+    <title>NanaphanHub - หลังบ้าน + หน้าร้าน POS (Realtime)</title>
     
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -102,6 +102,10 @@
     .no-spinners::-webkit-outer-spin-button,
     .no-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .no-spinners { -moz-appearance: textfield; }
+
+    .pos-key { transition: transform .08s ease, background .12s ease; }
+    .pos-key:active { transform: scale(.94); }
+    #posBarcodeInput { box-shadow: 0 0 0 3px rgba(249,115,22,.10); }
 </style>
 </head>
 <body class="h-full flex flex-col">
@@ -139,26 +143,23 @@
 
             <form id="loginForm" onsubmit="window.handleLogin(event)" class="space-y-4">
                 <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-600">ชื่อผู้ใช้งาน (Username)</label>
+                    <label class="text-xs font-semibold text-slate-600">รหัสผู้ดูแลระบบ</label>
                     <div class="relative">
-                        <input type="text" id="usernameInput" required value="Admin" placeholder="Admin" 
-                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
-                        <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-600">รหัสผ่าน (Password)</label>
-                    <div class="relative">
-                        <input type="password" id="passwordInput" required value="admin" placeholder="admin" 
-                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <input type="password" id="loginCodeInput" required inputmode="numeric" autocomplete="off" value="9876" placeholder="กรอกรหัส 9876"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 pl-10 text-sm font-mono font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
                         <i data-lucide="key-round" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
                     </div>
+                    <p class="text-[10px] text-slate-400">9876 = Login Admin / จัดการหลังบ้าน</p>
                 </div>
 
                 <button type="submit" class="w-full py-3.5 rounded-2xl orange-gradient-card text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 active:scale-95 transition-all flex items-center justify-center gap-2">
                     <i data-lucide="log-in" class="w-4 h-4"></i>
-                    <span>เข้าสู่ระบบหลังบ้าน</span>
+                    <span>Login Admin</span>
+                </button>
+
+                <button type="button" onclick="window.openPOSLoginModal()" class="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-brand-500"></i>
+                    <span>เข้าใช้งานหน้าร้าน</span>
                 </button>
             </form>
         </div>
@@ -193,9 +194,9 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <a href="./NanaphanHub_POS.html" title="เปิดหน้าร้าน POS" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
+                    <button type="button" onclick="window.openPOSLoginModal()" title="เปิดหน้าร้าน POS" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
                         <i data-lucide="shopping-cart" class="w-4 h-4 text-white"></i>
-                    </a>
+                    </button>
                     <button onclick="window.handleLogout()" title="ออกจากระบบ" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
                         <i data-lucide="log-out" class="w-4 h-4 text-white"></i>
                     </button>
@@ -280,7 +281,7 @@
                 </div>
             </div>
 
-            <a href="./NanaphanHub_POS.html" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md no-underline">
+            <button type="button" onclick="window.openPOSLoginModal()" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
                 <div class="w-8 h-8 rounded-xl bg-orange-50 text-brand-500 flex items-center justify-center mb-1">
                     <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 </div>
@@ -547,6 +548,101 @@
                     <i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูป
                 </button>
             </div>
+        </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW: FRONT STORE / POS                   -->
+    <!-- ========================================== -->
+    <section id="posView" class="hidden max-w-7xl mx-auto px-4 py-4 w-full flex-grow">
+        <div class="orange-gradient-card text-white rounded-3xl p-4 sm:p-5 shadow-xl shadow-brand-500/20 mb-4">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center">
+                        <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-orange-100">NanaphanHub POS</div>
+                        <h2 class="text-lg sm:text-xl font-black">หน้าร้าน · ร้านนานาภัณฑ์ จ.ขอนแก่น</h2>
+                        <div class="text-[10px] text-orange-100 mt-1 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                            <span>Realtime Connected</span>
+                            <span id="posRoleBadge" class="px-2 py-0.5 rounded-full bg-white/15 border border-white/20 font-bold">USER</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="window.exitPOSView()" class="px-3 py-2 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold flex items-center gap-1.5">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i><span id="posExitLabel">กลับหลังบ้าน</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-[1.18fr_.82fr] gap-4 items-start">
+            <section class="space-y-4">
+                <div class="glass-card rounded-3xl p-4 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800">ยิงบาร์โค้ดสินค้า</h3>
+                            <p class="text-[10px] text-slate-400">เปิดหน้าร้านแล้วยิงได้ทันที ไม่ต้องกดปุ่ม</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-bold">● Scanner Ready</span>
+                    </div>
+                    <input id="posBarcodeInput" type="text" inputmode="none" autocomplete="off" autofocus
+                        class="w-full bg-white border-2 border-brand-300 rounded-2xl px-4 py-4 text-lg font-mono font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder="ยิงบาร์โค้ดได้เลย...">
+                    <div id="posScanMessage" class="mt-2 min-h-4 text-[10px] text-slate-400"></div>
+                </div>
+
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.focusPOSBarcode()"><i data-lucide="scan-line" class="w-5 h-5 mx-auto mb-1 text-brand-500"></i>สแกน</button>
+                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(-1)"><i data-lucide="minus" class="w-5 h-5 mx-auto mb-1"></i>ลด</button>
+                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(1)"><i data-lucide="plus" class="w-5 h-5 mx-auto mb-1"></i>เพิ่ม</button>
+                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.clearPOSCart()"><i data-lucide="trash-2" class="w-5 h-5 mx-auto mb-1 text-rose-500"></i>ล้าง</button>
+                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.openPOSCash('in')"><i data-lucide="arrow-down-to-line" class="w-5 h-5 mx-auto mb-1 text-blue-600"></i>รับเงิน</button>
+                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.openPOSCash('out')"><i data-lucide="arrow-up-from-line" class="w-5 h-5 mx-auto mb-1 text-rose-500"></i>ถอนเงิน</button>
+                </div>
+
+                <div class="glass-card rounded-3xl p-4 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <div><h3 class="text-sm font-bold text-slate-800">สินค้าเร็ว</h3><p class="text-[10px] text-slate-400">เลือกสินค้าแทนการยิงได้</p></div>
+                        <span id="posProductCount" class="text-[10px] text-slate-400">0 รายการ</span>
+                    </div>
+                    <div id="posQuickProducts" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+                </div>
+            </section>
+
+            <section class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 xl:sticky xl:top-3">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <div><h3 class="text-sm font-bold text-slate-800">รายการขาย</h3><p class="text-[10px] text-slate-400">บิลปัจจุบัน</p></div>
+                    <span id="posCartCount" class="text-[10px] bg-brand-50 text-brand-600 border border-orange-100 px-2 py-1 rounded-full font-bold">0 รายการ</span>
+                </div>
+                <div id="posCartList" class="space-y-2 max-h-[360px] overflow-y-auto pr-1"></div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
+                    <div class="flex justify-between"><span class="text-slate-500">ยอดสินค้า</span><b id="posSubtotal">฿0.00</b></div>
+                    <div class="flex items-center justify-between gap-2"><span class="text-slate-500">ส่วนลด</span><div class="flex items-center gap-1.5"><select id="posDiscountType" onchange="window.renderPOSCart()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 text-[10px]"><option value="percent">%</option><option value="amount">บาท</option></select><input id="posDiscountValue" oninput="window.renderPOSCart()" type="number" min="0" value="0" class="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 text-right text-[10px]"></div></div>
+                    <div class="flex justify-between"><span class="text-slate-500">ภาษี 7%</span><b id="posTax">฿0.00</b></div>
+                    <div class="flex justify-between pt-2 border-t border-slate-100 text-base font-black"><span>ยอดสุทธิ</span><span id="posTotal" class="text-brand-600">฿0.00</span></div>
+                </div>
+
+                <div class="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-3">
+                    <div class="flex justify-between text-[11px] mb-1"><span class="text-slate-500">รับเงิน</span><b id="posReceivedDisplay">฿0.00</b></div>
+                    <div class="flex justify-between text-[11px]"><span class="text-slate-500">เงินทอน</span><b id="posChangeDisplay" class="text-emerald-600">฿0.00</b></div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 mt-3">
+                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('7')">7</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('8')">8</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('9')">9</button>
+                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('4')">4</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('5')">5</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('6')">6</button>
+                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('1')">1</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('2')">2</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('3')">3</button>
+                    <button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('00')">00</button><button type="button" class="pos-key bg-slate-100 rounded-2xl py-3 font-bold" onclick="window.posNumpad('0')">0</button><button type="button" class="pos-key bg-rose-50 text-rose-600 rounded-2xl py-3 font-bold" onclick="window.clearPOSNumpad()">C</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                    <button type="button" class="pos-key glass-card rounded-2xl py-3 text-xs font-bold" onclick="window.setPOSExactReceived()">รับเงินพอดี</button>
+                    <button type="button" class="pos-key orange-gradient-card text-white rounded-2xl py-3 text-sm font-black shadow-md" onclick="window.completePOSSale()"><i data-lucide="banknote" class="w-5 h-5 inline mr-1"></i>รับเงิน / ปิดบิล</button>
+                </div>
+            </section>
         </div>
     </section>
 
@@ -836,6 +932,45 @@
     </div>
 </div>
 
+
+<!-- Unified Access Code Modal -->
+<div id="accessCodeModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[90] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+    <div class="glass-card rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+                <h3 id="accessCodeTitle" class="text-base font-black text-slate-800">Login Admin</h3>
+                <p id="accessCodeDescription" class="text-[10px] text-slate-400 mt-0.5">กรอกรหัสเพื่อเข้าใช้งาน</p>
+            </div>
+            <button type="button" onclick="window.closeAccessCodeModal()" class="w-8 h-8 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center">×</button>
+        </div>
+
+        <form class="space-y-3 mt-4" onsubmit="window.submitAccessCode(event)">
+            <label class="text-xs font-bold text-slate-700">รหัสเข้าใช้งาน</label>
+            <input id="accessCodeInput" type="password" inputmode="numeric" autocomplete="off" autofocus
+                class="w-full bg-slate-50 border-2 border-brand-400 rounded-2xl px-4 py-4 text-xl font-mono font-black text-center tracking-[0.35em] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                placeholder="รหัส">
+            <p id="accessCodeHint" class="text-[10px] text-slate-400 text-center">หน้าร้าน: 9876 = ADMIN · 001 = USER</p>
+            <button type="submit" class="w-full py-3.5 rounded-2xl orange-gradient-card text-white font-bold shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="log-in" class="w-4 h-4"></i> เข้าสู่ระบบ
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- POS Cash Drawer Modal -->
+<div id="posCashModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[85] items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl">
+        <div class="flex items-center justify-between mb-3">
+            <h3 id="posCashTitle" class="text-sm font-bold text-slate-800">รับเงินเข้าลิ้นชัก</h3>
+            <button type="button" onclick="window.closePOSCash()" class="w-8 h-8 rounded-xl bg-slate-100 text-slate-500">×</button>
+        </div>
+        <input id="posCashAmount" type="number" min="0" step="0.01" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 font-mono text-xl font-black" placeholder="0.00">
+        <input id="posCashNote" type="text" class="w-full mt-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs" placeholder="หมายเหตุ (ถ้ามี)">
+        <button type="button" onclick="window.submitPOSCash()" class="w-full mt-3 orange-gradient-card text-white rounded-2xl py-3 font-bold">บันทึก</button>
+    </div>
+</div>
+
 <!-- Confirm Modal -->
 <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300">
@@ -990,6 +1125,7 @@
             updateCategoryDropdowns();
             updateDashboardStats();
             renderStockList();
+            syncPOSProductsFromStock();
             setSyncState(true);
         }, err => setSyncState(false, err.message)));
 
@@ -1039,7 +1175,8 @@
             amount: value,
             note,
             createdAt: Date.now(),
-            source: 'POS'
+            source: 'POS',
+            operatorRole: window.currentPOSRole || (typeof posRole !== 'undefined' ? posRole : currentRole) || 'USER'
         };
         if (!db) return false;
         try {
@@ -1065,7 +1202,8 @@
             received: Number(payment.received || 0),
             change: Number(payment.change || 0),
             createdAt: Date.now(),
-            source: 'POS'
+            source: 'POS',
+            operatorRole: payment.role || window.currentPOSRole || (typeof posRole !== 'undefined' ? posRole : currentRole) || 'USER'
         };
         try {
             const batch = writeBatch(db);
@@ -1100,6 +1238,14 @@
     }
 
     window.openSummaryView = function() {
+        window.openSummaryLoginModal();
+    };
+
+    window.openSummaryViewUnlocked = function() {
+        if (currentRole !== 'ADMIN') {
+            window.openSummaryLoginModal();
+            return;
+        }
         window.switchView('summaryView');
         renderSummaryDashboard();
     };
@@ -1237,59 +1383,424 @@
     }
 
     window.APP_MODULES = [
-        { id: 'watermark', title: 'ใส่ลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-brand-500 text-white', action: () => window.switchView('watermarkView') },
+        { id: 'pos', title: 'หน้าร้าน', badge: 'POS', badgeColor: 'bg-orange-500 text-white', icon: 'shopping-cart', iconBg: 'bg-orange-100 text-orange-600', action: () => window.openPOSLoginModal() },
+        { id: 'watermark', title: 'ใส่ลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-rose-100 text-rose-600', action: () => window.switchView('watermarkView') },
         { id: 'stock', title: 'คลังและราคา', badge: 'Realtime', badgeColor: 'bg-emerald-500 text-white', icon: 'boxes', iconBg: 'bg-emerald-100 text-emerald-600', action: () => { window.switchView('stockView'); window.renderStockList(); } },
-        { id: 'sets', title: 'คำนวณเซ็ต', badge: 'ราคา', badgeColor: 'bg-orange-500 text-white', icon: 'calculator', iconBg: 'bg-orange-100 text-brand-600', action: () => window.openSetsModal() },
-        { id: 'summary', title: 'สรุปรายรับ-รายจ่าย', badge: 'Realtime', badgeColor: 'bg-blue-500 text-white', icon: 'bar-chart-3', iconBg: 'bg-blue-100 text-blue-600', action: () => window.openSummaryView() },
+        { id: 'sets', title: 'คำนวณเซ็ต', badge: 'ราคา', badgeColor: 'bg-orange-500 text-white', icon: 'calculator', iconBg: 'bg-orange-100 text-orange-600', action: () => window.openSetsModal() },
+        { id: 'summary', title: 'สรุปรายรับ-รายจ่าย', badge: 'Admin', badgeColor: 'bg-blue-500 text-white', icon: 'bar-chart-3', iconBg: 'bg-blue-100 text-blue-600', action: () => window.openSummaryView() },
     ];
 
+    let currentRole = sessionStorage.getItem('nanaphan_auth_role') || '';
+    let posRole = '';
+    let accessCodeContext = '';
+    window.currentPOSRole = '';
+
     window.checkAuthSession = function() {
-        if (localStorage.getItem('nanaphan_session') === 'authenticated_admin') {
+        if (currentRole === 'ADMIN') {
+            window.showMainApp();
+        } else if (currentRole === 'USER') {
+            posRole = 'USER';
             window.showMainApp();
         } else {
             window.showLogin();
         }
-    }
+    };
 
     window.handleLogin = function(e) {
         e.preventDefault();
-        const user = document.getElementById('usernameInput').value.trim();
-        const pass = document.getElementById('passwordInput').value.trim();
-        if (user === 'Admin' && pass === 'admin') {
-            localStorage.setItem('nanaphan_session', 'authenticated_admin');
-            window.showToast('เข้าสู่ระบบหลังบ้านสำเร็จ!');
+        const code = String(document.getElementById('loginCodeInput')?.value || '').trim();
+        if (code === '9876') {
+            currentRole = 'ADMIN';
+            sessionStorage.setItem('nanaphan_auth_role', 'ADMIN');
+            window.showToast('Login Admin สำเร็จ');
             window.showMainApp();
         } else {
-            window.showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            window.showToast('รหัส Admin ไม่ถูกต้อง');
         }
-    }
+    };
 
     window.handleLogout = function() {
-        localStorage.removeItem('nanaphan_session');
+        currentRole = '';
+        posRole = '';
+        window.currentPOSRole = '';
+        sessionStorage.removeItem('nanaphan_auth_role');
+        sessionStorage.removeItem('nanaphan_pos_role');
         window.showToast('ออกจากระบบเรียบร้อย');
         window.showLogin();
-    }
+    };
 
     window.showLogin = function() {
         document.getElementById('loginView').classList.remove('hidden');
         const app = document.getElementById('mainAppWrapper');
         app.classList.add('hidden'); app.classList.remove('flex');
-    }
+    };
 
     window.showMainApp = function() {
         document.getElementById('loginView').classList.add('hidden');
         const app = document.getElementById('mainAppWrapper');
         app.classList.remove('hidden'); app.classList.add('flex');
-        window.switchView('homeView');
         window.updateCategoryDropdowns();
+        if (currentRole === 'USER') {
+            posRole = 'USER';
+            window.openPOSView('USER');
+            return;
+        }
+        window.switchView('homeView');
         window.renderModulesGrid();
         window.renderReceiptItems();
+    };
+
+
+    // ==========================================
+    // UNIFIED ACCESS CONTROL
+    // ==========================================
+    function resetAccessCodeModal() {
+        const input = document.getElementById('accessCodeInput');
+        if (input) input.value = '';
+    }
+
+    window.openPOSLoginModal = function() {
+        accessCodeContext = 'POS';
+        document.getElementById('accessCodeTitle').innerText = 'Login Admin';
+        document.getElementById('accessCodeDescription').innerText = 'เข้าสู่หน้าร้าน';
+        document.getElementById('accessCodeHint').innerText = '9876 = ADMIN · 001 = USER';
+        resetAccessCodeModal();
+        animateModalOpen('accessCodeModal');
+        setTimeout(() => document.getElementById('accessCodeInput')?.focus(), 100);
+    };
+
+    window.openSummaryLoginModal = function() {
+        accessCodeContext = 'SUMMARY';
+        document.getElementById('accessCodeTitle').innerText = 'Login Admin';
+        document.getElementById('accessCodeDescription').innerText = 'ส่วนรายรับ-รายจ่าย ต้องใช้รหัส Admin';
+        document.getElementById('accessCodeHint').innerText = 'ADMIN เท่านั้น · รหัส 9876';
+        resetAccessCodeModal();
+        animateModalOpen('accessCodeModal');
+        setTimeout(() => document.getElementById('accessCodeInput')?.focus(), 100);
+    };
+
+    window.closeAccessCodeModal = function() {
+        animateModalClose('accessCodeModal');
+        resetAccessCodeModal();
+        accessCodeContext = '';
+    };
+
+    window.submitAccessCode = function(e) {
+        e.preventDefault();
+        const code = String(document.getElementById('accessCodeInput')?.value || '').trim();
+
+        if (accessCodeContext === 'POS') {
+            if (code === '9876' || code === '001') {
+                const role = code === '9876' ? 'ADMIN' : 'USER';
+                currentRole = role;
+                posRole = role;
+                window.currentPOSRole = role;
+                sessionStorage.setItem('nanaphan_auth_role', role);
+                sessionStorage.setItem('nanaphan_pos_role', role);
+                animateModalClose('accessCodeModal');
+                accessCodeContext = '';
+                window.openPOSView(role);
+                return;
+            }
+            window.showToast('รหัสหน้าร้านไม่ถูกต้อง');
+            return;
+        }
+
+        if (accessCodeContext === 'SUMMARY') {
+            if (code === '9876') {
+                currentRole = 'ADMIN';
+                sessionStorage.setItem('nanaphan_auth_role', 'ADMIN');
+                animateModalClose('accessCodeModal');
+                accessCodeContext = '';
+                window.openSummaryViewUnlocked();
+                return;
+            }
+            window.showToast('รายรับ-รายจ่ายใช้รหัส 9876 เท่านั้น');
+            return;
+        }
+    };
+
+    // ==========================================
+    // FRONT STORE / POS
+    // ==========================================
+    let posCart = [];
+    let posReceived = 0;
+    let posNumpadBuffer = '';
+    let posProducts = [];
+
+    const posMoney = n => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const posEsc = s => String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c] || c));
+
+    function syncPOSProductsFromStock() {
+        posProducts = Array.isArray(stockProducts) ? stockProducts : [];
+        window.renderPOSQuickProducts();
+        window.renderPOSCart();
+    }
+
+    window.openPOSView = function(role = (posRole || currentRole || 'USER')) {
+        posRole = role;
+        window.currentPOSRole = role;
+        currentRole = role;
+        const app = document.getElementById('mainAppWrapper');
+        document.getElementById('loginView').classList.add('hidden');
+        app.classList.remove('hidden'); app.classList.add('flex');
+        window.switchView('posView');
+        const badge = document.getElementById('posRoleBadge');
+        const label = document.getElementById('posExitLabel');
+        if (badge) badge.innerText = role === 'ADMIN' ? 'ADMIN' : 'USER';
+        if (label) label.innerText = role === 'ADMIN' ? 'กลับหลังบ้าน' : 'ออกจากระบบ';
+        syncPOSProductsFromStock();
+        setTimeout(() => window.focusPOSBarcode(), 60);
+        lucide.createIcons();
+    };
+
+    window.exitPOSView = function() {
+        if (posRole === 'ADMIN') {
+            window.switchView('homeView');
+            window.renderModulesGrid();
+            return;
+        }
+        window.handleLogout();
+    };
+
+    window.focusPOSBarcode = function() {
+        const input = document.getElementById('posBarcodeInput');
+        if (input) { input.focus(); input.select(); }
+    };
+
+    window.clearPOSCart = function() {
+        posCart = [];
+        posReceived = 0;
+        posNumpadBuffer = '';
+        window.renderPOSCart();
+        window.focusPOSBarcode();
+    };
+
+    window.adjustPOSSelected = function(delta) {
+        if (!posCart.length) return;
+        const item = posCart[posCart.length - 1];
+        const found = resolvePOSProduct(item.barcodeKey || item.id);
+        const stock = found ? Number(found.variant?.stock ?? found.product?.qty ?? 0) : Infinity;
+        const next = Math.max(1, Number(item.qty) + delta);
+        if (next > stock) {
+            window.showPOSMessage('สินค้าในสต็อกไม่พอ');
+            return;
+        }
+        item.qty = next;
+        window.renderPOSCart();
+    };
+
+    function resolvePOSProduct(code) {
+        const q = String(code || '').trim().toLowerCase();
+        for (const p of posProducts) {
+            if (String(p.barcode || '').trim().toLowerCase() === q || String(p.sku || '').trim().toLowerCase() === q || String(p.id || '').trim().toLowerCase() === q) {
+                return { product: p, variant: null };
+            }
+            const variants = Array.isArray(p.variants) ? p.variants : [];
+            const v = variants.find(x => String(x.barcode || '').trim().toLowerCase() === q || String(x.id || '').trim().toLowerCase() === q);
+            if (v) return { product: p, variant: v };
+        }
+        return null;
+    }
+
+    window.showPOSMessage = function(msg) {
+        const el = document.getElementById('posScanMessage');
+        if (!el) return;
+        el.textContent = msg;
+        clearTimeout(window.__posMessageTimer);
+        window.__posMessageTimer = setTimeout(() => { el.textContent = ''; }, 2200);
+    };
+
+    window.addPOSScanned = function(code) {
+        const found = resolvePOSProduct(code);
+        if (!found) {
+            window.showPOSMessage('ไม่พบสินค้า: ' + code);
+            window.focusPOSBarcode();
+            return;
+        }
+        const p = found.product;
+        const v = found.variant;
+        const id = v ? `${p.id}_${v.id}` : p.id;
+        const barcodeKey = v ? (v.barcode || v.id) : (p.barcode || p.sku || p.id);
+        const name = v ? (v.fullName || `${p.name} (${v.optionName || ''})`) : p.name;
+        const price = Number(v?.price ?? p.price ?? 0);
+        const unit = v?.unit || p.unit || 'ชิ้น';
+        const stock = Number(v?.stock ?? p.qty ?? 0);
+
+        if (stock <= 0) {
+            window.showPOSMessage('สินค้าหมด');
+            window.focusPOSBarcode();
+            return;
+        }
+        const ex = posCart.find(x => x.id === id);
+        if (ex) {
+            if (ex.qty + 1 > stock) {
+                window.showPOSMessage('สินค้าในสต็อกไม่พอ');
+                return;
+            }
+            ex.qty += 1;
+        } else {
+            posCart.push({ id, barcodeKey, name, price, unit, qty: 1 });
+        }
+        window.renderPOSCart();
+        window.showPOSMessage(`เพิ่ม ${name} x1`);
+        window.focusPOSBarcode();
+    };
+
+    window.renderPOSQuickProducts = function() {
+        const wrap = document.getElementById('posQuickProducts');
+        const count = document.getElementById('posProductCount');
+        if (!wrap) return;
+        if (count) count.innerText = posProducts.length + ' รายการ';
+        wrap.innerHTML = posProducts.slice(0, 12).map(p => {
+            const code = String(p.barcode || p.sku || p.id || '').replace(/'/g, "\\'");
+            return `<button type="button" class="pos-key text-left bg-white border border-slate-200 rounded-2xl p-3 hover:border-orange-200" onclick="window.addPOSScanned('${code}')"><div class="text-[10px] text-slate-400 font-mono">${posEsc(p.sku || '')}</div><div class="text-xs font-bold text-slate-800 mt-1">${posEsc(p.name || '')}</div><div class="text-[10px] text-brand-600 font-bold mt-1">฿${posMoney(p.price)}</div></button>`;
+        }).join('');
+        lucide.createIcons();
+    };
+
+    window.renderPOSCart = function() {
+        const c = document.getElementById('posCartList');
+        if (!c) return;
+        const subtotal = posCart.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
+        const type = document.getElementById('posDiscountType')?.value || 'percent';
+        const rawDiscount = Math.max(0, Number(document.getElementById('posDiscountValue')?.value || 0));
+        const discount = Math.min(subtotal, type === 'percent' ? subtotal * rawDiscount / 100 : rawDiscount);
+        const taxable = Math.max(0, subtotal - discount);
+        const tax = taxable * 0.07;
+        const total = taxable + tax;
+        const change = Math.max(0, posReceived - total);
+
+        const set = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+        set('posSubtotal', '฿' + posMoney(subtotal));
+        set('posTax', '฿' + posMoney(tax));
+        set('posTotal', '฿' + posMoney(total));
+        set('posReceivedDisplay', '฿' + posMoney(posReceived));
+        set('posChangeDisplay', '฿' + posMoney(change));
+        set('posCartCount', posCart.length + ' รายการ');
+
+        if (!posCart.length) {
+            c.innerHTML = '<div class="py-10 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">ยังไม่มีสินค้า — ยิงบาร์โค้ดได้ทันที</div>';
+            return;
+        }
+
+        c.innerHTML = posCart.map((i, idx) => `
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                <div class="flex justify-between gap-2">
+                    <div class="min-w-0"><div class="font-bold text-xs text-slate-800 truncate">${posEsc(i.name)}</div><div class="text-[10px] text-slate-400">฿${posMoney(i.price)} / ${posEsc(i.unit)}</div></div>
+                    <button type="button" onclick="window.removePOSItem(${idx})" class="text-rose-500">×</button>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                    <div class="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden"><button type="button" onclick="window.changePOSQty(${idx},-1)" class="px-3 py-1.5">−</button><span class="px-3 font-mono font-bold">${i.qty}</span><button type="button" onclick="window.changePOSQty(${idx},1)" class="px-3 py-1.5">+</button></div>
+                    <b class="text-brand-600">฿${posMoney(i.price * i.qty)}</b>
+                </div>
+            </div>`).join('');
+    };
+
+    window.changePOSQty = function(idx, delta) {
+        const item = posCart[idx]; if (!item) return;
+        const found = resolvePOSProduct(item.barcodeKey || item.id);
+        const stock = found ? Number(found.variant?.stock ?? found.product?.qty ?? 0) : Infinity;
+        item.qty = Math.max(1, Number(item.qty) + delta);
+        if (item.qty > stock) item.qty = stock;
+        window.renderPOSCart();
+    };
+
+    window.removePOSItem = function(idx) { posCart.splice(idx, 1); window.renderPOSCart(); };
+
+    window.posNumpad = function(value) {
+        posNumpadBuffer += String(value);
+        posReceived = Number(posNumpadBuffer || 0);
+        window.renderPOSCart();
+    };
+
+    window.clearPOSNumpad = function() {
+        posNumpadBuffer = '';
+        posReceived = 0;
+        window.renderPOSCart();
+    };
+
+    window.setPOSExactReceived = function() {
+        const totalText = document.getElementById('posTotal')?.innerText || '฿0';
+        posReceived = Number(totalText.replace(/[^0-9.-]/g, '')) || 0;
+        posNumpadBuffer = String(posReceived);
+        window.renderPOSCart();
+    };
+
+    window.completePOSSale = async function() {
+        if (!posCart.length) { window.showPOSMessage('ยังไม่มีสินค้าในบิล'); return; }
+        const subtotal = posCart.reduce((s, x) => s + Number(x.price || 0) * Number(x.qty || 0), 0);
+        const type = document.getElementById('posDiscountType')?.value || 'percent';
+        const rawDiscount = Math.max(0, Number(document.getElementById('posDiscountValue')?.value || 0));
+        const discount = Math.min(subtotal, type === 'percent' ? subtotal * rawDiscount / 100 : rawDiscount);
+        const taxable = Math.max(0, subtotal - discount);
+        const tax = taxable * 0.07;
+        const total = taxable + tax;
+        if (posReceived < total) { window.showPOSMessage('ยอดรับเงินยังไม่พอ'); return; }
+
+        const payment = { method: 'cash', received: posReceived, change: Math.max(0, posReceived - total), role: posRole || currentRole || 'USER' };
+        const recorded = await window.recordSale(posCart, { subtotal, discount, tax, total }, payment);
+        if (!recorded) return;
+
+        window.showPOSMessage(`ปิดบิลสำเร็จ · เงินทอน ฿${posMoney(payment.change)}`);
+        posCart = [];
+        posReceived = 0;
+        posNumpadBuffer = '';
+        const dv = document.getElementById('posDiscountValue'); if (dv) dv.value = '0';
+        window.renderPOSCart();
+        window.focusPOSBarcode();
+    };
+
+    window.openPOSCash = function(type) {
+        window.__posCashMode = type;
+        const title = document.getElementById('posCashTitle');
+        if (title) title.innerText = type === 'in' ? 'รับเงินเข้าลิ้นชัก' : 'ถอนเงิน / จ่ายเงินออก';
+        const amount = document.getElementById('posCashAmount'); if (amount) amount.value = '';
+        const note = document.getElementById('posCashNote'); if (note) note.value = '';
+        const modal = document.getElementById('posCashModal');
+        if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        setTimeout(() => amount?.focus(), 80);
+    };
+
+    window.closePOSCash = function() {
+        const modal = document.getElementById('posCashModal');
+        if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    };
+
+    window.submitPOSCash = async function() {
+        const amount = Number(document.getElementById('posCashAmount')?.value || 0);
+        const note = String(document.getElementById('posCashNote')?.value || '').trim();
+        const type = window.__posCashMode || 'in';
+        if (!amount) return;
+        const ok = await window.recordCashTransaction(type, amount, note + (note ? ' · ' : '') + `ผู้ใช้งาน ${posRole || currentRole || 'USER'}`);
+        if (ok) {
+            window.showPOSMessage((type === 'in' ? 'รับเงิน' : 'ถอนเงิน') + ' บันทึกแล้ว');
+            window.closePOSCash();
+        }
+    };
+
+    const existingHomeKeyHandler = document._nanaphanHomeScannerHandler;
+    if (!existingHomeKeyHandler) {
+        // Replace behavior only for POS when it is visible; the original handler remains for Admin home.
+    }
+
+    const posBarcodeInput = document.getElementById('posBarcodeInput');
+    if (posBarcodeInput) {
+        posBarcodeInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                const code = e.currentTarget.value.trim();
+                e.currentTarget.value = '';
+                if (code) window.addPOSScanned(code);
+                e.preventDefault();
+            }
+        });
     }
 
     window.renderModulesGrid = function() {
         const grid = document.getElementById('modulesGrid');
         if(!grid) return;
-        grid.innerHTML = window.APP_MODULES.map(m => `
+        const modules = currentRole === 'ADMIN' ? window.APP_MODULES : window.APP_MODULES.filter(m => m.id === 'pos');
+        grid.innerHTML = modules.map(m => `
             <div onclick="window.APP_MODULES.find(x => x.id === '${m.id}').action()" class="glass-card rounded-3xl p-3.5 flex flex-col items-center text-center shadow-sm border border-slate-200/70 cursor-pointer active:scale-95 transition-all hover:shadow-md relative overflow-hidden">
                 <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${m.badgeColor}">${m.badge}</span>
                 <div class="w-10 h-10 rounded-2xl ${m.iconBg} flex items-center justify-center mb-2 shadow-sm">
@@ -1302,7 +1813,7 @@
     }
 
     window.switchView = function(viewId) {
-        ['homeView', 'watermarkView', 'stockView', 'summaryView'].forEach(id => {
+        ['homeView', 'watermarkView', 'stockView', 'summaryView', 'posView'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.classList.add('hidden');
         });
@@ -1487,16 +1998,29 @@
         const mainApp = document.getElementById('mainAppWrapper');
         if (!mainApp || mainApp.classList.contains('hidden')) return;
 
-        const target = e.target;
-        const tag = target && target.tagName ? target.tagName.toUpperCase() : '';
-
-        // อย่าดักการพิมพ์ในช่องกรอกข้อมูลปกติ
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) {
+        const posView = document.getElementById('posView');
+        const posVisible = posView && !posView.classList.contains('hidden');
+        if (posVisible) {
+            const target = e.target;
+            const tag = target && target.tagName ? target.tagName.toUpperCase() : '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+            if (e.key.length !== 1 && e.key !== 'Enter') return;
+            if (e.key === 'Enter') return;
+            window.__posGlobalScanBuffer = (window.__posGlobalScanBuffer || '') + e.key;
+            clearTimeout(window.__posGlobalScanTimer);
+            window.__posGlobalScanTimer = setTimeout(() => {
+                const code = String(window.__posGlobalScanBuffer || '').trim();
+                window.__posGlobalScanBuffer = '';
+                if (code.length >= 4) window.addPOSScanned(code);
+            }, 120);
             return;
         }
 
+        const target = e.target;
+        const tag = target && target.tagName ? target.tagName.toUpperCase() : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
         if (e.ctrlKey || e.altKey || e.metaKey) return;
-
         if (e.key === 'Enter') {
             if (autoBarcodeBuffer.length >= 4) {
                 const code = autoBarcodeBuffer.trim();
@@ -1508,14 +2032,10 @@
             }
             return;
         }
-
         if (e.key.length !== 1) return;
-
         autoBarcodeBuffer += e.key;
-
         if (autoBarcodeTimer) clearTimeout(autoBarcodeTimer);
         autoBarcodeTimer = setTimeout(() => {
-            // รองรับ Scanner ที่ไม่ได้ส่ง Enter ต่อท้าย
             if (autoBarcodeBuffer.length >= 6) {
                 const code = autoBarcodeBuffer.trim();
                 resetAutoBarcodeBuffer();
@@ -2517,6 +3037,7 @@
         try {
             await seedCloudFromLocal();
             attachRealtimeListeners();
+            syncPOSProductsFromStock();
             setSyncState(true);
         } catch (err) {
             console.warn('Realtime startup failed:', err);
