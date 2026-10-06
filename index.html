@@ -43,7 +43,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-<script src="./barcode-scan-processor.js"></script>
 
 <style>
     * {
@@ -103,8 +102,10 @@
     .no-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .no-spinners { -moz-appearance: textfield; }
 </style>
+</head>
+<body class="h-full flex flex-col">
 
-
+<!-- Toast Notification Container -->
 <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] pointer-events-none transition-all duration-300 transform -translate-y-10 opacity-0">
     <div id="toastMessage" class="glass-card shadow-xl rounded-2xl px-5 py-3 border border-slate-200 text-sm font-medium flex items-center gap-2.5 text-slate-800">
         <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
@@ -163,7 +164,11 @@
     </div>
 </section>
 
+<!-- ========================================== -->
+<!-- MAIN APP WRAPPER                           -->
+<!-- ========================================== -->
 <div id="mainAppWrapper" class="hidden min-h-screen flex-col w-full">
+    
     <!-- ========================================== -->
     <!-- VIEW 2: MAIN ADMIN HOME DASHBOARD          -->
     <!-- ========================================== -->
@@ -191,39 +196,43 @@
                 </button>
             </div>
 
-            <div onclick="window.openScanBarcodeModal()" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
+            <!-- Direct Barcode Scan Entry Triggering Direct List Influx -->
+            <div onclick="window.openScanBarcodeModalDirect()" class="bg-white/15 hover:bg-white/25 border border-white/20 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-95 transition-all backdrop-blur-md relative z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-md">
                         <i data-lucide="scan-line" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold text-white">สแกนบาร์โค้ดสินค้า</h3>
-                        <p class="text-[11px] text-orange-100">กดเพื่อเปิดกล้องสแกนสินค้า</p>
+                        <h3 class="text-xs font-bold text-white">ยิงบาร์โค้ดเข้าสู่รายการทันที</h3>
+                        <p class="text-[11px] text-orange-100">ยิงปุ๊บ รายการเพิ่มเข้าบิลอัตโนมัติทันที</p>
                     </div>
                 </div>
                 <span class="px-3 py-1 rounded-full bg-white text-brand-600 text-xs font-bold flex items-center gap-1 shadow-sm">
-                    เปิด <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    ยิงบาร์โค้ด <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                 </span>
             </div>
         </div>
 
-        <div id="receiptCard" class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3 hidden">
+        <!-- Receipt Active Order List -->
+        <div id="receiptCard" class="glass-card rounded-3xl p-4 shadow-lg border border-slate-200 space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <div class="w-7 h-7 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center">
                         <i data-lucide="receipt" class="w-4 h-4"></i>
                     </div>
                     <div>
-                        <h3 class="text-[11px] font-bold text-slate-800">ใบเสร็จรับเงิน</h3>
-                        <p class="text-[9px] text-slate-500">MiniMart สาขาหลัก</p>
+                        <h3 class="text-[11px] font-bold text-slate-800">รายการยิงบาร์โค้ดเข้าสู่อัตโนมัติ</h3>
+                        <p class="text-[9px] text-slate-500">Realtime Scan List</p>
                     </div>
                 </div>
-                <button type="button" onclick="window.openScanBarcodeModal()" class="px-2.5 py-1.5 rounded-xl bg-brand-50 text-brand-600 text-[10px] font-bold active:scale-95 transition-all">
-                    + เพิ่ม
+                <button type="button" onclick="window.openScanBarcodeModalDirect()" class="px-2.5 py-1.5 rounded-xl bg-brand-50 text-brand-600 text-[10px] font-bold active:scale-95 transition-all flex items-center gap-1">
+                    <i data-lucide="scan" class="w-3.5 h-3.5"></i> ยิงเพิ่ม
                 </button>
             </div>
 
-            <div id="receiptItemsList" class="space-y-2.5"></div>
+            <div id="receiptItemsList" class="space-y-2.5 max-h-60 overflow-y-auto no-scrollbar">
+                <!-- Dynamic Items Inflow -->
+            </div>
 
             <div class="pt-2 border-t border-slate-100 space-y-2 text-[11px] text-slate-700">
                 <div class="flex items-center justify-between">
@@ -246,10 +255,10 @@
 
             <div class="flex gap-2 pt-2">
                 <button type="button" onclick="window.clearReceiptItems()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">
-                    รีเซ็ต
+                    ล้างรายการ
                 </button>
-                <button type="button" onclick="window.printReceiptAndReduceStock()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">
-                    พิมพ์
+                <button type="button" onclick="window.printReceiptAndReduceStock()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์บิล/บันทึกสต็อก
                 </button>
             </div>
         </div>
@@ -303,9 +312,6 @@
             </div>
 
             <div class="flex items-center gap-2 ml-auto flex-wrap">
-                <button onclick="window.forceSyncCloud()" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">ซิงค์</span>
-                </button>
                 <button onclick="window.openSetsModal()" class="px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-brand-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
                     <i data-lucide="calculator" class="w-4 h-4"></i> <span class="hidden sm:inline">คำนวณเซ็ตราคา</span>
                 </button>
@@ -599,9 +605,6 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- SETS (BUNDLES) & PRICING MODALS            -->
-<!-- ========================================== -->
 <!-- Sets List Modal -->
 <div id="setsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="glass-card rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-white transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh]">
@@ -709,7 +712,7 @@
     </div>
 </div>
 
-<!-- Barcode Modal -->
+<!-- Barcode View Modal -->
 <div id="barcodeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="bg-white rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col items-center gap-4 text-center">
         <h3 id="barcodeModalName" class="text-sm font-bold text-slate-800">ชื่อสินค้า</h3>
@@ -725,49 +728,28 @@
     </div>
 </div>
 
+<!-- Direct Barcode Scan / Enter Modal (Instantly added to list) -->
 <div id="scanBarcodeModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
     <div class="bg-white rounded-3xl p-5 shadow-2xl transform scale-95 transition-transform duration-300 w-full max-w-sm">
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="scan-line" class="w-4 h-4 text-brand-500"></i> สแกนบาร์โค้ด
+                <i data-lucide="scan-line" class="w-4 h-4 text-brand-500"></i> ยิงบาร์โค้ดสินค้าเข้าบิลทันที
             </h3>
             <button type="button" onclick="window.closeScanBarcodeModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
 
-        <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 mb-3">
-            <video id="scanVideoPreview" autoplay playsinline muted class="w-full h-44 object-cover hidden"></video>
-            <div id="scanFallbackBox" class="w-full h-44 flex items-center justify-center text-center p-4 text-[11px] text-slate-500">
-                เปิดกล้องเพื่อสแกนบาร์โค้ดหรือกรอกด้านล่าง
-            </div>
-        </div>
+        <p class="text-[11px] text-slate-500 mb-3">ยิงบาร์โค้ดจากเครื่องสแกน หรือพิมพ์รหัสบาร์โค้ด/SKU แล้วกด Enter หรือค้นหา รายการจะไหลเข้าบิลทันทีโดยไม่ต้องกดเพิ่มซ้ำ</p>
 
-        <form onsubmit="window.handleBarcodeScanSubmit(event)">
-            <label class="block text-[11px] font-bold text-slate-700 mb-2">ใส่หรือสแกนบาร์โค้ด</label>
-            <input id="scanBarcodeInput" type="text" autocomplete="off" autofocus placeholder="เช่น 885... หรือ 880..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <form onsubmit="window.handleDirectBarcodeSubmit(event)">
+            <input id="scanBarcodeInput" type="text" autocomplete="off" autofocus placeholder="ยิงบาร์โค้ดตรงนี้..." class="w-full bg-slate-50 border-2 border-brand-500 rounded-2xl px-4 py-3.5 text-sm font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            
             <div class="mt-4 flex gap-2">
-                <button type="button" onclick="window.closeScanBarcodeModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ยกเลิก</button>
-                <button type="submit" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">ค้นหา</button>
+                <button type="button" onclick="window.closeScanBarcodeModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">เสร็จสิ้น</button>
+                <button type="submit" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">เพิ่มเข้าบิล</button>
             </div>
         </form>
-    </div>
-</div>
-
-<div id="scanResultModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[75] flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
-    <div class="bg-white rounded-3xl p-5 shadow-2xl transform scale-95 transition-transform duration-300 w-full max-w-sm">
-        <div class="text-center">
-            <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto text-emerald-500 mb-3">
-                <i data-lucide="check-circle-2" class="w-7 h-7"></i>
-            </div>
-            <h3 class="text-sm font-bold text-slate-800">พบสินค้า</h3>
-            <p id="scanResultName" class="mt-2 text-base font-bold text-slate-800">ชื่อสินค้า</p>
-            <p id="scanResultMeta" class="mt-1 text-[11px] text-slate-500">SKU • ราคา</p>
-        </div>
-        <div class="mt-4 flex gap-2">
-            <button type="button" onclick="window.closeScanResultModal()" class="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-bold text-xs active:scale-95 transition-all">ปิด</button>
-            <button type="button" onclick="window.addScannedProductToCurrentList()" class="flex-1 py-3 rounded-2xl orange-gradient-card text-white font-bold text-xs shadow-md active:scale-95 transition-all">เพิ่มลงรายการ</button>
-        </div>
     </div>
 </div>
 
@@ -816,7 +798,7 @@
 <!-- ========================================== -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.showToast = function(text) {
@@ -842,6 +824,15 @@
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphan-hub-app';
     let db, auth;
 
+    try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        signInAnonymously(auth).catch(err => console.log("Auth anon:", err));
+    } catch (e) {
+        console.warn("Firebase init offline mode:", e);
+    }
+
     // Default Seed Categories
     const defaultCategories = [
         { id: 'cat_jivar', name: 'จีวร' },
@@ -863,9 +854,7 @@
         }
     ];
 
-    function normalizeBarcodeValue(value) {
-        return String(value || '').replace(/[\s\-_]+/g, '').trim().toUpperCase();
-    }
+    let receiptItems = [];
 
     function seedDefaultProductsIfNeeded() {
         const existing = JSON.parse(localStorage.getItem('nanaphan_products_' + appId) || '[]');
@@ -900,27 +889,12 @@
                 price: 490,
                 lowStockThreshold: 3,
                 updatedAt: Date.now()
-            },
-            {
-                id: 'demo_p_03',
-                type: 'variable',
-                sku: 'SKU-003',
-                barcode: '880123456789',
-                name: 'แปรงล้างท่อ',
-                categoryId: 'cat_plumbing',
-                unit: 'ชิ้น',
-                qty: 14,
-                variants: [
-                    { id: 'demo_v_01', optionName: 'เล็ก', fullName: 'แปรงล้างท่อ - เล็ก', barcode: '880123456789', unit: 'ชิ้น', price: 90, stock: 7, lowStockThreshold: 2 },
-                    { id: 'demo_v_02', optionName: 'ใหญ่', fullName: 'แปรงล้างท่อ - ใหญ่', barcode: '880123456790', unit: 'ชิ้น', price: 140, stock: 7, lowStockThreshold: 2 }
-                ],
-                lowStockThreshold: 5,
-                updatedAt: Date.now()
             }
         ];
-
         persistLocalCache();
     }
+
+    seedDefaultProductsIfNeeded();
 
     function persistLocalCache() {
         localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
@@ -973,7 +947,23 @@
         app.classList.remove('hidden'); app.classList.add('flex');
         window.switchView('homeView');
         window.updateCategoryDropdowns();
-        window.renderStockList();
+        window.renderModulesGrid();
+        window.renderReceiptItems();
+    }
+
+    window.renderModulesGrid = function() {
+        const grid = document.getElementById('modulesGrid');
+        if(!grid) return;
+        grid.innerHTML = window.APP_MODULES.map(m => `
+            <div onclick="window.APP_MODULES.find(x => x.id === '${m.id}').action()" class="glass-card rounded-3xl p-3.5 flex flex-col items-center text-center shadow-sm border border-slate-200/70 cursor-pointer active:scale-95 transition-all hover:shadow-md relative overflow-hidden">
+                <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${m.badgeColor}">${m.badge}</span>
+                <div class="w-10 h-10 rounded-2xl ${m.iconBg} flex items-center justify-center mb-2 shadow-sm">
+                    <i data-lucide="${m.icon}" class="w-5 h-5"></i>
+                </div>
+                <h4 class="text-xs font-bold text-slate-800">${m.title}</h4>
+            </div>
+        `).join('');
+        lucide.createIcons();
     }
 
     window.switchView = function(viewId) {
@@ -1016,6 +1006,176 @@
         animateModalClose('confirmModal');
     });
 
+    // ==========================================
+    // DIRECT BARCODE SCAN INFLOW LOGIC
+    // ==========================================
+    window.openScanBarcodeModalDirect = function() {
+        animateModalOpen('scanBarcodeModal');
+        setTimeout(() => {
+            const input = document.getElementById('scanBarcodeInput');
+            if(input) {
+                input.value = '';
+                input.focus();
+            }
+        }, 150);
+    };
+
+    window.closeScanBarcodeModal = function() {
+        animateModalClose('scanBarcodeModal');
+    };
+
+    window.handleDirectBarcodeSubmit = function(e) {
+        e.preventDefault();
+        const input = document.getElementById('scanBarcodeInput');
+        const code = input ? input.value.trim() : '';
+        if(!code) return;
+
+        // Find product by barcode or SKU
+        const found = stockProducts.find(p => 
+            (p.barcode && p.barcode.toLowerCase() === code.toLowerCase()) || 
+            (p.sku && p.sku.toLowerCase() === code.toLowerCase()) ||
+            (p.variants && p.variants.some(v => v.barcode && v.barcode.toLowerCase() === code.toLowerCase()))
+        );
+
+        if(!found) {
+            window.showToast(`ไม่พบสินค้าบาร์โค้ด: ${code}`);
+            input.value = '';
+            input.focus();
+            return;
+        }
+
+        // Add to receipt items list instantly
+        let targetName = found.name;
+        let targetPrice = found.price || 0;
+        let targetUnit = found.unit || 'ชิ้น';
+        let targetId = found.id;
+
+        if(found.variants && found.variants.length > 0) {
+            const matchedVar = found.variants.find(v => v.barcode && v.barcode.toLowerCase() === code.toLowerCase()) || found.variants[0];
+            targetName = matchedVar.fullName || `${found.name} (${matchedVar.optionName})`;
+            targetPrice = matchedVar.price || 0;
+            targetUnit = matchedVar.unit || found.unit || 'ชิ้น';
+            targetId = found.id + '_' + matchedVar.id;
+        }
+
+        const existingItem = receiptItems.find(i => i.id === targetId);
+        if(existingItem) {
+            existingItem.qty += 1;
+        } else {
+            receiptItems.push({
+                id: targetId,
+                name: targetName,
+                price: targetPrice,
+                unit: targetUnit,
+                qty: 1
+            });
+        }
+
+        window.renderReceiptItems();
+        window.showToast(`เพิ่ม "${targetName}" เข้าบิลสำเร็จ!`);
+        input.value = '';
+        input.focus();
+    };
+
+    window.renderReceiptItems = function() {
+        const container = document.getElementById('receiptItemsList');
+        if(!container) return;
+
+        if(receiptItems.length === 0) {
+            container.innerHTML = `<div class="py-6 text-center text-slate-400 text-xs bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">ยังไม่มีรายการสินค้า (กด "ยิงบาร์โค้ดเข้าสู่อัตโนมัติ")</div>`;
+            document.getElementById('receiptSubtotal').innerText = '0.00 ฿';
+            document.getElementById('receiptDiscount5').innerText = '-0.00 ฿';
+            document.getElementById('receiptTax7').innerText = '+0.00 ฿';
+            document.getElementById('receiptTotal').innerText = '0.00 ฿';
+            return;
+        }
+
+        let subtotal = 0;
+        container.innerHTML = receiptItems.map((item, idx) => {
+            const itemSum = item.price * item.qty;
+            subtotal += itemSum;
+            return `
+                <div class="flex items-center justify-between p-2.5 rounded-2xl bg-white border border-slate-100 shadow-2xs text-xs">
+                    <div class="flex items-center gap-2 overflow-hidden pr-2">
+                        <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-[10px] shrink-0">${idx + 1}</span>
+                        <div class="truncate">
+                            <span class="font-bold text-slate-800 truncate block">${item.name}</span>
+                            <span class="text-[10px] text-slate-400">฿${item.price} / ${item.unit}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex items-center bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                            <button onclick="window.updateReceiptItemQty('${item.id}', -1)" class="px-2 py-1 text-slate-600 hover:bg-slate-200 font-bold">-</button>
+                            <span class="px-2 font-mono font-bold text-xs">${item.qty}</span>
+                            <button onclick="window.updateReceiptItemQty('${item.id}', 1)" class="px-2 py-1 text-slate-600 hover:bg-slate-200 font-bold">+</button>
+                        </div>
+                        <span class="font-mono font-bold text-brand-600 w-16 text-right">฿${itemSum.toLocaleString()}</span>
+                        <button onclick="window.removeReceiptItem('${item.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const discount5 = subtotal * 0.05;
+        const afterDiscount = subtotal - discount5;
+        const tax7 = afterDiscount * 0.07;
+        const total = afterDiscount + tax7;
+
+        document.getElementById('receiptSubtotal').innerText = subtotal.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ฿';
+        document.getElementById('receiptDiscount5').innerText = '-' + discount5.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ฿';
+        document.getElementById('receiptTax7').innerText = '+' + tax7.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ฿';
+        document.getElementById('receiptTotal').innerText = total.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ฿';
+
+        lucide.createIcons();
+    };
+
+    window.updateReceiptItemQty = function(id, delta) {
+        const item = receiptItems.find(i => i.id === id);
+        if(item) {
+            item.qty += delta;
+            if(item.qty <= 0) {
+                receiptItems = receiptItems.filter(i => i.id !== id);
+            }
+            window.renderReceiptItems();
+        }
+    };
+
+    window.removeReceiptItem = function(id) {
+        receiptItems = receiptItems.filter(i => i.id !== id);
+        window.renderReceiptItems();
+    };
+
+    window.clearReceiptItems = function() {
+        receiptItems = [];
+        window.renderReceiptItems();
+        window.showToast('ล้างรายการทั้งหมดแล้ว');
+    };
+
+    window.printReceiptAndReduceStock = function() {
+        if(receiptItems.length === 0) return window.showToast('ไม่มีรายการในบิล');
+        
+        // Reduce stock accordingly
+        receiptItems.forEach(ri => {
+            const prod = stockProducts.find(p => p.id === ri.id || ri.id.startsWith(p.id));
+            if(prod) {
+                if(prod.type === 'variable' && prod.variants) {
+                    const varMatch = prod.variants.find(v => (prod.id + '_' + v.id) === ri.id);
+                    if(varMatch) {
+                        varMatch.stock = Math.max(0, varMatch.stock - ri.qty);
+                    }
+                } else {
+                    prod.qty = Math.max(0, prod.qty - ri.qty);
+                }
+            }
+        });
+
+        persistLocalCache();
+        window.showToast('บันทึกบิลและตัดสต็อกสินค้าเรียบร้อย!');
+        receiptItems = [];
+        window.renderReceiptItems();
+        window.renderStockList();
+    };
+
     window.updateCategoryDropdowns = function() {
         const filterSelect = document.getElementById('stockCategoryFilter');
         const formSelect = document.getElementById('prodCategory');
@@ -1052,14 +1212,6 @@
             window.updateCategoryDropdowns();
             window.renderCategoryList();
             window.showToast('เพิ่มหมวดหมู่สำเร็จ');
-
-            try {
-                if (db) {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', idToSave), finalData);
-                }
-            } catch (err) {
-                console.error("Firestore error:", err);
-            }
         }
     };
 
@@ -1072,14 +1224,6 @@
             window.updateCategoryDropdowns();
             window.renderCategoryList();
             window.showToast('ลบหมวดหมู่สำเร็จ');
-
-            try {
-                if (db) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id));
-                }
-            } catch (err) {
-                console.error("Firestore error:", err);
-            }
         });
     };
 
@@ -1325,14 +1469,6 @@
         window.closeSetFormModal();
         window.renderSetsList();
         window.showToast(editId ? 'อัปเดตเซ็ตคำนวณราคาสำเร็จ' : 'สร้างเซ็ตคำนวณราคาสำเร็จ');
-
-        try {
-            if (db) {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sets', idToSave), finalSetData);
-            }
-        } catch (err) {
-            console.error("Firestore set save error:", err);
-        }
     };
 
     window.deleteSet = function(id, name) {
@@ -1341,14 +1477,6 @@
             persistLocalCache();
             window.renderSetsList();
             window.showToast('ลบเซ็ตสินค้าสำเร็จ');
-
-            try {
-                if (db) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sets', id));
-                }
-            } catch (err) {
-                console.error("Firestore set delete error:", err);
-            }
         });
     };
 
@@ -1460,10 +1588,6 @@
                 document.getElementById('prodUnit').value = item.unit;
                 document.getElementById('prodQty').value = item.qty ?? 0;
                 document.getElementById('prodPrice').value = item.price ?? 0;
-                document.getElementById('prodQty').value = item.type === 'variable' ? (item.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0) : (item.qty ?? 0);
-                if (item.type === 'variable') {
-                    document.getElementById('prodQty').value = (item.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-                }
             }
         } else {
             title.innerHTML = `<i data-lucide="package-plus" class="w-5 h-5 text-brand-500"></i> เพิ่มสินค้าใหม่และราคา`;
@@ -1560,1001 +1684,322 @@
             persistLocalCache();
             window.renderStockList();
             window.showToast('ลบสินค้าสำเร็จ');
-
-            try {
-                if (db) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
-                }
-            } catch (err) {
-                console.error("Firestore delete error:", err);
-            }
         });
     };
-
-    window.qtyUpdateTimeouts = {};
 
     window.adjustQtyBtn = function(id, amount) {
         const item = stockProducts.find(p => p.id === id);
         if (item) {
-            const newQty = Math.max(0, item.qty + amount);
-            item.qty = newQty;
+            item.qty = Math.max(0, item.qty + amount);
             item.updatedAt = Date.now();
-
             persistLocalCache();
-
-            const inputEl = document.getElementById(`qtyInput_${id}`);
-            if (inputEl) {
-                inputEl.value = newQty;
-                inputEl.classList.add('bg-brand-100');
-                setTimeout(() => inputEl.classList.remove('bg-brand-100'), 150);
-            }
-            
-            const badgeEl = document.getElementById(`statusBadge_${id}`);
-            if (badgeEl) updateStatusBadgeUI(badgeEl, newQty);
-            updateDashboardStats();
-            
-            if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
-            window.qtyUpdateTimeouts[id] = setTimeout(() => {
-                updateItemQtyFirestore(id, newQty);
-            }, 300);
+            window.renderStockList();
         }
     };
 
     window.manualInputQty = function(id, inputElement) {
         let val = parseInt(inputElement.value);
-        if(isNaN(val) || val < 0) {
-            const item = stockProducts.find(p => p.id === id);
-            inputElement.value = item ? item.qty : 0; 
-            return;
-        }
+        if(isNaN(val) || val < 0) return;
         const item = stockProducts.find(p => p.id === id);
         if (item) {
             item.qty = val;
             item.updatedAt = Date.now();
-
             persistLocalCache();
-
-            const badgeEl = document.getElementById(`statusBadge_${id}`);
-            if (badgeEl) updateStatusBadgeUI(badgeEl, val);
             updateDashboardStats();
-            
-            if (window.qtyUpdateTimeouts[id]) clearTimeout(window.qtyUpdateTimeouts[id]);
-            window.qtyUpdateTimeouts[id] = setTimeout(() => {
-                updateItemQtyFirestore(id, val);
-            }, 300);
         }
-    }
-
-    async function updateItemQtyFirestore(id, newQty) {
-        const item = stockProducts.find(p => p.id === id);
-        if (item) {
-            try {
-                if (db) {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
-                        ...item,
-                        qty: newQty,
-                        updatedAt: Date.now()
-                    });
-                }
-            } catch (err) {
-                console.error("Firestore update error:", err);
-            }
-        }
-    }
-
-    function updateStatusBadgeUI(badgeEl, qty) {
-        if(!badgeEl) return;
-        badgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max';
-        if(qty === 0) { badgeEl.classList.add('bg-rose-100', 'text-rose-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> หมด`; }
-        else if (qty <= 5) { badgeEl.classList.add('bg-amber-100', 'text-amber-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใกล้หมด`; }
-        else { badgeEl.classList.add('bg-emerald-100', 'text-emerald-600'); badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> มีสินค้า`; }
-    }
-
-    window.openBarcodeModal = function(name, barcode) {
-        document.getElementById('barcodeModalName').innerText = name;
-        document.getElementById('barcodeModalName').dataset.barcode = barcode;
-        JsBarcode("#largeBarcode", barcode || '885000000000', { format: "CODE128", lineColor: "#1e293b", width: 2, height: 80, displayValue: true, fontSize: 16, fontOptions: "bold", font: "Kanit" });
-        animateModalOpen('barcodeModal');
-    }
-    window.closeBarcodeModal = function() { animateModalClose('barcodeModal'); }
-    
-    window.copyBarcodeText = function() {
-        const bc = document.getElementById('barcodeModalName').dataset.barcode;
-        if(bc) {
-            navigator.clipboard.writeText(bc).catch(() => {
-                let ta = document.createElement("textarea"); ta.value = bc; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-            });
-            window.showToast('คัดลอก Barcode: ' + bc);
-        }
-    }
-
-    window.currentScanItems = [];
-    window.pendingScanResult = null;
-    window.scanStream = null;
-
-    function calculateReceiptTotals() {
-        const subtotal = window.currentScanItems.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.qty || 0)), 0);
-        const discount5 = subtotal * 0.05;
-        const tax7 = (subtotal - discount5) * 0.07;
-        const total = subtotal - discount5 + tax7;
-        return { subtotal, discount5, tax7, total };
-    }
-
-    function renderReceiptList() {
-        const container = document.getElementById('receiptItemsList');
-        const card = document.getElementById('receiptCard');
-        const subtotalEl = document.getElementById('receiptSubtotal');
-        const discount5El = document.getElementById('receiptDiscount5');
-        const tax7El = document.getElementById('receiptTax7');
-        const totalEl = document.getElementById('receiptTotal');
-
-        if (!container || !card || !subtotalEl || !discount5El || !tax7El || !totalEl) return;
-
-        if (!window.currentScanItems.length) {
-            card.classList.add('hidden');
-            container.innerHTML = '';
-            subtotalEl.innerText = '0.00 ฿';
-            discount5El.innerText = '-0.00 ฿';
-            tax7El.innerText = '+0.00 ฿';
-            totalEl.innerText = '0.00 ฿';
-            return;
-        }
-
-        card.classList.remove('hidden');
-        const totals = calculateReceiptTotals();
-        subtotalEl.innerText = `${totals.subtotal.toFixed(2)} ฿`;
-        discount5El.innerText = `-${totals.discount5.toFixed(2)} ฿`;
-        tax7El.innerText = `+${totals.tax7.toFixed(2)} ฿`;
-        totalEl.innerText = `${totals.total.toFixed(2)} ฿`;
-
-        container.innerHTML = window.currentScanItems.map((item, index) => `
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-2.5">
-                <div class="flex items-center justify-between gap-2">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span class="text-[9px] font-bold text-slate-500">#${index + 1}</span>
-                            <span class="text-[11px] font-bold text-slate-800 truncate">${item.name}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">${item.price.toFixed(2)} ฿ / ${item.unit || 'ชิ้น'}</div>
-                    </div>
-                    <div class="text-[11px] font-bold text-brand-600">${(Number(item.price || 0) * Number(item.qty || 0)).toFixed(2)} ฿</div>
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-2">
-                    <button type="button" onclick="window.adjustReceiptQty('${item.id}', '${item.variantId || ''}', -1)" class="w-7 h-7 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold active:scale-95 transition-all">-</button>
-                    <span class="min-w-8 text-center text-[11px] font-bold text-slate-800">${item.qty}</span>
-                    <button type="button" onclick="window.adjustReceiptQty('${item.id}', '${item.variantId || ''}', 1)" class="w-7 h-7 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold active:scale-95 transition-all">+</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    window.adjustReceiptQty = function(productId, variantId, delta) {
-        const index = window.currentScanItems.findIndex(item => item.id === productId && (item.variantId || '') === (variantId || ''));
-        if (index < 0) return;
-
-        const nextQty = Number(window.currentScanItems[index].qty || 0) + Number(delta);
-        if (nextQty <= 0) {
-            window.currentScanItems.splice(index, 1);
-        } else {
-            window.currentScanItems[index].qty = nextQty;
-        }
-
-        renderReceiptList();
     };
-
-    window.clearReceiptItems = function() {
-        window.currentScanItems = [];
-        renderReceiptList();
-    };
-
-    window.printReceiptAndReduceStock = function() {
-        if (!window.currentScanItems.length) {
-            window.showToast('ไม่มีรายการในใบเสร็จ');
-            return;
-        }
-
-        for (const item of window.currentScanItems) {
-            const product = stockProducts.find(p => p.id === item.id);
-            if (!product) continue;
-
-            if (product.type === 'variable') {
-                const targetVariant = (product.variants || []).find(v => v.id === item.variantId);
-                if (targetVariant) {
-                    targetVariant.stock = Math.max(0, Number(targetVariant.stock || 0) - Number(item.qty || 0));
-                }
-                product.qty = (product.variants || []).reduce((sum, v) => sum + (Number(v.stock || 0)), 0);
-            } else {
-                product.qty = Math.max(0, Number(product.qty || 0) - Number(item.qty || 0));
-            }
-        }
-
-        persistLocalCache();
-        window.renderStockList();
-        window.currentScanItems = [];
-        renderReceiptList();
-        window.showToast('พิมพ์ใบเสร็จและลดสต็อกเรียบร้อย');
-    };
-
-    async function startCameraScanPreview() {
-        const video = document.getElementById('scanVideoPreview');
-        const fallback = document.getElementById('scanFallbackBox');
-        if (!video || !fallback) return;
-
-        if (window.scanDetectionTimer) {
-            clearTimeout(window.scanDetectionTimer);
-            window.scanDetectionTimer = null;
-        }
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            fallback.innerText = 'อุปกรณ์นี้ไม่รองรับกล้องสแกนบาร์โค้ด กรุณาใส่บาร์โค้ดด้วยมือ';
-            fallback.classList.remove('hidden');
-            video.classList.add('hidden');
-            return;
-        }
-
-        try {
-            window.scanStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' },
-                audio: false
-            });
-            video.srcObject = window.scanStream;
-            video.classList.remove('hidden');
-            fallback.classList.add('hidden');
-            video.play().catch(() => {});
-
-            if (!window.barcodeScanProcessor) {
-                window.barcodeScanProcessor = new window.BarcodeScanProcessor({
-                    products: () => stockProducts,
-                    onMatch: function (payload) {
-                        const input = document.getElementById('scanBarcodeInput');
-                        if (input) input.value = payload.barcode || input.value;
-                        window.openScanResultModal(payload);
-                    },
-                    onNoMatch: function (code) {
-                        const input = document.getElementById('scanBarcodeInput');
-                        if (input) input.value = code;
-                    },
-                    onStatus: function (message) {
-                        const box = document.getElementById('scanFallbackBox');
-                        if (box && !video.classList.contains('hidden')) {
-                            box.innerText = message;
-                            box.classList.remove('hidden');
-                        }
-                    },
-                    intervalMs: 400
-                });
-            }
-
-            window.barcodeScanProcessor.start(video);
-        } catch (err) {
-            fallback.innerText = 'ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์กล้อง หรือกรอกบาร์โค้ดด้วยมือ';
-            fallback.classList.remove('hidden');
-            video.classList.add('hidden');
-        }
-    }
-
-    function stopCameraScanPreview() {
-        const video = document.getElementById('scanVideoPreview');
-        if (window.scanDetectionTimer) {
-            clearTimeout(window.scanDetectionTimer);
-            window.scanDetectionTimer = null;
-        }
-        if (window.barcodeScanProcessor) {
-            window.barcodeScanProcessor.stop();
-        }
-        if (video && video.srcObject) {
-            video.srcObject.getTracks().forEach(track => track.stop());
-            video.srcObject = null;
-        }
-        if (window.scanStream) {
-            window.scanStream.getTracks().forEach(track => track.stop());
-            window.scanStream = null;
-        }
-    }
-
-    window.resolveBarcodeToProduct = function(code, silent = false) {
-        const normalized = String(code || '').trim();
-        if (!normalized) {
-            if (!silent) alert('กรุณาใส่หรือสแกนบาร์โค้ดก่อนค้นหา');
-            return false;
-        }
-
-        const found = findBarcodeInProducts(normalized);
-        if (!found) {
-            if (!silent) {
-                alert('ไม่พบบาร์โค้ดนี้ในระบบ หรือยังไม่มี QR / Barcode ในคลังสินค้า');
-            } else {
-                const input = document.getElementById('scanBarcodeInput');
-                if (input) input.value = normalized;
-            }
-            return false;
-        }
-
-        const product = found.product;
-        const variant = found.variant;
-        const name = variant ? (variant.fullName || product.name) : product.name;
-        const price = variant ? Number(variant.price || 0) : Number(product.price || 0);
-        const sku = product.sku || 'SKU';
-        const unit = variant ? (variant.unit || product.unit || 'ชิ้น') : (product.unit || 'ชิ้น');
-
-        if (navigator.vibrate) {
-            navigator.vibrate([90, 60, 120]);
-        }
-        window.showToast('สแกนบาร์โค้ดสำเร็จ');
-
-        window.openScanResultModal({
-            id: product.id,
-            variantId: variant ? variant.id : null,
-            name,
-            sku,
-            price,
-            unit
-        });
-        return true;
-    };
-
-    function findBarcodeInProducts(code) {
-        const normalized = normalizeBarcodeValue(code);
-        if (!normalized) return null;
-
-        for (const item of stockProducts) {
-            const productBarcode = normalizeBarcodeValue(item.barcode);
-            if (productBarcode && productBarcode === normalized) {
-                return { product: item, variant: null, type: 'product' };
-            }
-
-            if (Array.isArray(item.variants)) {
-                const variant = item.variants.find(v => normalizeBarcodeValue(v.barcode) === normalized);
-                if (variant) {
-                    return { product: item, variant, type: 'variant' };
-                }
-            }
-        }
-
-        return null;
-    }
-
-    window.openScanBarcodeModal = function() {
-        const input = document.getElementById('scanBarcodeInput');
-        if (input) {
-            input.value = '';
-            setTimeout(() => input.focus(), 50);
-        }
-
-        const modal = document.getElementById('scanBarcodeModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => modal.classList.remove('opacity-0'));
-        }
-
-        startCameraScanPreview();
-    };
-
-    window.closeScanBarcodeModal = function() {
-        const modal = document.getElementById('scanBarcodeModal');
-        if (modal) {
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 250);
-        }
-        stopCameraScanPreview();
-    };
-
-    window.openScanResultModal = function(payload) {
-        window.pendingScanResult = payload;
-        const resultName = document.getElementById('scanResultName');
-        const resultMeta = document.getElementById('scanResultMeta');
-        if (resultName) resultName.innerText = payload.name;
-        if (resultMeta) resultMeta.innerText = `${payload.sku || 'SKU'} • ฿${Number(payload.price || 0).toLocaleString()} / ${payload.unit || 'ชิ้น'}`;
-
-        const modal = document.getElementById('scanResultModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => modal.classList.remove('opacity-0'));
-        }
-        window.closeScanBarcodeModal();
-    };
-
-    window.closeScanResultModal = function() {
-        const modal = document.getElementById('scanResultModal');
-        if (modal) {
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 250);
-        }
-        window.pendingScanResult = null;
-    };
-
-    window.addScannedProductToCurrentList = function() {
-        const payload = window.pendingScanResult;
-        if (!payload) return;
-
-        const existingIndex = window.currentScanItems.findIndex(item => item.id === payload.id && item.variantId === (payload.variantId || null));
-        if (existingIndex >= 0) {
-            window.currentScanItems[existingIndex].qty += 1;
-        } else {
-            window.currentScanItems.push({
-                id: payload.id,
-                variantId: payload.variantId || null,
-                name: payload.name,
-                sku: payload.sku || '',
-                price: Number(payload.price || 0),
-                unit: payload.unit || 'ชิ้น',
-                qty: 1
-            });
-        }
-
-        renderReceiptList();
-        window.closeScanResultModal();
-        window.showToast('เพิ่มลงรายการสแกนแล้ว');
-    };
-
-    window.handleBarcodeScanSubmit = function(event) {
-        event.preventDefault();
-        const input = document.getElementById('scanBarcodeInput');
-        const code = (input ? input.value : '').trim();
-        window.resolveBarcodeToProduct(code, false);
-    };
-
-    window.filterStockList = function() { window.renderStockList(); };
-    window.expandedProductIds = new Set();
-
-    window.toggleExpandedProduct = function(productId) {
-        if (window.expandedProductIds.has(productId)) {
-            window.expandedProductIds.delete(productId);
-        } else {
-            window.expandedProductIds.add(productId);
-        }
-        window.renderStockList();
-    };
-
-    function getProductInventoryStatus(item) {
-        if (item.type === 'variable') {
-            const variants = item.variants || [];
-            if (!variants.length) return 'out';
-            const anyLow = variants.some(v => (parseInt(v.stock) || 0) > 0 && (parseInt(v.stock) || 0) <= (parseInt(v.lowStockThreshold) || 5));
-            const anyStock = variants.some(v => (parseInt(v.stock) || 0) > 0);
-            if (!anyStock) return 'out';
-            if (anyLow) return 'low';
-            return 'normal';
-        }
-
-        const qty = parseInt(item.qty) || 0;
-        if (qty === 0) return 'out';
-        if (qty <= (parseInt(item.lowStockThreshold) || 5)) return 'low';
-        return 'normal';
-    }
 
     function updateDashboardStats() {
-        const totalItemsEl = document.getElementById('statTotalItems');
-        const totalQtyEl = document.getElementById('statTotalQty');
-        const totalValueEl = document.getElementById('statTotalValue');
-        const lowStockEl = document.getElementById('statLowStock');
-        const outOfStockEl = document.getElementById('statOutOfStock');
+        let totalItems = stockProducts.length;
+        let totalQty = 0;
+        let totalValue = 0;
+        let lowStockCount = 0;
+        let outStockCount = 0;
 
-        const totalQty = stockProducts.reduce((sum, p) => {
-            if (p.type === 'variable') {
-                return sum + ((p.variants || []).reduce((variantSum, v) => variantSum + (parseInt(v.stock) || 0), 0));
+        stockProducts.forEach(p => {
+            if(p.type === 'variable' && p.variants) {
+                p.variants.forEach(v => {
+                    totalQty += (v.stock || 0);
+                    totalValue += (v.price || 0) * (v.stock || 0);
+                    if(v.stock === 0) outStockCount++;
+                    else if(v.stock <= (v.lowStockThreshold || 5)) lowStockCount++;
+                });
+            } else {
+                totalQty += (p.qty || 0);
+                totalValue += (p.price || 0) * (p.qty || 0);
+                if(p.qty === 0) outStockCount++;
+                else if(p.qty <= (p.lowStockThreshold || 5)) lowStockCount++;
             }
-            return sum + (parseInt(p.qty) || 0);
-        }, 0);
+        });
 
-        const totalVal = stockProducts.reduce((sum, p) => {
-            if (p.type === 'variable') {
-                return sum + ((p.variants || []).reduce((variantSum, v) => variantSum + ((parseFloat(v.price) || 0) * (parseInt(v.stock) || 0)), 0));
-            }
-            return sum + ((parseFloat(p.price) || 0) * (parseInt(p.qty) || 0));
-        }, 0);
-
-        const lowCount = stockProducts.reduce((count, p) => {
-            if (p.type === 'variable') {
-                return count + (p.variants || []).filter(v => (parseInt(v.stock) || 0) > 0 && (parseInt(v.stock) || 0) <= (parseInt(v.lowStockThreshold) || 5)).length;
-            }
-            return count + (((parseInt(p.qty) || 0) > 0 && (parseInt(p.qty) || 0) <= (parseInt(p.lowStockThreshold) || 5)) ? 1 : 0);
-        }, 0);
-
-        const outCount = stockProducts.reduce((count, p) => {
-            if (p.type === 'variable') {
-                return count + (p.variants || []).filter(v => (parseInt(v.stock) || 0) === 0).length;
-            }
-            return count + (((parseInt(p.qty) || 0) === 0) ? 1 : 0);
-        }, 0);
-
-        if(totalItemsEl) totalItemsEl.innerText = stockProducts.length;
-        if(totalQtyEl) totalQtyEl.innerText = totalQty.toLocaleString();
-        if(totalValueEl) totalValueEl.innerText = '฿' + totalVal.toLocaleString();
-        if(lowStockEl) lowStockEl.innerText = lowCount;
-        if(outOfStockEl) outOfStockEl.innerText = outCount;
+        if(document.getElementById('statTotalItems')) document.getElementById('statTotalItems').innerText = totalItems;
+        if(document.getElementById('statTotalQty')) document.getElementById('statTotalQty').innerText = totalQty.toLocaleString();
+        if(document.getElementById('statTotalValue')) document.getElementById('statTotalValue').innerText = '฿' + totalValue.toLocaleString();
+        if(document.getElementById('statLowStock')) document.getElementById('statLowStock').innerText = lowStockCount;
+        if(document.getElementById('statOutOfStock')) document.getElementById('statOutOfStock').innerText = outStockCount;
     }
 
     window.renderStockList = function() {
         const container = document.getElementById('stockListContainer');
-        if (!container) return;
+        if(!container) return;
         updateDashboardStats();
 
-        const query = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
-        const selectedCat = document.getElementById('stockCategoryFilter')?.value || '';
-        const selectedStatus = document.getElementById('stockStatusFilter')?.value || '';
+        const search = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
+        const catFilter = document.getElementById('stockCategoryFilter')?.value || '';
+        const statusFilter = document.getElementById('stockStatusFilter')?.value || '';
 
-        const filteredProducts = stockProducts.filter(item => {
-            const hasVariants = item.type === 'variable' && (item.variants || []).length > 0;
-            const productText = `${item.name} ${item.sku || ''} ${item.barcode || ''}`.toLowerCase();
-            const variantText = (item.variants || []).map(v => `${v.fullName || ''} ${v.barcode || ''} ${v.optionName || ''}`).join(' ').toLowerCase();
-            const matchQuery = productText.includes(query) || variantText.includes(query);
-            const matchCat = selectedCat === '' || item.categoryId === selectedCat;
-            let matchStatus = true;
+        const filtered = stockProducts.filter(p => {
+            const matchSearch = !search || p.name.toLowerCase().includes(search) || (p.sku && p.sku.toLowerCase().includes(search)) || (p.barcode && p.barcode.toLowerCase().includes(search));
+            const matchCat = !catFilter || p.categoryId === catFilter;
+            
+            let status = 'normal';
+            if(p.qty === 0) status = 'out';
+            else if(p.qty <= (p.lowStockThreshold || 5)) status = 'low';
 
-            if (hasVariants) {
-                const variantStatuses = (item.variants || []).map(v => {
-                    const qty = parseInt(v.stock) || 0;
-                    if (qty === 0) return 'out';
-                    if (qty <= (parseInt(v.lowStockThreshold) || 5)) return 'low';
-                    return 'normal';
-                });
-                if (selectedStatus === 'normal') matchStatus = variantStatuses.includes('normal');
-                if (selectedStatus === 'low') matchStatus = variantStatuses.includes('low');
-                if (selectedStatus === 'out') matchStatus = variantStatuses.includes('out');
-            } else {
-                const qty = parseInt(item.qty) || 0;
-                if (selectedStatus === 'normal') matchStatus = qty > 0 && qty > (parseInt(item.lowStockThreshold) || 5);
-                if (selectedStatus === 'low') matchStatus = qty > 0 && qty <= (parseInt(item.lowStockThreshold) || 5);
-                if (selectedStatus === 'out') matchStatus = qty === 0;
-            }
-
-            return matchQuery && matchCat && matchStatus;
+            const matchStatus = !statusFilter || status === statusFilter;
+            return matchSearch && matchCat && matchStatus;
         });
 
-        const countText = document.getElementById('filteredCountText');
-        if(countText) countText.innerText = `แสดง ${filteredProducts.length} จาก ${stockProducts.length}`;
-
-        if (filteredProducts.length === 0) {
-            container.innerHTML = `
-                <div class="py-14 text-center space-y-3">
-                    <div class="w-16 h-16 rounded-3xl bg-orange-50 text-brand-500 flex items-center justify-center mx-auto shadow-inner">
-                        <i data-lucide="package-open" class="w-8 h-8"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-slate-700">ไม่พบรายการสินค้าที่ค้นหา</p>
-                        <p class="text-[11px] text-slate-400 mt-0.5">ลองเปลี่ยนคำค้นหา หรือกดปุ่ม "เพิ่มสินค้า"</p>
-                    </div>
-                </div>`; 
-            lucide.createIcons();
+        if(filtered.length === 0) {
+            container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs">ไม่พบรายการสินค้า</div>`;
             return;
         }
 
-        container.innerHTML = filteredProducts.map(item => {
-            const catObj = categories.find(c => c.id === item.categoryId) || {name: 'ทั่วไป'};
-            const hasVariants = item.type === 'variable' && (item.variants || []).length > 0;
-            const overallStatus = getProductInventoryStatus(item);
-            const statusClass = overallStatus === 'out' ? 'bg-rose-100 text-rose-600' : overallStatus === 'low' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600';
-            const isExpanded = window.expandedProductIds.has(item.id);
-
-            if (item.type === 'simple' || !hasVariants) {
-                return `
-                    <div class="p-3.5 rounded-2xl bg-white border ${overallStatus === 'out' ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs transition-colors shadow-sm">
-                        <div class="flex items-start gap-3 w-full sm:w-auto overflow-hidden">
-                            <div onclick="window.openBarcodeModal('${item.name.replace(/'/g, "\\'")}', '${item.barcode || '885000000000'}')" class="shrink-0 w-20 h-16 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 active:scale-95 overflow-hidden px-1">
-                                <svg class="barcode-svg max-w-full h-auto max-h-10" data-bc="${item.barcode || '885000000000'}"></svg>
-                                <span class="text-[8px] text-slate-400 font-mono mt-0.5 truncate w-full text-center">${item.sku || ''}</span>
-                            </div>
-                            <div class="space-y-1 w-full min-w-0">
-                                <div class="flex items-start justify-between sm:justify-start gap-2">
-                                    <h4 class="font-bold text-slate-800 truncate text-sm" title="${item.name}">${item.name}</h4>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
-                                    <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">${catObj.name}</span>
-                                </div>
-                                <div class="text-[11px]">ราคาหน่วยละ: <strong class="text-brand-600 text-xs">฿${Number(item.price || 0).toLocaleString()}</strong> / ${item.unit} <span class="text-slate-400 font-mono text-[10px] ml-1">(รวมมูลค่า: ฿${((Number(item.price || 0) * Number(item.qty || 0))).toLocaleString()})</span></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                            <div class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max ${statusClass}">
-                                <span class="w-1.5 h-1.5 rounded-full ${overallStatus === 'out' ? 'bg-rose-500' : overallStatus === 'low' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
-                                ${overallStatus === 'out' ? 'หมด' : overallStatus === 'low' ? 'ใกล้หมด' : 'มีสินค้า'}
-                            </div>
-                            <div class="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-200">
-                                <button onclick="window.adjustQtyBtn('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center">-</button>
-                                <input type="number" id="qtyInput_${item.id}_main" value="${item.qty || 0}" min="0" onchange="window.manualInputQty('${item.id}', this)" class="w-10 text-center bg-transparent font-bold font-mono text-slate-800 focus:outline-none no-spinners">
-                                <button onclick="window.adjustQtyBtn('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-brand-600">+</button>
-                            </div>
-                            <div class="flex gap-1.5 ml-2">
-                                <button onclick="window.openAddProductModal('${item.id}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-200 text-slate-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                                <button onclick="window.deleteProduct('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            const variants = item.variants || [];
-            const variantRows = variants.map(variant => {
-                const variantStatus = parseInt(variant.stock) === 0 ? 'out' : (parseInt(variant.stock) <= (parseInt(variant.lowStockThreshold) || 5) ? 'low' : 'normal');
-                const variantStatusClass = variantStatus === 'out' ? 'bg-rose-100 text-rose-600' : variantStatus === 'low' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600';
-
-                return `
-                    <div class="p-3 rounded-2xl bg-white border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
-                        <div class="flex items-start gap-3 w-full sm:w-auto overflow-hidden">
-                            <div onclick="window.openBarcodeModal('${(variant.fullName || item.name).replace(/'/g, "\\'")}', '${variant.barcode || '885000000000'}')" class="shrink-0 w-20 h-16 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 active:scale-95 overflow-hidden px-1">
-                                <svg class="barcode-svg max-w-full h-auto max-h-10" data-bc="${variant.barcode || '885000000000'}"></svg>
-                                <span class="text-[8px] text-slate-400 font-mono mt-0.5 truncate w-full text-center">${item.sku || 'VAR'}</span>
-                            </div>
-                            <div class="space-y-1 w-full min-w-0">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <h4 class="font-bold text-slate-800 truncate text-sm" title="${variant.fullName || item.name}">${variant.fullName || item.name}</h4>
-                                    <span class="bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full text-[9px] font-bold">Variable Variant</span>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
-                                    <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">${catObj.name}</span>
-                                </div>
-                                <div class="text-[11px]">ราคาหน่วยละ: <strong class="text-brand-600 text-xs">฿${Number(variant.price || 0).toLocaleString()}</strong> / ${variant.unit || item.unit} <span class="text-slate-400 font-mono text-[10px] ml-1">(รวมมูลค่า: ฿${((Number(variant.price || 0) * Number(variant.stock || 0))).toLocaleString()})</span></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                            <div class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max ${variantStatusClass}">
-                                <span class="w-1.5 h-1.5 rounded-full ${variantStatus === 'out' ? 'bg-rose-500' : variantStatus === 'low' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
-                                ${variantStatus === 'out' ? 'หมด' : variantStatus === 'low' ? 'ใกล้หมด' : 'มีสินค้า'}
-                            </div>
-                            <div class="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-200">
-                                <button onclick="window.adjustQtyBtn('${item.id}', -1, '${variant.id}')" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center">-</button>
-                                <input type="number" id="qtyInput_${item.id}_${variant.id}" value="${variant.stock || 0}" min="0" onchange="window.manualInputQty('${item.id}', this, '${variant.id}')" class="w-10 text-center bg-transparent font-bold font-mono text-slate-800 focus:outline-none no-spinners">
-                                <button onclick="window.adjustQtyBtn('${item.id}', 1, '${variant.id}')" class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-brand-600">+</button>
-                            </div>
-                            <div class="flex gap-1.5 ml-2">
-                                <button onclick="window.openAddProductModal('${item.id}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-200 text-slate-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                                <button onclick="window.deleteVariantFromMain('${item.id}', '${variant.id}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        container.innerHTML = filtered.map(p => {
+            const cat = categories.find(c => c.id === p.categoryId)?.name || 'ทั่วไป';
+            let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 flex items-center gap-1 w-max">🟢 มีสินค้า</span>`;
+            if(p.qty === 0) statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-100 text-rose-700 flex items-center gap-1 w-max">🔴 สินค้าหมด</span>`;
+            else if(p.qty <= (p.lowStockThreshold || 5)) statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 flex items-center gap-1 w-max">🟡 ใกล้หมด</span>`;
 
             return `
-                <div class="space-y-2">
-                    <div class="p-3.5 rounded-2xl bg-white border ${overallStatus === 'out' ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'} shadow-sm">
-                        <div class="flex items-center justify-between gap-3">
-                            <div class="flex items-start gap-3 min-w-0">
-                                <div onclick="window.openBarcodeModal('${item.name.replace(/'/g, "\\'")}', '${item.barcode || '885000000000'}')" class="shrink-0 w-20 h-16 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 active:scale-95 overflow-hidden px-1">
-                                    <svg class="barcode-svg max-w-full h-auto max-h-10" data-bc="${item.barcode || '885000000000'}"></svg>
-                                    <span class="text-[8px] text-slate-400 font-mono mt-0.5 truncate w-full text-center">${item.sku || 'VAR'}</span>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <h4 class="font-bold text-slate-800 text-sm truncate" title="${item.name}">${item.name}</h4>
-                                        <span class="bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full text-[9px] font-bold">Variable Product</span>
-                                    </div>
-                                    <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-500 mt-1">
-                                        <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">${catObj.name}</span>
-                                        <span class="text-slate-400">${variants.length} ตัวเลือก</span>
-                                    </div>
-                                </div>
+                <div class="glass-card rounded-2xl p-3 border border-slate-200/80 shadow-2xs space-y-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">${p.sku}</span>
+                                <span class="text-[10px] text-brand-600 font-semibold bg-brand-50 px-2 py-0.5 rounded-md">${cat}</span>
                             </div>
-
-                            <div class="flex items-center gap-2 shrink-0">
-                                <div class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 w-max ${statusClass}">
-                                    <span class="w-1.5 h-1.5 rounded-full ${overallStatus === 'out' ? 'bg-rose-500' : overallStatus === 'low' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
-                                    ${overallStatus === 'out' ? 'หมด' : overallStatus === 'low' ? 'ใกล้หมด' : 'มีสินค้า'}
-                                </div>
-                                <button type="button" onclick="window.toggleExpandedProduct('${item.id}')" class="px-3 py-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold active:scale-95 transition-all">
-                                    ${isExpanded ? 'ซ่อน' : 'เพิ่มเติม'}
-                                </button>
-                            </div>
+                            <h4 class="font-bold text-slate-900 text-xs mt-1">${p.name}</h4>
+                            <p class="text-[10px] text-slate-400 font-mono">บาร์โค้ด: ${p.barcode || '-'}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-black font-mono text-brand-600">฿${parseFloat(p.price || 0).toLocaleString()}</span>
+                            <span class="text-[10px] text-slate-400 block">ต่อ ${p.unit}</span>
                         </div>
                     </div>
 
-                    ${isExpanded ? `<div class="space-y-2 pl-2 border-l-2 border-orange-200 ml-3">${variantRows}</div>` : ''}
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                        ${statusBadge}
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                                <button onclick="window.adjustQtyBtn('${p.id}', -1)" class="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-bold">-</button>
+                                <input type="number" id="qtyInput_${p.id}" value="${p.qty}" onchange="window.manualInputQty('${p.id}', this)" class="w-12 bg-transparent text-center font-mono font-bold text-xs focus:outline-none no-spinners">
+                                <button onclick="window.adjustQtyBtn('${p.id}', 1)" class="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-bold">+</button>
+                            </div>
+                            <button onclick="window.openAddProductModal('${p.id}')" class="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-95 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="window.deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500 active:scale-95 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        </div>
+                    </div>
                 </div>
             `;
         }).join('');
-        
+
         lucide.createIcons();
-        setTimeout(() => {
-            document.querySelectorAll('.barcode-svg').forEach(svg => {
-                if(svg.dataset.bc) {
-                    try {
-                        JsBarcode(svg, svg.dataset.bc, { format: "CODE128", displayValue: false, width: 1, height: 30, background: "transparent", lineColor: "#334155", margin: 0 });
-                    } catch (e) {}
-                }
-            });
-        }, 10);
-    }
-
-    window.deleteVariantFromMain = function(productId, variantId) {
-        const product = stockProducts.find(p => p.id === productId);
-        if (!product || !product.variants) return;
-        product.variants = (product.variants || []).filter(v => v.id !== variantId);
-        if (!product.variants.length) {
-            stockProducts = stockProducts.filter(p => p.id !== productId);
-        } else {
-            product.qty = product.variants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-        }
-        persistLocalCache();
-        window.renderStockList();
-        window.showToast('ลบตัวเลือกย่อยสำเร็จ');
     };
 
-    window.adjustQtyBtn = function(id, amount, variantId = '') {
-        const item = stockProducts.find(p => p.id === id);
-        if (!item) return;
-
-        if (item.type === 'variable') {
-            const variant = (item.variants || []).find(v => v.id === variantId);
-            if (!variant) return;
-            variant.stock = Math.max(0, (Number(variant.stock) || 0) + amount);
-            item.qty = (item.variants || []).reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
-            persistLocalCache();
-            window.renderStockList();
-            return;
-        }
-
-        item.qty = Math.max(0, (Number(item.qty) || 0) + amount);
-        persistLocalCache();
+    window.filterStockList = function() {
         window.renderStockList();
     };
 
-    window.manualInputQty = function(id, inputElement, variantId = '') {
-        const item = stockProducts.find(p => p.id === id);
-        if (!item) return;
-
-        const value = Math.max(0, Number(inputElement.value) || 0);
-
-        if (item.type === 'variable') {
-            const variant = (item.variants || []).find(v => v.id === variantId);
-            if (!variant) return;
-            variant.stock = value;
-            item.qty = (item.variants || []).reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
-            persistLocalCache();
-            window.renderStockList();
-            return;
-        }
-
-        item.qty = value;
-        persistLocalCache();
-        window.renderStockList();
-    };
-
-    const canvas = document.getElementById('previewCanvas');
-    const ctx = canvas.getContext('2d');
-    const wmState = { image: null, fileName: 'watermarked.png', text: 'ร้านนานาภัณฑ์ จ.ขอนแก่น', opacity: 0.16, scale: 0.96, pattern: 'tile' };
-
-    window.setupWatermarkControls = function() {
-        document.getElementById('imageInput').addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) window.handleImageFile(e.target.files[0]);
-        });
-        document.getElementById('opacitySlider').addEventListener('input', (e) => {
-            wmState.opacity = e.target.value / 100; document.getElementById('opacityVal').innerText = e.target.value + '%'; window.renderWatermark();
-        });
-        document.getElementById('scaleSlider').addEventListener('input', (e) => {
-            wmState.scale = e.target.value / 100; document.getElementById('scaleVal').innerText = e.target.value + '%'; window.renderWatermark();
-        });
-        document.getElementById('patternTile').addEventListener('click', (e) => {
-            wmState.pattern = 'tile'; e.currentTarget.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600'); e.currentTarget.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
-            document.getElementById('patternCenter').className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
-            window.renderWatermark();
-        });
-        document.getElementById('patternCenter').addEventListener('click', (e) => {
-            wmState.pattern = 'center'; e.currentTarget.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-600'); e.currentTarget.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
-            document.getElementById('patternTile').className = 'pattern-btn p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2 transition-all';
-            window.renderWatermark();
-        });
-    }
-
-    window.resetWatermarkSettings = function() {
-        wmState.opacity = 0.16; wmState.scale = 0.96;
-        document.getElementById('opacitySlider').value = 16; document.getElementById('opacityVal').innerText = '16%';
-        document.getElementById('scaleSlider').value = 96; document.getElementById('scaleVal').innerText = '96%';
-        window.renderWatermark(); window.showToast('รีเซ็ตค่าเรียบร้อย');
-    }
-
-    window.handleImageFile = function(file) {
-        wmState.fileName = 'wm-' + file.name;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                wmState.image = img;
-                document.getElementById('emptyState').classList.add('hidden');
-                canvas.classList.remove('hidden');
-                document.getElementById('imageDimensions').classList.remove('hidden');
-                document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
-                document.getElementById('downloadBtn').disabled = false;
-                document.getElementById('clearBtn').disabled = false;
-                window.renderWatermark();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    window.renderWatermark = function() {
-        if (!wmState.image) return;
-        const img = wmState.image;
-        canvas.width = img.width; canvas.height = img.height;
-        ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0);
-
-        const baseSize = Math.max(16, Math.round((Math.min(img.width, img.height) / 20) * wmState.scale));
-        ctx.save();
-        if (wmState.pattern === 'tile') {
-            ctx.font = `600 ${baseSize}px 'Kanit'`;
-            const metrics = ctx.measureText(wmState.text);
-            const stepX = metrics.width + (baseSize * 2.5), stepY = baseSize * 3.5;
-            ctx.translate(img.width / 2, img.height / 2); ctx.rotate(-28 * Math.PI / 180);
-            const diag = Math.sqrt(img.width*img.width + img.height*img.height);
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            let rowCount = 0;
-            for (let y = -diag; y < diag; y += stepY) {
-                rowCount++; const shiftX = (rowCount % 2 === 0) ? stepX / 2 : 0;
-                for (let x = -diag; x < diag; x += stepX) {
-                    ctx.fillStyle = `rgba(0,0,0,${wmState.opacity * 0.7})`; ctx.fillText(wmState.text, x + shiftX + 2, y + 2);
-                    ctx.fillStyle = `rgba(255,255,255,${wmState.opacity})`; ctx.fillText(wmState.text, x + shiftX, y);
-                }
-            }
-        } else {
-            ctx.translate(img.width / 2, img.height / 2); ctx.font = `600 ${baseSize * 1.3}px 'Kanit'`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillStyle = `rgba(0,0,0,${wmState.opacity})`; ctx.fillText(wmState.text, 2, 2);
-            ctx.fillStyle = `rgba(255,255,255,${wmState.opacity * 1.5})`; ctx.fillText(wmState.text, 0, 0);
-        }
-        ctx.restore();
-    }
-
-    window.createDemoImage = function() {
-        const dc = document.createElement('canvas'); dc.width = 800; dc.height = 800; const dctx = dc.getContext('2d');
-        const grad = dctx.createLinearGradient(0, 0, 800, 800); grad.addColorStop(0, '#fdba74'); grad.addColorStop(1, '#ea580c');
-        dctx.fillStyle = grad; dctx.fillRect(0, 0, 800, 800); dctx.fillStyle = 'white'; dctx.font = 'bold 36px Kanit'; dctx.textAlign = 'center'; dctx.fillText('ตัวอย่างสินค้า ร้านนานาภัณฑ์', 400, 400);
-        const img = new Image();
-        img.onload = () => {
-            wmState.image = img;
-            document.getElementById('emptyState').classList.add('hidden'); canvas.classList.remove('hidden');
-            document.getElementById('imageDimensions').classList.add('hidden'); document.getElementById('imageDimensions').innerText = '800 x 800 px';
-            document.getElementById('downloadBtn').disabled = false; document.getElementById('clearBtn').disabled = false;
-            window.renderWatermark();
-        };
-        img.src = dc.toDataURL();
-    }
-
-    window.downloadImage = function() {
-        if (!wmState.image) return;
-        const dataUrl = canvas.toDataURL('image/png');
-        document.getElementById('modalPreviewImg').src = dataUrl;
-        const link = document.getElementById('modalDownloadLink');
-        link.href = dataUrl; link.download = wmState.fileName;
-        document.getElementById('downloadModal').classList.remove('hidden'); lucide.createIcons();
-        
-        const a = document.createElement('a'); a.download = wmState.fileName; a.href = dataUrl;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-    window.closeDownloadModal = function() { document.getElementById('downloadModal').classList.add('hidden'); }
+    // ==========================================
+    // WATERMARK MODULE CODE
+    // ==========================================
+    let currentImage = null;
+    let originalImageObj = null;
 
     window.clearImage = function() {
-        wmState.image = null; ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.classList.add('hidden'); document.getElementById('emptyState').classList.remove('hidden');
+        currentImage = null;
+        originalImageObj = null;
+        const canvas = document.getElementById('previewCanvas');
+        canvas.classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+        document.getElementById('clearBtn').disabled = true;
+        document.getElementById('downloadBtn').disabled = true;
         document.getElementById('imageDimensions').classList.add('hidden');
-        document.getElementById('downloadBtn').disabled = true; document.getElementById('clearBtn').disabled = true;
-        document.getElementById('imageInput').value = '';
     }
 
-    window.renderModulesGrid = function() {
-        document.getElementById('modulesGrid').innerHTML = window.APP_MODULES.map(mod => `
-            <div onclick="window.APP_MODULES.find(m => m.id === '${mod.id}').action()" class="glass-card rounded-3xl p-3.5 flex flex-col items-center justify-between text-center relative border border-slate-200/80 shadow-xs cursor-pointer active:scale-95 hover:shadow-md transition-all h-28">
-                ${mod.badge ? `<span class="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${mod.badgeColor}">${mod.badge}</span>` : ''}
-                <div class="w-11 h-11 rounded-2xl ${mod.iconBg} flex items-center justify-center mt-1 shadow-sm"><i data-lucide="${mod.icon}" class="w-5 h-5"></i></div>
-                <span class="text-xs font-bold text-slate-800 leading-tight">${mod.title}</span>
-            </div>
-        `).join('');
-        lucide.createIcons();
-    }
-
-    window.forceSyncCloud = async function() {
-        window.showToast('กำลังซิงค์ข้อมูลกับคลาวด์...');
-        try {
-            if (db) {
-                const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-                const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-                const setsRef = collection(db, 'artifacts', appId, 'public', 'data', 'sets');
-                
-                const catSnap = await getDocs(categoriesRef);
-                if (!catSnap.empty) {
-                    const serverCats = [];
-                    catSnap.forEach(d => serverCats.push(d.data()));
-                    categories = serverCats;
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImageObj = img;
+                    currentImage = img;
+                    document.getElementById('emptyState').classList.add('hidden');
+                    const canvas = document.getElementById('previewCanvas');
+                    canvas.classList.remove('hidden');
+                    document.getElementById('clearBtn').disabled = false;
+                    document.getElementById('downloadBtn').disabled = false;
+                    document.getElementById('imageDimensions').classList.remove('hidden');
+                    document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
+                    window.drawWatermark();
                 }
-
-                const prodSnap = await getDocs(productsRef);
-                if (!prodSnap.empty) {
-                    const serverProds = [];
-                    prodSnap.forEach(d => serverProds.push(d.data()));
-                    stockProducts = serverProds;
-                }
-
-                const setSnap = await getDocs(setsRef);
-                if (!setSnap.empty) {
-                    const serverSets = [];
-                    setSnap.forEach(d => serverSets.push(d.data()));
-                    productSets = serverSets;
-                }
-
-                persistLocalCache();
-                window.updateCategoryDropdowns();
-                window.renderStockList();
-                window.showToast('ซิงค์ข้อมูลสำเร็จเรียบร้อย!');
+                img.src = event.target.result;
             }
-        } catch (err) {
-            console.error("Force sync error:", err);
-            window.showToast('ซิงค์ข้อมูลสำเร็จ (ใช้แคชในเครื่อง)');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        seedDefaultProductsIfNeeded();
-        lucide.createIcons();
-        window.renderModulesGrid();
-        window.setupWatermarkControls();
-        window.checkAuthSession();
-        window.updateCategoryDropdowns();
-        window.renderStockList();
-        
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-
-            const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-            const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-            const setsRef = collection(db, 'artifacts', appId, 'public', 'data', 'sets');
-
-            // Realtime Categories Listener
-            onSnapshot(categoriesRef, async (snapshot) => {
-                const serverCats = [];
-                snapshot.forEach(doc => serverCats.push(doc.data()));
-                if(serverCats.length > 0) {
-                    categories = serverCats;
-                    persistLocalCache();
-                    window.updateCategoryDropdowns();
-                    if(!document.getElementById('categoryModal').classList.contains('hidden')) {
-                        window.renderCategoryList();
-                    }
-                } else {
-                    for (const cat of defaultCategories) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), cat);
-                    }
-                }
-            }, (error) => console.warn("Category Sync Warning:", error.message));
-
-            // Realtime Products Listener
-            onSnapshot(productsRef, (snapshot) => {
-                const serverProducts = [];
-                snapshot.forEach(doc => serverProducts.push(doc.data()));
-                if(serverProducts.length > 0) {
-                    stockProducts = serverProducts;
-                    persistLocalCache();
-                    if(!document.getElementById('stockView').classList.contains('hidden')) {
-                        window.renderStockList();
-                    }
-                }
-            }, (error) => console.warn("Product Sync Warning:", error.message));
-
-            // Realtime Sets Listener
-            onSnapshot(setsRef, (snapshot) => {
-                const serverSets = [];
-                snapshot.forEach(doc => serverSets.push(doc.data()));
-                if(serverSets.length > 0) {
-                    productSets = serverSets;
-                    persistLocalCache();
-                    if(!document.getElementById('setsModal').classList.contains('hidden')) {
-                        window.renderSetsList();
-                    }
-                }
-            }, (error) => console.warn("Sets Sync Warning:", error.message));
-
-        } catch (err) { 
-            console.warn("Firebase Connection Warning (Using Local Cache):", err.message);
-            document.getElementById('syncDotIndicator').className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+            reader.readAsDataURL(file);
         }
     });
+
+    window.createDemoImage = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800; canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, 800, 600);
+        ctx.fillStyle = '#f97316';
+        ctx.font = 'bold 48px Kanit, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('นานาภัณฑ์ จ.ขอนแก่น', 400, 280);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '24px Kanit, sans-serif';
+        ctx.fillText('ตัวอย่างรูปภาพสินค้าสำหรับใส่ลายน้ำ', 400, 340);
+
+        const img = new Image();
+        img.onload = function() {
+            originalImageObj = img;
+            currentImage = img;
+            document.getElementById('emptyState').classList.add('hidden');
+            const previewCanvas = document.getElementById('previewCanvas');
+            previewCanvas.classList.remove('hidden');
+            document.getElementById('clearBtn').disabled = false;
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('imageDimensions').classList.remove('hidden');
+            document.getElementById('imageDimensions').innerText = `${img.width} x ${img.height} px`;
+            window.drawWatermark();
+        }
+        img.src = canvas.toDataURL();
+    };
+
+    let watermarkPattern = 'tile';
+    document.querySelectorAll('.pattern-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.pattern-btn').forEach(b => {
+                b.classList.remove('border-brand-500', 'bg-brand-50', 'text-brand-600', 'active');
+                b.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-600');
+            });
+            this.classList.add('border-brand-500', 'bg-brand-50', 'text-brand-600', 'active');
+            this.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
+            watermarkPattern = this.id === 'patternTile' ? 'tile' : 'center';
+            if(currentImage) window.drawWatermark();
+        });
+    });
+
+    document.getElementById('opacitySlider').addEventListener('input', function(e) {
+        document.getElementById('opacityVal').innerText = e.target.value + '%';
+        if(currentImage) window.drawWatermark();
+    });
+
+    document.getElementById('scaleSlider').addEventListener('input', function(e) {
+        document.getElementById('scaleVal').innerText = e.target.value + '%';
+        if(currentImage) window.drawWatermark();
+    });
+
+    window.drawWatermark = function() {
+        if(!currentImage) return;
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = currentImage.width;
+        canvas.height = currentImage.height;
+
+        ctx.drawImage(currentImage, 0, 0);
+
+        const opacity = parseInt(document.getElementById('opacitySlider').value) / 100;
+        const scale = parseInt(document.getElementById('scaleSlider').value) / 100;
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        
+        const baseFontSize = Math.max(24, Math.floor(Math.min(canvas.width, canvas.height) * 0.05 * scale));
+        ctx.font = `bold ${baseFontSize}px Kanit, sans-serif`;
+        ctx.lineWidth = Math.max(1, baseFontSize / 12);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const text = 'NANAPHAN HUB';
+
+        if(watermarkPattern === 'center') {
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 6);
+            ctx.strokeText(text, 0, 0);
+            ctx.fillText(text, 0, 0);
+        } else {
+            const stepX = Math.max(250, baseFontSize * 8);
+            const stepY = Math.max(200, baseFontSize * 6);
+            for(let y = -canvas.height; y < canvas.height * 2; y += stepY) {
+                for(let x = -canvas.width; x < canvas.width * 2; x += stepX) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(-Math.PI / 6);
+                    ctx.strokeText(text, 0, 0);
+                    ctx.fillText(text, 0, 0);
+                    ctx.restore();
+                }
+            }
+        }
+        ctx.restore();
+    };
+
+    window.resetWatermarkSettings = function() {
+        document.getElementById('opacitySlider').value = 16;
+        document.getElementById('opacityVal').innerText = '16%';
+        document.getElementById('scaleSlider').value = 96;
+        document.getElementById('scaleVal').innerText = '96%';
+        if(currentImage) window.drawWatermark();
+        window.showToast('รีเซ็ตค่าลายน้ำแล้ว');
+    };
+
+    window.downloadImage = function() {
+        const canvas = document.getElementById('previewCanvas');
+        const dataUrl = canvas.toDataURL('image/png');
+        
+        const modalImg = document.getElementById('modalPreviewImg');
+        const modalLink = document.getElementById('modalDownloadLink');
+        modalImg.src = dataUrl;
+        modalLink.href = dataUrl;
+        modalLink.download = 'nanaphan-watermark-' + Date.now() + '.png';
+
+        const downloadModal = document.getElementById('downloadModal');
+        downloadModal.classList.remove('hidden');
+
+        const link = document.createElement('a');
+        link.download = 'nanaphan-watermark-' + Date.now() + '.png';
+        link.href = dataUrl;
+        link.click();
+    };
+
+    window.closeDownloadModal = function() {
+        document.getElementById('downloadModal').classList.add('hidden');
+    };
+
+    window.closeBarcodeModal = function() {
+        animateModalClose('barcodeModal');
+    };
+
+    window.copyBarcodeText = function() {
+        window.showToast('คัดลอกบาร์โค้ดแล้ว');
+    };
+
+    // Initialize Application Session
+    window.onload = function() {
+        lucide.createIcons();
+        window.checkAuthSession();
+    };
 </script>
+
 </body>
 </html>
