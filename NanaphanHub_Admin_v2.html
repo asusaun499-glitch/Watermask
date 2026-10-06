@@ -43,6 +43,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
 <style>
     * {
@@ -191,9 +192,14 @@
                     </div>
                 </div>
                 
-                <button onclick="window.handleLogout()" title="ออกจากระบบ" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
-                    <i data-lucide="log-out" class="w-4 h-4 text-white"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <a href="./NanaphanHub_POS.html" title="เปิดหน้าร้าน POS" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
+                        <i data-lucide="shopping-cart" class="w-4 h-4 text-white"></i>
+                    </a>
+                    <button onclick="window.handleLogout()" title="ออกจากระบบ" class="w-9 h-9 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-90 flex items-center justify-center transition-all z-10 relative">
+                        <i data-lucide="log-out" class="w-4 h-4 text-white"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Always-on Barcode Scanner -->
@@ -274,12 +280,13 @@
                 </div>
             </div>
 
-            <div onclick="window.openSetsModal()" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md">
+            <a href="./NanaphanHub_POS.html" class="col-span-4 glass-card rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60 cursor-pointer active:scale-95 transition-all hover:shadow-md no-underline">
                 <div class="w-8 h-8 rounded-xl bg-orange-50 text-brand-500 flex items-center justify-center mb-1">
-                    <i data-lucide="calculator" class="w-4 h-4"></i>
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 </div>
-                <span class="text-[11px] font-bold text-slate-700 leading-tight">คำนวณราคาเซ็ต</span>
-            </div>
+                <span class="text-[11px] font-bold text-slate-700 leading-tight">หน้าร้าน POS</span>
+                <span class="text-[9px] text-slate-400 mt-0.5">ยิงบาร์โค้ด / รับเงิน</span>
+            </a>
         </div>
 
         <div class="space-y-3 pt-1">
@@ -317,6 +324,9 @@
                 </button>
                 <button onclick="window.openCategoryModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
                     <i data-lucide="folders" class="w-4 h-4"></i> <span class="hidden sm:inline">หมวดหมู่</span>
+                </button>
+                <button onclick="window.syncAllData()" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> ซิงค์ข้อมูล
                 </button>
                 <button onclick="window.openAddProductModal()" class="px-3 py-1.5 rounded-xl orange-gradient-card text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
                     <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มสินค้า
@@ -378,6 +388,79 @@
 
             <div id="stockListContainer" class="space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar pb-10">
                 <!-- Dynamic Stock Cards -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: REALTIME BUSINESS SUMMARY          -->
+    <!-- ========================================== -->
+    <section id="summaryView" class="hidden max-w-5xl mx-auto px-4 py-4 w-full flex-grow">
+        <div class="flex items-center justify-between mb-3 glass-card p-3 rounded-2xl border border-slate-200 shadow-xs flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <button onclick="window.switchView('homeView')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> หน้าหลัก
+                </button>
+                <div class="flex items-center gap-2">
+                    <span id="summarySyncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h1 class="text-xs font-bold text-slate-800">ข้อมูลสรุป รายรับ-รายจ่าย (Realtime)</h1>
+                </div>
+            </div>
+            <button onclick="window.syncAllData()" class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold flex items-center gap-1.5">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> ซิงค์ข้อมูล
+            </button>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 text-center shadow-xs">
+                <span class="text-[10px] text-slate-500 block mb-1">ยอดขาย</span>
+                <span id="summarySales" class="text-lg font-black font-mono text-emerald-600">฿0.00</span>
+            </div>
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 text-center shadow-xs">
+                <span class="text-[10px] text-slate-500 block mb-1">รายจ่าย</span>
+                <span id="summaryExpenses" class="text-lg font-black font-mono text-rose-500">฿0.00</span>
+            </div>
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 text-center shadow-xs">
+                <span class="text-[10px] text-slate-500 block mb-1">รับเงินสดเข้า</span>
+                <span id="summaryCashIn" class="text-lg font-black font-mono text-blue-600">฿0.00</span>
+            </div>
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 text-center shadow-xs">
+                <span class="text-[10px] text-slate-500 block mb-1">ยอดสุทธิ</span>
+                <span id="summaryNet" class="text-lg font-black font-mono text-brand-600">฿0.00</span>
+            </div>
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 text-center shadow-xs">
+                <span class="text-[10px] text-slate-500 block mb-1">จำนวนบิล</span>
+                <span id="summaryBillCount" class="text-lg font-black font-mono text-slate-800">0</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-bold text-slate-800">ยอดขาย / รายจ่าย 7 วันล่าสุด</h3>
+                    <span class="text-[10px] text-slate-400">Realtime</span>
+                </div>
+                <div class="h-64"><canvas id="summaryChart"></canvas></div>
+            </div>
+            <div class="glass-card rounded-3xl p-4 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-bold text-slate-800">สัดส่วนรายรับ-รายจ่าย</h3>
+                    <span class="text-[10px] text-slate-400">รวมทั้งหมด</span>
+                </div>
+                <div class="h-64"><canvas id="summaryPieChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-3xl p-4 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-3">
+                <div>
+                    <h3 class="text-xs font-bold text-slate-800">ยอดขายแต่ละบิล</h3>
+                    <p class="text-[10px] text-slate-400">รายการขายจากหน้าร้านจะแสดงที่นี่แบบเรียลไทม์</p>
+                </div>
+                <span id="summarySyncBadge" class="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full">🟢 Connected</span>
+            </div>
+            <div id="summaryBillsList" class="space-y-2 max-h-[420px] overflow-y-auto no-scrollbar">
+                <div class="py-8 text-center text-slate-400 text-xs">ยังไม่มีข้อมูลการขาย</div>
             </div>
         </div>
     </section>
@@ -799,7 +882,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot, addDoc, writeBatch, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.showToast = function(text) {
         const container = document.getElementById('toastContainer');
@@ -823,6 +906,257 @@
     };
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanaphan-hub-app';
     let db, auth;
+
+    // ==========================================
+    // FIRESTORE REALTIME SYNC + BUSINESS DATA
+    // ==========================================
+    let realtimeUnsubs = [];
+    let realtimeSales = [];
+    let realtimeCashTransactions = [];
+    let summaryChartInstance = null;
+    let summaryPieInstance = null;
+
+    function setSyncState(connected, message = '') {
+        const dots = ['syncDotIndicator', 'summarySyncDot'];
+        dots.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.toggle('bg-emerald-500', connected);
+            el.classList.toggle('bg-rose-500', !connected);
+        });
+        const badge = document.getElementById('summarySyncBadge');
+        if (badge) {
+            badge.innerText = connected ? '🟢 Connected' : '🔴 Offline';
+            badge.className = connected
+                ? 'text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full'
+                : 'text-[10px] bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full';
+        }
+        if (message) console.log('[NanaphanHub]', message);
+    }
+
+    async function cloudSet(collectionName, id, data) {
+        if (!db) return false;
+        try {
+            await setDoc(doc(db, collectionName, id), data, { merge: true });
+            return true;
+        } catch (err) {
+            console.warn('Cloud set failed:', collectionName, id, err);
+            setSyncState(false, err.message);
+            return false;
+        }
+    }
+
+    async function cloudDelete(collectionName, id) {
+        if (!db) return false;
+        try {
+            await deleteDoc(doc(db, collectionName, id));
+            return true;
+        } catch (err) {
+            console.warn('Cloud delete failed:', collectionName, id, err);
+            setSyncState(false, err.message);
+            return false;
+        }
+    }
+
+    async function seedCloudFromLocal() {
+        if (!db) return;
+        const productSnap = await getDocs(collection(db, 'nanaphan_products'));
+        if (productSnap.empty && stockProducts.length) {
+            for (const product of stockProducts) await cloudSet('nanaphan_products', product.id, product);
+        } else if (!productSnap.empty) {
+            stockProducts = productSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            localStorage.setItem('nanaphan_products_' + appId, JSON.stringify(stockProducts));
+        }
+
+        const categorySnap = await getDocs(collection(db, 'nanaphan_categories'));
+        if (categorySnap.empty && categories.length) {
+            for (const cat of categories) await cloudSet('nanaphan_categories', cat.id, cat);
+        } else if (!categorySnap.empty) {
+            categories = categorySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
+        }
+        updateCategoryDropdowns();
+        renderStockList();
+    }
+
+    function attachRealtimeListeners() {
+        if (!db) return;
+        realtimeUnsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        realtimeUnsubs = [];
+
+        realtimeUnsubs.push(onSnapshot(collection(db, 'nanaphan_products'), snap => {
+            stockProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            localStorage.setItem('nanaphan_products_' + appId, JSON.stringify(stockProducts));
+            updateCategoryDropdowns();
+            updateDashboardStats();
+            renderStockList();
+            setSyncState(true);
+        }, err => setSyncState(false, err.message)));
+
+        realtimeUnsubs.push(onSnapshot(collection(db, 'nanaphan_categories'), snap => {
+            categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            if (!categories.length) categories = defaultCategories;
+            localStorage.setItem('nanaphan_categories_' + appId, JSON.stringify(categories));
+            updateCategoryDropdowns();
+            setSyncState(true);
+        }, err => setSyncState(false, err.message)));
+
+        realtimeUnsubs.push(onSnapshot(query(collection(db, 'nanaphan_sales'), orderBy('createdAt', 'desc'), limit(500)), snap => {
+            realtimeSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderSummaryDashboard();
+        }, err => setSyncState(false, err.message)));
+
+        realtimeUnsubs.push(onSnapshot(query(collection(db, 'nanaphan_cash_transactions'), orderBy('createdAt', 'desc'), limit(500)), snap => {
+            realtimeCashTransactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderSummaryDashboard();
+        }, err => setSyncState(false, err.message)));
+    }
+
+    window.syncAllData = async function() {
+        if (!db || !auth) {
+            window.showToast('ยังเชื่อมต่อฐานข้อมูลไม่ได้');
+            return;
+        }
+        try {
+            window.showToast('กำลังซิงค์ข้อมูล...');
+            await auth.currentUser?.getIdToken?.();
+            await seedCloudFromLocal();
+            attachRealtimeListeners();
+            window.showToast('ซิงค์ข้อมูลเรียบร้อย');
+            setSyncState(true);
+        } catch (err) {
+            console.warn(err);
+            setSyncState(false, err.message);
+            window.showToast('ซิงค์ไม่สำเร็จ ใช้ข้อมูลในเครื่องต่อไป');
+        }
+    };
+
+    window.recordCashTransaction = async function(type, amount, note = '') {
+        const value = Number(amount) || 0;
+        if (!value) return false;
+        const payload = {
+            type,
+            amount: value,
+            note,
+            createdAt: Date.now(),
+            source: 'POS'
+        };
+        if (!db) return false;
+        try {
+            await addDoc(collection(db, 'nanaphan_cash_transactions'), payload);
+            return true;
+        } catch (err) {
+            console.warn('Cash transaction failed:', err);
+            window.showToast('บันทึกรับ/ถอนเงินไม่สำเร็จ');
+            return false;
+        }
+    };
+
+    window.recordSale = async function(items, pricing, payment = {}) {
+        if (!db) return false;
+        const sale = {
+            billNo: 'B' + new Date().toISOString().replace(/\D/g, '').slice(0, 14),
+            items: JSON.parse(JSON.stringify(items || [])),
+            subtotal: Number(pricing.subtotal || 0),
+            discount: Number(pricing.discount || 0),
+            tax: Number(pricing.tax || 0),
+            total: Number(pricing.total || 0),
+            paymentMethod: payment.method || 'cash',
+            received: Number(payment.received || 0),
+            change: Number(payment.change || 0),
+            createdAt: Date.now(),
+            source: 'POS'
+        };
+        try {
+            const batch = writeBatch(db);
+            for (const item of items) {
+                const prod = stockProducts.find(p => p.id === item.id || String(item.id || '').startsWith(p.id + '_'));
+                if (!prod) continue;
+                const ref = doc(db, 'nanaphan_products', prod.id);
+                const updated = JSON.parse(JSON.stringify(prod));
+                if (updated.type === 'variable' && Array.isArray(updated.variants)) {
+                    const varId = String(item.id).startsWith(prod.id + '_') ? String(item.id).slice(prod.id.length + 1) : null;
+                    const v = updated.variants.find(x => x.id === varId);
+                    if (v) v.stock = Math.max(0, Number(v.stock || 0) - Number(item.qty || 0));
+                } else {
+                    updated.qty = Math.max(0, Number(updated.qty || 0) - Number(item.qty || 0));
+                }
+                updated.updatedAt = Date.now();
+                batch.set(ref, updated, { merge: true });
+            }
+            const saleRef = doc(collection(db, 'nanaphan_sales'));
+            batch.set(saleRef, sale);
+            await batch.commit();
+            return { ok: true, sale: { id: saleRef.id, ...sale } };
+        } catch (err) {
+            console.warn('Sale record failed:', err);
+            window.showToast('บันทึกบิลออนไลน์ไม่สำเร็จ');
+            return false;
+        }
+    };
+
+    function money(n) {
+        return Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    window.openSummaryView = function() {
+        window.switchView('summaryView');
+        renderSummaryDashboard();
+    };
+
+    function renderSummaryDashboard() {
+        const sales = realtimeSales.reduce((s, x) => s + Number(x.total || 0), 0);
+        const cashIn = realtimeCashTransactions.filter(x => x.type === 'in').reduce((s, x) => s + Number(x.amount || 0), 0);
+        const expenses = realtimeCashTransactions.filter(x => x.type === 'out').reduce((s, x) => s + Number(x.amount || 0), 0);
+        const net = sales + cashIn - expenses;
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.innerText = value; };
+        setText('summarySales', '฿' + money(sales));
+        setText('summaryExpenses', '฿' + money(expenses));
+        setText('summaryCashIn', '฿' + money(cashIn));
+        setText('summaryNet', '฿' + money(net));
+        setText('summaryBillCount', realtimeSales.length.toLocaleString());
+
+        const list = document.getElementById('summaryBillsList');
+        if (list) {
+            if (!realtimeSales.length) {
+                list.innerHTML = '<div class="py-8 text-center text-slate-400 text-xs">ยังไม่มีข้อมูลการขาย</div>';
+            } else {
+                list.innerHTML = realtimeSales.slice(0, 100).map((sale, i) => {
+                    const date = new Date(Number(sale.createdAt || Date.now()));
+                    const when = date.toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+                    const count = (sale.items || []).reduce((s, x) => s + Number(x.qty || 0), 0);
+                    return `<div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                        <div class="min-w-0"><div class="text-xs font-bold text-slate-800">${sale.billNo || 'บิล #' + (i + 1)}</div><div class="text-[10px] text-slate-400">${when} · ${count} ชิ้น</div></div>
+                        <div class="text-right shrink-0"><div class="font-black font-mono text-brand-600">฿${money(sale.total)}</div><div class="text-[10px] text-slate-400">${sale.paymentMethod === 'cash' ? 'เงินสด' : sale.paymentMethod}</div></div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        const labels = [];
+        const salesByDay = [];
+        const expensesByDay = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - i);
+            const next = new Date(d); next.setDate(next.getDate() + 1);
+            labels.push(d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+            salesByDay.push(realtimeSales.filter(x => Number(x.createdAt) >= d.getTime() && Number(x.createdAt) < next.getTime()).reduce((s,x)=>s+Number(x.total||0),0));
+            expensesByDay.push(realtimeCashTransactions.filter(x => x.type === 'out' && Number(x.createdAt) >= d.getTime() && Number(x.createdAt) < next.getTime()).reduce((s,x)=>s+Number(x.amount||0),0));
+        }
+        const c1 = document.getElementById('summaryChart');
+        if (c1 && window.Chart) {
+            if (summaryChartInstance) summaryChartInstance.destroy();
+            summaryChartInstance = new Chart(c1, { type:'bar', data:{ labels, datasets:[
+                { label:'ยอดขาย', data:salesByDay, borderWidth:1 },
+                { label:'รายจ่าย', data:expensesByDay, borderWidth:1 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}, plugins:{legend:{display:true}} }});
+        }
+        const c2 = document.getElementById('summaryPieChart');
+        if (c2 && window.Chart) {
+            if (summaryPieInstance) summaryPieInstance.destroy();
+            summaryPieInstance = new Chart(c2, { type:'doughnut', data:{ labels:['ยอดขาย','รับเงินเข้า','รายจ่าย'], datasets:[{ data:[sales,cashIn,expenses] }]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}} });
+        }
+    }
 
     try {
         const app = initializeApp(firebaseConfig);
@@ -906,6 +1240,7 @@
         { id: 'watermark', title: 'ใส่ลายน้ำ', badge: 'ใหม่', badgeColor: 'bg-rose-500 text-white', icon: 'stamp', iconBg: 'bg-brand-500 text-white', action: () => window.switchView('watermarkView') },
         { id: 'stock', title: 'คลังและราคา', badge: 'Realtime', badgeColor: 'bg-emerald-500 text-white', icon: 'boxes', iconBg: 'bg-emerald-100 text-emerald-600', action: () => { window.switchView('stockView'); window.renderStockList(); } },
         { id: 'sets', title: 'คำนวณเซ็ต', badge: 'ราคา', badgeColor: 'bg-orange-500 text-white', icon: 'calculator', iconBg: 'bg-orange-100 text-brand-600', action: () => window.openSetsModal() },
+        { id: 'summary', title: 'สรุปรายรับ-รายจ่าย', badge: 'Realtime', badgeColor: 'bg-blue-500 text-white', icon: 'bar-chart-3', iconBg: 'bg-blue-100 text-blue-600', action: () => window.openSummaryView() },
     ];
 
     window.checkAuthSession = function() {
@@ -967,7 +1302,7 @@
     }
 
     window.switchView = function(viewId) {
-        ['homeView', 'watermarkView', 'stockView'].forEach(id => {
+        ['homeView', 'watermarkView', 'stockView', 'summaryView'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.classList.add('hidden');
         });
@@ -1265,25 +1600,34 @@
         window.showToast('ล้างรายการทั้งหมดแล้ว');
     };
 
-    window.printReceiptAndReduceStock = function() {
-        if(receiptItems.length === 0) return window.showToast('ไม่มีรายการในบิล');
-        
-        // Reduce stock accordingly
-        receiptItems.forEach(ri => {
-            const prod = stockProducts.find(p => p.id === ri.id || ri.id.startsWith(p.id));
-            if(prod) {
-                if(prod.type === 'variable' && prod.variants) {
-                    const varMatch = prod.variants.find(v => (prod.id + '_' + v.id) === ri.id);
-                    if(varMatch) {
-                        varMatch.stock = Math.max(0, varMatch.stock - ri.qty);
-                    }
-                } else {
-                    prod.qty = Math.max(0, prod.qty - ri.qty);
-                }
-            }
-        });
+    window.printReceiptAndReduceStock = async function() {
+        if (receiptItems.length === 0) return window.showToast('ไม่มีรายการในบิล');
 
-        persistLocalCache();
+        const subtotal = receiptItems.reduce((s, x) => s + Number(x.price || 0) * Number(x.qty || 0), 0);
+        const discount = subtotal * 0.05;
+        const taxable = subtotal - discount;
+        const tax = taxable * 0.07;
+        const total = taxable + tax;
+
+        if (db) {
+            const recorded = await window.recordSale(receiptItems, { subtotal, discount, tax, total }, { method:'cash', received:total, change:0 });
+            if (!recorded) return;
+        } else {
+            receiptItems.forEach(ri => {
+                const prod = stockProducts.find(p => p.id === ri.id || ri.id.startsWith(p.id));
+                if (prod) {
+                    if (prod.type === 'variable' && prod.variants) {
+                        const varMatch = prod.variants.find(v => (prod.id + '_' + v.id) === ri.id);
+                        if (varMatch) varMatch.stock = Math.max(0, varMatch.stock - ri.qty);
+                    } else {
+                        prod.qty = Math.max(0, prod.qty - ri.qty);
+                    }
+                    prod.updatedAt = Date.now();
+                }
+            });
+            persistLocalCache();
+        }
+
         window.showToast('บันทึกบิลและตัดสต็อกสินค้าเรียบร้อย!');
         receiptItems = [];
         window.renderReceiptItems();
@@ -1323,6 +1667,7 @@
             
             categories.push(finalData);
             persistLocalCache();
+            await cloudSet('nanaphan_categories', idToSave, finalData);
             window.updateCategoryDropdowns();
             window.renderCategoryList();
             window.showToast('เพิ่มหมวดหมู่สำเร็จ');
@@ -1335,6 +1680,7 @@
         window.showConfirm('ลบหมวดหมู่', `ต้องการลบหมวดหมู่ "${name}" ใช่หรือไม่?`, async () => {
             categories = categories.filter(c => c.id !== id);
             persistLocalCache();
+            await cloudDelete('nanaphan_categories', id);
             window.updateCategoryDropdowns();
             window.renderCategoryList();
             window.showToast('ลบหมวดหมู่สำเร็จ');
@@ -1751,6 +2097,7 @@
             else stockProducts.unshift(itemData);
 
             persistLocalCache();
+            await cloudSet('nanaphan_products', idToSave, itemData);
             window.closeProductModal();
             window.renderStockList();
             window.showToast(editId ? 'อัปเดตข้อมูลสินค้าสำเร็จ' : 'เพิ่มสินค้าเรียบร้อย');
@@ -1787,6 +2134,7 @@
         else stockProducts.unshift(productData);
 
         persistLocalCache();
+        await cloudSet('nanaphan_products', idToSave, productData);
         window.closeProductModal();
         window.renderStockList();
         window.showToast(editId ? 'อัปเดตสินค้ามีตัวแปรสำเร็จ' : 'เพิ่มสินค้ามีตัวแปรเรียบร้อย');
@@ -1796,6 +2144,7 @@
         window.showConfirm('ลบสินค้า', `ลบสินค้า "${name}" ใช่หรือไม่?`, async () => {
             stockProducts = stockProducts.filter(p => p.id !== id);
             persistLocalCache();
+            await cloudDelete('nanaphan_products', id);
             window.renderStockList();
             window.showToast('ลบสินค้าสำเร็จ');
         });
@@ -1807,6 +2156,7 @@
             item.qty = Math.max(0, item.qty + amount);
             item.updatedAt = Date.now();
             persistLocalCache();
+            cloudSet('nanaphan_products', item.id, item);
             window.renderStockList();
         }
     };
@@ -1819,6 +2169,7 @@
             item.qty = val;
             item.updatedAt = Date.now();
             persistLocalCache();
+            cloudSet('nanaphan_products', item.id, item);
             updateDashboardStats();
         }
     };
@@ -2160,9 +2511,17 @@
     };
 
     // Initialize Application Session
-    window.onload = function() {
+    window.onload = async function() {
         lucide.createIcons();
         window.checkAuthSession();
+        try {
+            await seedCloudFromLocal();
+            attachRealtimeListeners();
+            setSyncState(true);
+        } catch (err) {
+            console.warn('Realtime startup failed:', err);
+            setSyncState(false, err.message);
+        }
     };
 </script>
 
