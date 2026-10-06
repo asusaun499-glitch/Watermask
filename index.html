@@ -1740,76 +1740,308 @@
     }
 
     window.renderStockList = function() {
-        const container = document.getElementById('stockListContainer');
-        if(!container) return;
-        updateDashboardStats();
+    const container = document.getElementById('stockListContainer');
+    if (!container) return;
 
-        const search = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
-        const catFilter = document.getElementById('stockCategoryFilter')?.value || '';
-        const statusFilter = document.getElementById('stockStatusFilter')?.value || '';
+    updateDashboardStats();
 
-        const filtered = stockProducts.filter(p => {
-            const matchSearch = !search || p.name.toLowerCase().includes(search) || (p.sku && p.sku.toLowerCase().includes(search)) || (p.barcode && p.barcode.toLowerCase().includes(search));
-            const matchCat = !catFilter || p.categoryId === catFilter;
-            
-            let status = 'normal';
-            if(p.qty === 0) status = 'out';
-            else if(p.qty <= (p.lowStockThreshold || 5)) status = 'low';
+    const search = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
+    const catFilter = document.getElementById('stockCategoryFilter')?.value || '';
+    const statusFilter = document.getElementById('stockStatusFilter')?.value || '';
 
-            const matchStatus = !statusFilter || status === statusFilter;
-            return matchSearch && matchCat && matchStatus;
-        });
+    const filtered = stockProducts.filter(p => {
+        const barcode = String(p.barcode || '').toLowerCase();
 
-        if(filtered.length === 0) {
-            container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs">ไม่พบรายการสินค้า</div>`;
-            return;
+        const variantMatch = Array.isArray(p.variants) &&
+            p.variants.some(v =>
+                String(v.barcode || '').toLowerCase().includes(search)
+            );
+
+        const matchSearch =
+            !search ||
+            String(p.name || '').toLowerCase().includes(search) ||
+            String(p.sku || '').toLowerCase().includes(search) ||
+            barcode.includes(search) ||
+            variantMatch;
+
+        const matchCat = !catFilter || p.categoryId === catFilter;
+
+        let totalQty = p.qty || 0;
+
+        if (p.type === 'variable' && Array.isArray(p.variants)) {
+            totalQty = p.variants.reduce(
+                (sum, v) => sum + Number(v.stock || 0),
+                0
+            );
         }
 
-        container.innerHTML = filtered.map(p => {
-            const cat = categories.find(c => c.id === p.categoryId)?.name || 'ทั่วไป';
-            let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 flex items-center gap-1 w-max">🟢 มีสินค้า</span>`;
-            if(p.qty === 0) statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-100 text-rose-700 flex items-center gap-1 w-max">🔴 สินค้าหมด</span>`;
-            else if(p.qty <= (p.lowStockThreshold || 5)) statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 flex items-center gap-1 w-max">🟡 ใกล้หมด</span>`;
+        let status = 'normal';
 
-            return `
-                <div class="glass-card rounded-2xl p-3 border border-slate-200/80 shadow-2xs space-y-2">
-                    <div class="flex items-start justify-between gap-2">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-mono text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">${p.sku}</span>
-                                <span class="text-[10px] text-brand-600 font-semibold bg-brand-50 px-2 py-0.5 rounded-md">${cat}</span>
-                            </div>
-                            <h4 class="font-bold text-slate-900 text-xs mt-1">${p.name}</h4>
-                            <p class="text-[10px] text-slate-400 font-mono">บาร์โค้ด: ${p.barcode || '-'}</p>
+        if (totalQty === 0) {
+            status = 'out';
+        } else if (
+            totalQty <= (p.lowStockThreshold || 5)
+        ) {
+            status = 'low';
+        }
+
+        const matchStatus =
+            !statusFilter || status === statusFilter;
+
+        return matchSearch && matchCat && matchStatus;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="py-12 text-center text-slate-400 text-xs">
+                ไม่พบรายการสินค้า
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.map((p, index) => {
+
+        const cat =
+            categories.find(c => c.id === p.categoryId)?.name ||
+            'ทั่วไป';
+
+        const barcodeValue =
+            p.barcode ||
+            (p.variants?.[0]?.barcode || '');
+
+        let totalQty = p.qty || 0;
+
+        if (p.type === 'variable' && Array.isArray(p.variants)) {
+            totalQty = p.variants.reduce(
+                (sum, v) => sum + Number(v.stock || 0),
+                0
+            );
+        }
+
+        let statusBadge = `
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold
+            bg-emerald-100 text-emerald-700 flex items-center gap-1 w-max">
+                🟢 มีสินค้า
+            </span>
+        `;
+
+        if (totalQty === 0) {
+            statusBadge = `
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold
+                bg-rose-100 text-rose-700 flex items-center gap-1 w-max">
+                    🔴 สินค้าหมด
+                </span>
+            `;
+        } else if (totalQty <= (p.lowStockThreshold || 5)) {
+            statusBadge = `
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold
+                bg-amber-100 text-amber-700 flex items-center gap-1 w-max">
+                    🟡 ใกล้หมด
+                </span>
+            `;
+        }
+
+        return `
+            <div class="glass-card rounded-2xl p-3 border border-slate-200/80 shadow-2xs space-y-3">
+
+                <!-- Product Header -->
+                <div class="flex items-start justify-between gap-2">
+
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-[10px] font-bold
+                                bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                                ${p.sku || '-'}
+                            </span>
+
+                            <span class="text-[10px] text-brand-600 font-semibold
+                                bg-brand-50 px-2 py-0.5 rounded-md">
+                                ${cat}
+                            </span>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs font-black font-mono text-brand-600">฿${parseFloat(p.price || 0).toLocaleString()}</span>
-                            <span class="text-[10px] text-slate-400 block">ต่อ ${p.unit}</span>
-                        </div>
+
+                        <h4 class="font-bold text-slate-900 text-xs mt-1">
+                            ${p.name || '-'}
+                        </h4>
+
+                        <p class="text-[10px] text-slate-400 font-mono mt-0.5">
+                            บาร์โค้ด: ${barcodeValue || '-'}
+                        </p>
                     </div>
 
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-                        ${statusBadge}
-                        <div class="flex items-center gap-2">
-                            <div class="flex items-center bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
-                                <button onclick="window.adjustQtyBtn('${p.id}', -1)" class="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-bold">-</button>
-                                <input type="number" id="qtyInput_${p.id}" value="${p.qty}" onchange="window.manualInputQty('${p.id}', this)" class="w-12 bg-transparent text-center font-mono font-bold text-xs focus:outline-none no-spinners">
-                                <button onclick="window.adjustQtyBtn('${p.id}', 1)" class="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-bold">+</button>
-                            </div>
-                            <button onclick="window.openAddProductModal('${p.id}')" class="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-95 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="window.deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500 active:scale-95 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    <div class="text-right shrink-0">
+                        <span class="text-xs font-black font-mono text-brand-600">
+                            ฿${parseFloat(p.price || 0).toLocaleString()}
+                        </span>
+
+                        <span class="text-[10px] text-slate-400 block">
+                            ต่อ ${p.unit || 'ชิ้น'}
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- REAL BARCODE -->
+                ${
+                    barcodeValue
+                    ? `
+                    <div class="bg-white rounded-2xl border border-slate-200
+                        p-3 flex flex-col items-center justify-center">
+
+                        <svg
+                            id="stockBarcode_${index}"
+                            class="stock-barcode-svg w-full max-w-[280px] h-[70px]"
+                            data-barcode="${barcodeValue}">
+                        </svg>
+
+                        <div class="mt-1 text-[10px] font-mono
+                            font-bold tracking-widest text-slate-600">
+                            ${barcodeValue}
                         </div>
+
+                    </div>
+                    `
+                    : `
+                    <div class="bg-slate-50 rounded-2xl border border-dashed
+                        border-slate-200 p-4 text-center">
+                        <span class="text-[10px] text-slate-400">
+                            ไม่มีบาร์โค้ด
+                        </span>
+                    </div>
+                    `
+                }
+
+                <!-- Bottom Controls -->
+                <div class="flex items-center justify-between pt-2
+                    border-t border-slate-100 text-xs">
+
+                    ${statusBadge}
+
+                    <div class="flex items-center gap-2">
+
+                        <div class="flex items-center bg-slate-100
+                            rounded-xl overflow-hidden border border-slate-200">
+
+                            <button
+                                onclick="window.adjustQtyBtn('${p.id}', -1)"
+                                class="px-2.5 py-1 text-slate-600
+                                hover:bg-slate-200 font-bold">
+                                -
+                            </button>
+
+                            <input
+                                type="number"
+                                id="qtyInput_${p.id}"
+                                value="${totalQty}"
+                                onchange="window.manualInputQty('${p.id}', this)"
+                                class="w-12 bg-transparent text-center
+                                font-mono font-bold text-xs
+                                focus:outline-none no-spinners">
+
+                            <button
+                                onclick="window.adjustQtyBtn('${p.id}', 1)"
+                                class="px-2.5 py-1 text-slate-600
+                                hover:bg-slate-200 font-bold">
+                                +
+                            </button>
+
+                        </div>
+
+                        <button
+                            onclick="window.openAddProductModal('${p.id}')"
+                            class="p-1.5 rounded-xl bg-slate-100
+                            hover:bg-slate-200 text-slate-700
+                            active:scale-95 transition-all">
+
+                            <i
+                                data-lucide="edit-3"
+                                class="w-3.5 h-3.5">
+                            </i>
+
+                        </button>
+
+                        <button
+                            onclick="window.deleteProduct(
+                                '${p.id}',
+                                '${String(p.name || '').replace(/'/g, "\\'")}'
+                            )"
+                            class="p-1.5 rounded-xl bg-rose-50
+                            hover:bg-rose-100 text-rose-500
+                            active:scale-95 transition-all">
+
+                            <i
+                                data-lucide="trash-2"
+                                class="w-3.5 h-3.5">
+                            </i>
+
+                        </button>
+
                     </div>
                 </div>
-            `;
-        }).join('');
 
-        lucide.createIcons();
-    };
+            </div>
+        `;
+    }).join('');
 
-    window.filterStockList = function() {
-        window.renderStockList();
-    };
+    // ==========================================
+    // GENERATE REAL BARCODE WITH JsBarcode
+    // ==========================================
+
+    if (typeof JsBarcode === 'function') {
+
+        filtered.forEach((p, index) => {
+
+            const barcodeValue =
+                p.barcode ||
+                (p.variants?.[0]?.barcode || '');
+
+            if (!barcodeValue) return;
+
+            const svg = document.getElementById(
+                `stockBarcode_${index}`
+            );
+
+            if (!svg) return;
+
+            try {
+
+                JsBarcode(svg, String(barcodeValue), {
+                    format: 'auto',
+                    width: 2,
+                    height: 55,
+                    displayValue: false,
+                    margin: 5,
+                    background: '#ffffff',
+                    lineColor: '#111827'
+                });
+
+            } catch (error) {
+
+                console.warn(
+                    'สร้างบาร์โค้ดไม่สำเร็จ:',
+                    barcodeValue,
+                    error
+                );
+
+                svg.outerHTML = `
+                    <div class="text-[10px] text-rose-500 font-mono">
+                        ไม่สามารถสร้างบาร์โค้ด ${barcodeValue}
+                    </div>
+                `;
+            }
+        });
+
+    } else {
+
+        console.warn(
+            'JsBarcode ยังไม่พร้อมใช้งาน'
+        );
+
+    }
+
+    lucide.createIcons();
+};
 
     // ==========================================
     // WATERMARK MODULE CODE
