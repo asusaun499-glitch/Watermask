@@ -1009,55 +1009,164 @@
     // ==========================================
     // DIRECT BARCODE SCAN INFLOW LOGIC
     // ==========================================
-    window.openScanBarcodeModalDirect = function() {
-        animateModalOpen('scanBarcodeModal');
-        setTimeout(() => {
-            const input = document.getElementById('scanBarcodeInput');
-            if(input) {
-                input.value = '';
-                input.focus();
+    // ==========================================
+    // AUTO BARCODE SCANNER - NO BUTTON REQUIRED
+    // ==========================================
+
+        let autoBarcodeBuffer = '';
+        let autoBarcodeTimer = null;
+
+        function resetAutoBarcodeBuffer() {
+            autoBarcodeBuffer = '';
+
+            if (autoBarcodeTimer) {
+                clearTimeout(autoBarcodeTimer);
+                autoBarcodeTimer = null;
             }
-        }, 150);
-    };
-
-    window.closeScanBarcodeModal = function() {
-        animateModalClose('scanBarcodeModal');
-    };
-
-    window.handleDirectBarcodeSubmit = function(e) {
-        e.preventDefault();
-        const input = document.getElementById('scanBarcodeInput');
-        const code = input ? input.value.trim() : '';
-        if(!code) return;
-
-        // Find product by barcode or SKU
-        const found = stockProducts.find(p => 
-            (p.barcode && p.barcode.toLowerCase() === code.toLowerCase()) || 
-            (p.sku && p.sku.toLowerCase() === code.toLowerCase()) ||
-            (p.variants && p.variants.some(v => v.barcode && v.barcode.toLowerCase() === code.toLowerCase()))
-        );
-
-        if(!found) {
-            window.showToast(`ไม่พบสินค้าบาร์โค้ด: ${code}`);
-            input.value = '';
-            input.focus();
-            return;
         }
 
-        // Add to receipt items list instantly
-        let targetName = found.name;
-        let targetPrice = found.price || 0;
-        let targetUnit = found.unit || 'ชิ้น';
-        let targetId = found.id;
+        window.handleAutoBarcodeScan = function(code) {
+            code = String(code || '').trim();
 
-        if(found.variants && found.variants.length > 0) {
-            const matchedVar = found.variants.find(v => v.barcode && v.barcode.toLowerCase() === code.toLowerCase()) || found.variants[0];
-            targetName = matchedVar.fullName || `${found.name} (${matchedVar.optionName})`;
-            targetPrice = matchedVar.price || 0;
-            targetUnit = matchedVar.unit || found.unit || 'ชิ้น';
-            targetId = found.id + '_' + matchedVar.id;
-        }
+            if (!code) return;
 
+            // ค้นหาสินค้าจาก Barcode / SKU / Variant Barcode
+            const found = stockProducts.find(p =>
+                String(p.barcode || '').toLowerCase() === code.toLowerCase() ||
+                String(p.sku || '').toLowerCase() === code.toLowerCase() ||
+                (
+                    Array.isArray(p.variants) &&
+                    p.variants.some(v =>
+                        String(v.barcode || '').toLowerCase() === code.toLowerCase()
+                    )
+                )
+            );
+
+            if (!found) {
+                window.showToast(`ไม่พบสินค้าบาร์โค้ด: ${code}`);
+                return;
+            }
+
+            let targetName = found.name;
+            let targetPrice = Number(found.price || 0);
+            let targetUnit = found.unit || 'ชิ้น';
+            let targetId = found.id;
+
+            // รองรับสินค้าแบบมี Variant
+            if (Array.isArray(found.variants) && found.variants.length > 0) {
+
+                const matchedVar = found.variants.find(v =>
+                    String(v.barcode || '').toLowerCase() === code.toLowerCase()
+                );
+
+                if (matchedVar) {
+                    targetName =
+                        matchedVar.fullName ||
+                        `${found.name} (${matchedVar.optionName})`;
+
+                    targetPrice = Number(matchedVar.price || 0);
+                    targetUnit = matchedVar.unit || found.unit || 'ชิ้น';
+
+                    targetId = found.id + '_' + matchedVar.id;
+                }
+            }
+
+            // ถ้ามีสินค้าอยู่แล้ว → เพิ่มจำนวน
+            const existingItem = receiptItems.find(
+                item => item.id === targetId
+            );
+
+            if (existingItem) {
+                existingItem.qty += 1;
+            } else {
+                receiptItems.push({
+                    id: targetId,
+                    name: targetName,
+                    price: targetPrice,
+                    unit: targetUnit,
+                    qty: 1
+                });
+            }
+
+            window.renderReceiptItems();
+
+            window.showToast(
+                `เพิ่ม "${targetName}" x1 สำเร็จ`
+            );
+        };
+
+
+        // รับข้อมูลจากเครื่องยิงบาร์โค้ดโดยตรง
+        document.addEventListener('keydown', function(e) {
+
+            // ถ้ากำลังพิมพ์ในช่องข้อความปกติ
+            // ไม่ต้องดัก
+            const target = e.target;
+
+            if (
+                target &&
+                (
+                    target.tagName === 'TEXTAREA' ||
+                    target.tagName === 'SELECT'
+                )
+            ) {
+                return;
+            }
+
+            // Enter = จบการยิงบาร์โค้ด
+            if (e.key === 'Enter') {
+
+                if (autoBarcodeBuffer.length > 0) {
+
+                    const scannedCode =
+                        autoBarcodeBuffer.trim();
+
+                    resetAutoBarcodeBuffer();
+
+                    window.handleAutoBarcodeScan(
+                        scannedCode
+                    );
+
+                    e.preventDefault();
+                }
+
+                return;
+            }
+
+            // รับเฉพาะตัวอักษร/ตัวเลข
+            if (
+                e.key.length === 1 &&
+                !e.ctrlKey &&
+                !e.altKey &&
+                !e.metaKey
+            ) {
+
+                autoBarcodeBuffer += e.key;
+
+                // ถ้าหยุดส่งข้อมูลเกิน 100ms
+                // ถือว่าจบการยิง
+                if (autoBarcodeTimer) {
+                    clearTimeout(autoBarcodeTimer);
+                }
+
+                autoBarcodeTimer = setTimeout(() => {
+
+                    // บาง Scanner ไม่ส่ง Enter
+                    if (autoBarcodeBuffer.length >= 6) {
+
+                        const scannedCode =
+                            autoBarcodeBuffer.trim();
+
+                        resetAutoBarcodeBuffer();
+
+                        window.handleAutoBarcodeScan(
+                            scannedCode
+                        );
+                    }
+
+                }, 100);
+            }
+        });
         const existingItem = receiptItems.find(i => i.id === targetId);
         if(existingItem) {
             existingItem.qty += 1;
