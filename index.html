@@ -408,9 +408,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="window.connectCashDrawer()" class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold flex items-center gap-1.5">
-                    <i data-lucide="usb" class="w-4 h-4"></i> เชื่อมต่อลิ้นชัก
-                </button>
+                <span id="printerBridgeStatus" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> GA-E200 • USB002
+                </span>
                 <button onclick="window.openCashDrawer('ADMIN')" class="px-3 py-1.5 rounded-xl bg-orange-50 text-orange-700 text-xs font-bold flex items-center gap-1.5">
                     <i data-lucide="archive-restore" class="w-4 h-4"></i> เปิดลิ้นชัก
                 </button>
@@ -607,7 +607,6 @@
                     <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(-1)"><i data-lucide="minus" class="w-5 h-5 mx-auto mb-1"></i>ลด</button>
                     <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.adjustPOSSelected(1)"><i data-lucide="plus" class="w-5 h-5 mx-auto mb-1"></i>เพิ่ม</button>
                     <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.clearPOSCart()"><i data-lucide="trash-2" class="w-5 h-5 mx-auto mb-1 text-rose-500"></i>ล้าง</button>
-                    <button type="button" class="pos-key glass-card rounded-2xl p-3 text-xs font-bold text-slate-700" onclick="window.openCashDrawer('POS')"><i data-lucide="archive-restore" class="w-5 h-5 mx-auto mb-1 text-orange-600"></i>เปิดลิ้นชัก</button>
                 </div>
 
                 <div class="glass-card rounded-3xl p-4 shadow-sm border border-slate-200">
@@ -968,24 +967,7 @@
 
 
 <!-- Cash Drawer Connection Modal -->
-<div id="cashDrawerModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
-  <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h3 class="text-base font-black text-slate-800">ลิ้นชักเงิน MAKEN EK-350B</h3>
-        <p id="cashDrawerStatus" class="text-xs text-slate-500 mt-1">ยังไม่ได้เชื่อมต่อ</p>
-      </div>
-      <button type="button" onclick="window.closeCashDrawerModal()" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500">×</button>
-    </div>
-    <div class="bg-slate-50 rounded-2xl p-4 text-xs text-slate-600 space-y-2">
-      <div><b>อุปกรณ์:</b> MAKEN DT-100U → USB → คอมพิวเตอร์</div>
-      <div><b>ลิ้นชัก:</b> EK-350B → RJ11/RJ12 → DT-100U</div>
-      <div><b>เบราว์เซอร์:</b> Chrome/Edge ต้องอนุญาต Serial Port ครั้งแรก</div>
-    </div>
-    <button type="button" onclick="window.connectCashDrawer()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 font-black">เชื่อมต่อ USB Trigger</button>
-    <button type="button" onclick="window.openCashDrawer('ADMIN')" class="w-full mt-2 orange-gradient-card text-white rounded-2xl py-3 font-black">ทดสอบเปิดลิ้นชัก</button>
-  </div>
-</div>
+
 
 <!-- POS Cash Drawer Modal -->
 <div id="posCashModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[85] items-center justify-center p-4">
@@ -1550,89 +1532,82 @@
     };
 
     // ==========================================
+    // GAINSCHA GA-E200 / MAKEN EK-350B
+    // Windows printer bridge on USB002
     // ==========================================
-    // MAKEN EK-350B CASH DRAWER / DT-100U
-    // ==========================================
-    let cashDrawerPort = null;
-    let cashDrawerWriter = null;
-    let cashDrawerConnected = false;
+    const PRINTER_BRIDGE_URL = 'http://127.0.0.1:8765';
 
-    function cashDrawerSupported() {
-        return 'serial' in navigator;
-    }
-
-    window.connectCashDrawer = async function() {
-        if (!cashDrawerSupported()) {
-            window.showToast('เบราว์เซอร์นี้ไม่รองรับ Web Serial — ใช้ Chrome หรือ Edge บน Windows');
-            return false;
-        }
+    window.checkPrinterBridge = async function(showToast = false) {
+        const el = document.getElementById('printerBridgeStatus');
         try {
-            if (cashDrawerPort && cashDrawerConnected) {
-                window.showToast('ลิ้นชักเชื่อมต่ออยู่แล้ว');
-                return true;
+            const res = await fetch(PRINTER_BRIDGE_URL + '/status', { cache: 'no-store' });
+            const data = await res.json();
+            const ready = !!data.ok;
+            if (el) {
+                el.className = 'px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ' + (ready ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700');
+                el.innerHTML = `<span class="w-2 h-2 rounded-full ${ready ? 'bg-emerald-500' : 'bg-rose-500'}"></span> GA-E200 • ${data.port || 'ไม่พบพอร์ต'}`;
             }
-            cashDrawerPort = await navigator.serial.requestPort();
-            // DT-100U uses a Prolific USB-to-Serial virtual COM port.
-            // The trigger opens the drawer when any bytes are written.
-            await cashDrawerPort.open({ baudRate: 9600, dataBits: 8, stopBits: 1, parity: 'none', flowControl: 'none' });
-            cashDrawerWriter = cashDrawerPort.writable?.getWriter();
-            cashDrawerConnected = true;
-            const status = document.getElementById('cashDrawerStatus');
-            if (status) status.textContent = 'เชื่อมต่อแล้ว • MAKEN DT-100U Ready';
-            window.showToast('เชื่อมต่อลิ้นชักแล้ว');
-            return true;
+            if (showToast) window.showToast(ready ? 'GA-E200 พร้อมใช้งาน • USB002' : (data.message || 'ไม่พบ GA-E200'));
+            return ready;
         } catch (err) {
-            cashDrawerConnected = false;
-            cashDrawerWriter = null;
-            if (err?.name !== 'NotFoundError') window.showToast('เชื่อมต่อลิ้นชักไม่สำเร็จ: ' + (err?.message || 'Unknown error'));
+            if (el) {
+                el.className = 'px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold flex items-center gap-1.5';
+                el.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span> Printer Bridge Offline';
+            }
+            if (showToast) window.showToast('ยังไม่พบ Printer Bridge — เปิด NanaphanHub_PrinterBridge ก่อน');
             return false;
         }
     };
 
     window.openCashDrawer = async function(source = 'POS') {
-        // Require ADMIN for the back-office manual open button.
         if (source === 'ADMIN' && currentRole !== 'ADMIN' && posRole !== 'ADMIN' && window.currentPOSRole !== 'ADMIN') {
             window.showToast('เมนูเปิดลิ้นชักในหลังบ้านใช้สิทธิ์ ADMIN เท่านั้น');
             return false;
         }
-        if (!cashDrawerSupported()) {
-            window.showToast('ต้องใช้ Chrome/Edge บน Windows เพื่อเชื่อมต่อ DT-100U');
-            return false;
-        }
         try {
-            if (!cashDrawerConnected) {
-                const ok = await window.connectCashDrawer();
-                if (!ok) return false;
-            }
-            if (!cashDrawerWriter) throw new Error('Serial writer unavailable');
-            const payload = new Uint8Array([0x01]);
-            await cashDrawerWriter.write(payload);
-            window.showToast('สั่งเปิดลิ้นชักแล้ว');
+            const res = await fetch(PRINTER_BRIDGE_URL + '/open-drawer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.message || 'เปิดลิ้นชักไม่สำเร็จ');
+            window.showToast('เปิดลิ้นชักแล้ว');
             return true;
         } catch (err) {
-            cashDrawerConnected = false;
-            try { if (cashDrawerPort) await cashDrawerPort.close(); } catch (_) {}
-            cashDrawerPort = null;
-            cashDrawerWriter = null;
-            window.showToast('เปิดลิ้นชักไม่สำเร็จ: ' + (err?.message || 'ตรวจสอบ USB Trigger/สาย RJ11'));
+            window.showToast('เปิดลิ้นชักไม่สำเร็จ: ' + (err?.message || 'เปิด Printer Bridge ก่อน'));
             return false;
         }
     };
 
-    window.closeCashDrawerConnection = async function() {
-        try { if (cashDrawerWriter) cashDrawerWriter.releaseLock(); } catch (_) {}
-        try { if (cashDrawerPort) await cashDrawerPort.close(); } catch (_) {}
-        cashDrawerWriter = null; cashDrawerPort = null; cashDrawerConnected = false;
+    window.printPOSReceipt = async function(sale, items, pricing, payment) {
+        try {
+            const payload = {
+                billNo: sale?.billNo || ('B' + Date.now()),
+                items: items || [],
+                subtotal: Number(pricing?.subtotal || 0),
+                discount: Number(pricing?.discount || 0),
+                tax: Number(pricing?.tax || 0),
+                total: Number(pricing?.total || 0),
+                received: Number(payment?.received || 0),
+                change: Number(payment?.change || 0)
+            };
+            const res = await fetch(PRINTER_BRIDGE_URL + '/print-receipt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.message || 'พิมพ์ใบเสร็จไม่สำเร็จ');
+            return true;
+        } catch (err) {
+            window.showToast('พิมพ์/เปิดลิ้นชักไม่สำเร็จ: ' + (err?.message || 'เปิด Printer Bridge ก่อน'));
+            return false;
+        }
     };
 
-    window.openCashDrawerModal = function() {
-        const m = document.getElementById('cashDrawerModal');
-        if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
-    };
-    window.closeCashDrawerModal = function() {
-        const m = document.getElementById('cashDrawerModal');
-        if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
-    };
+    // ตรวจสถานะเมื่อโหลดหน้า และตรวจซ้ำเมื่อเปิดหน้าสรุป
+    setTimeout(() => window.checkPrinterBridge(false), 700);
 
     // FRONT STORE / POS
     // ==========================================
@@ -1855,11 +1830,13 @@
         const recorded = await window.recordSale(posCart, { subtotal, discount, tax, total }, payment);
         if (!recorded) return;
 
-        window.showPOSMessage(`ปิดบิลสำเร็จ · เงินทอน ฿${posMoney(payment.change)}`);
-        // เปิดลิ้นชักอัตโนมัติหลังรับเงิน/ปิดบิล เมื่อเชื่อมต่อ DT-100U แล้ว
-        if (typeof window.openCashDrawer === 'function') {
-            await window.openCashDrawer('POS');
+        const printed = await window.printPOSReceipt(recorded.sale, posCart, { subtotal, discount, tax, total }, payment);
+        if (!printed) {
+            window.showPOSMessage('บันทึกบิลแล้ว แต่ยังพิมพ์ใบเสร็จ/เปิดลิ้นชักไม่ได้ — กรุณาเปิด Printer Bridge แล้วลองพิมพ์จากบิลล่าสุด');
+            return;
         }
+
+        window.showPOSMessage(`ปิดบิลสำเร็จ · เงินทอน ฿${posMoney(payment.change)} · เปิดลิ้นชักและพิมพ์ใบเสร็จแล้ว`);
         posCart = [];
         posReceived = 0;
         posNumpadBuffer = '';
