@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 HOST = "127.0.0.1"
 PORT = 8765
-PRINTER_NAME = "GA-E200"
+PRINTER_NAME = "GA-E200 Series"
 EXPECTED_PORT = "USB002"
 PAPER_DOTS = 576  # 80mm class printer at ~203dpi
 
