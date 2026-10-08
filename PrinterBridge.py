@@ -1,27 +1,22 @@
 # NanaphanHub Printer Bridge
 # Windows + Gainscha GA-E200 on USB002
-# Text-mode ESC/POS receipt + automatic cash drawer
+# Receipt: Windows GDI driver (Thai-safe) + cash drawer: ESC/POS RAW
 # Requires: pywin32
 
 import json
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import win32con
 import win32print
+import win32ui
 
 HOST = "127.0.0.1"
 PORT = 8765
-PRINTER_NAME = "GA-E200 Series"
+PRINTER_NAME = "GA-E200"
 EXPECTED_PORT = "USB002"
 
 ESC = b"\x1b"
-GS = b"\x1d"
-
-# Epson/ESC-POS Thai code page. GA-E200 firmware/driver variants commonly
-# map ESC t 255 to CP874 (Thai). ASCII remains compatible as usual.
-THAI_CODEPAGE = 255
-TEXT_ENCODING = "cp874"
-LINE_WIDTH = 48
 
 
 def printer_info():
@@ -42,13 +37,15 @@ def check_printer():
 
 
 def raw_print(data: bytes, job_name: str):
+    """Send a genuine RAW ESC/POS job to the Windows printer queue."""
     h = win32print.OpenPrinter(PRINTER_NAME)
     try:
         win32print.StartDocPrinter(h, 1, (job_name, None, "RAW"))
         try:
             win32print.StartPagePrinter(h)
-            win32print.WritePrinter(h, data)
+            written = win32print.WritePrinter(h, data)
             win32print.EndPagePrinter(h)
+            return written
         finally:
             win32print.EndDocPrinter(h)
     finally:
@@ -56,60 +53,63 @@ def raw_print(data: bytes, job_name: str):
 
 
 def drawer_kick():
-    # ESC p m t1 t2: pin 0, 25ms ON, 250ms OFF.
-    return ESC + b"p" + bytes([0, 25, 250])
+    # ESC p m t1 t2. Pin 0, 50 ms ON, 100 ms OFF.
+    # ESC/POS standard: m=0 is drawer kick pin 2.
+    return ESC + b"p" + bytes([0, 25, 50])
 
 
-def esc_text(text=""):
-    """Encode Thai/ASCII text for the printer, ending with CR/LF."""
-    value = str(text if text is not None else "")
-    # cp874 handles Thai + ASCII. Characters outside the printer's code page
-    # are replaced instead of crashing the sale.
-    return value.encode(TEXT_ENCODING, errors="replace") + b"\r\n"
+def require_printer():
+    ok, port, info = check_printer()
+    if not ok:
+        raise RuntimeError(f"ไม่พบเครื่องพิมพ์ {PRINTER_NAME}: {info.get('error', '')}")
+    if EXPECTED_PORT and port.upper() != EXPECTED_PORT.upper():
+        raise RuntimeError(f"GA-E200 ใช้พอร์ต {port} ไม่ใช่ {EXPECTED_PORT}")
+    return port
 
 
-def text_width(value):
-    """Approximate printable character width for 48-column 80mm receipts."""
-    return len(str(value))
+def money(v):
+    return f"{float(v or 0):,.2f}"
 
 
-def wrap_text(text, width=LINE_WIDTH):
+def wrap_text_gdi(dc, text, max_width):
+    """Wrap Unicode text using the actual Windows printer font metrics."""
     text = str(text or "")
     if not text:
         return [""]
     result = []
-    while len(text) > width:
-        # Prefer breaking at a space when possible.
-        cut = text.rfind(" ", 0, width + 1)
-        if cut <= 0:
-            cut = width
-        result.append(text[:cut].rstrip())
-        text = text[cut:].lstrip()
-    result.append(text)
-    return result
+    current = ""
+    for ch in text:
+        candidate = current + ch
+        width = dc.GetTextExtent(candidate)[0]
+        if current and width > max_width:
+            result.append(current)
+            current = ch
+        else:
+            current = candidate
+    if current:
+        result.append(current)
+    return result or [""]
 
 
-def money(value):
-    return f"{float(value or 0):,.2f}"
+def create_font(height, bold=False, face="Tahoma"):
+    # Negative height = character height in logical units for a crisp printer font.
+    return win32ui.CreateFont({
+        "name": face,
+        "height": -abs(int(height)),
+        "width": 0,
+        "weight": 700 if bold else 400,
+        "italic": False,
+        "underline": False,
+        "strikeout": False,
+        "charset": win32con.DEFAULT_CHARSET,
+        "outprecision": win32con.OUT_DEFAULT_PRECIS,
+        "clipprecision": win32con.CLIP_DEFAULT_PRECIS,
+        "quality": win32con.PROOF_QUALITY,
+        "pitchandfamily": win32con.DEFAULT_PITCH | win32con.FF_DONTCARE,
+    })
 
 
-def centered(text, width=LINE_WIDTH):
-    text = str(text)
-    if len(text) >= width:
-        return text[:width]
-    return text.center(width)
-
-
-def pair_line(left, right, width=LINE_WIDTH):
-    left = str(left)
-    right = str(right)
-    if len(right) >= width:
-        return right[-width:]
-    available = width - len(right) - 1
-    return left[:max(0, available)] + " " * max(1, available - min(len(left), available) + 1) + right
-
-
-def build_text_receipt(payload):
+def build_receipt_lines(payload):
     items = payload.get("items") or []
     bill_no = payload.get("billNo") or "-"
     subtotal = float(payload.get("subtotal") or 0)
@@ -119,72 +119,110 @@ def build_text_receipt(payload):
     received = float(payload.get("received") or 0)
     change = float(payload.get("change") or 0)
 
-    lines = []
-    lines.append(centered("ร้านนานาภัณฑ์ จ.ขอนแก่น"))
-    lines.append(centered("ใบเสร็จรับเงิน"))
-    lines.append(f"เลขที่: {bill_no}")
-    lines.append(datetime.now().strftime("วันที่ %d/%m/%Y %H:%M"))
-    lines.append("-" * LINE_WIDTH)
+    rows = []
+    rows.append(("center_bold", "ร้านนานาภัณฑ์ จ.ขอนแก่น"))
+    rows.append(("center_bold", "ใบเสร็จรับเงิน"))
+    rows.append(("normal", f"เลขที่: {bill_no}"))
+    rows.append(("normal", datetime.now().strftime("วันที่ %d/%m/%Y %H:%M")))
+    rows.append(("line", "-" * 58))
 
     for item in items:
         name = str(item.get("name") or "สินค้า")
         qty = float(item.get("qty") or 0)
         price = float(item.get("price") or 0)
         total_item = qty * price
+        rows.append(("item", name))
+        rows.append(("pair", f"  {qty:g} x {money(price)}", money(total_item)))
 
-        for idx, part in enumerate(wrap_text(name)):
-            lines.append(part if idx == 0 else "  " + part)
-        lines.append(pair_line(f"  {qty:g} x {money(price)}", money(total_item)))
-
-    lines.extend([
-        "-" * LINE_WIDTH,
-        pair_line("ยอดสินค้า", money(subtotal)),
-        pair_line("ส่วนลด", money(discount)),
-        pair_line("ภาษี", money(tax)),
-        pair_line("ยอดสุทธิ", money(total)),
-        pair_line("รับเงิน", money(received)),
-        pair_line("เงินทอน", money(change)),
-        "-" * LINE_WIDTH,
-        centered("ขอบคุณที่ใช้บริการ"),
-        "",
-        "",
-        "",
+    rows.extend([
+        ("line", "-" * 58),
+        ("pair", "ยอดสินค้า", money(subtotal)),
+        ("pair", "ส่วนลด", money(discount)),
+        ("pair", "ภาษี", money(tax)),
+        ("pair_bold", "ยอดสุทธิ", money(total)),
+        ("pair", "รับเงิน", money(received)),
+        ("pair_bold", "เงินทอน", money(change)),
+        ("line", "-" * 58),
+        ("center", "ขอบคุณที่ใช้บริการ"),
     ])
-    return lines
+    return rows
 
 
-def text_receipt_bytes(payload):
-    # Initialize printer, select Thai code page, align left.
-    raw = bytearray()
-    raw += ESC + b"@"
-    raw += ESC + b"t" + bytes([THAI_CODEPAGE])
-    raw += ESC + b"a" + b"\x00"
+def gdi_print_receipt(payload):
+    """Print through the installed GA-E200 Windows driver.
 
-    lines = build_text_receipt(payload)
-    for index, line in enumerate(lines):
-        # Bold the main totals and header without converting the receipt to an image.
-        if index in (0, 1):
-            raw += ESC + b"E" + b"\x01"
-        elif "ยอดสุทธิ" in line or "เงินทอน" in line:
-            raw += ESC + b"E" + b"\x01"
-        else:
-            raw += ESC + b"E" + b"\x00"
-        raw += esc_text(line)
+    This intentionally does NOT send Thai as CP874 bytes. The E200 documentation
+    lists GB18030/Big5/international character sets rather than Thai CP874, so
+    Windows renders Unicode Thai with the installed printer driver instead.
+    """
+    port = require_printer()
 
-    raw += ESC + b"E" + b"\x00"
-    # Feed a little paper, cut, then kick the cash drawer.
-    raw += b"\n\n"
-    raw += GS + b"V" + bytes([1])
-    raw += drawer_kick()
-    return bytes(raw)
+    dc = win32ui.CreateDC()
+    dc.CreatePrinterDC(PRINTER_NAME)
 
+    try:
+        # Printer pixel dimensions from the actual driver.
+        dpi_x = dc.GetDeviceCaps(win32con.LOGPIXELSX) or 203
+        dpi_y = dc.GetDeviceCaps(win32con.LOGPIXELSY) or 203
+        printable_width = dc.GetDeviceCaps(win32con.HORZRES)
+        if printable_width <= 0:
+            printable_width = int(80 / 25.4 * dpi_x)
 
-def require_printer():
-    ok, port, info = check_printer()
-    if not ok:
-        raise RuntimeError(f"ไม่พบเครื่องพิมพ์ {PRINTER_NAME}: {port or info.get('error', '')}")
-    if EXPECTED_PORT and port.upper() != EXPECTED_PORT.upper():
-        raise RuntimeError(f"GA-E200 ใช้พอร์ต {port} ไม่ใช่ {EXPECTED_PORT}")
+        margin = max(10, int(3 * dpi_x / 25.4))
+        max_width = printable_width - margin * 2
+        left = margin
+        y = margin
+        line_gap = max(4, int(1.2 * dpi_y / 25.4))
+        normal_h = max(20, int(3.0 * dpi_y / 25.4))
+        small_h = max(18, int(2.6 * dpi_y / 25.4))
+        bold_h = max(24, int(3.4 * dpi_y / 25.4))
+
+        font_normal = create_font(normal_h, False)
+        font_small = create_font(small_h, False)
+        font_bold = create_font(bold_h, True)
+
+        dc.StartDoc("NanaphanHub POS Receipt")
+        try:
+            dc.StartPage()
+            for kind, *values in build_receipt_lines(payload):
+                if kind == "line":
+                    font = font_small
+                    text = values[0]
+                    dc.SelectObject(font)
+                    dc.TextOut(left, y, text)
+                    y += small_h + line_gap
+                    continue
+
+                if kind == "pair" or kind == "pair_bold":
+                    font = font_bold if kind == "pair_bold" else font_normal
+                    left_text, right_text = values
+                    dc.SelectObject(font)
+                    dc.TextOut(left, y, left_text)
+                    right_w = dc.GetTextExtent(right_text)[0]
+                    dc.TextOut(max(left, printable_width - margin - right_w), y, right_text)
+                    y += (bold_h if kind == "pair_bold" else normal_h) + line_gap
+                    continue
+
+                font = font_bold if kind in ("center_bold",) else font_normal
+                dc.SelectObject(font)
+                text = values[0]
+                lines = wrap_text_gdi(dc, text, max_width)
+                for line in lines:
+                    text_w = dc.GetTextExtent(line)[0]
+                    x = max(left, (printable_width - text_w) // 2) if kind.startswith("center") else left
+                    dc.TextOut(x, y, line)
+                    y += (bold_h if kind == "center_bold" else normal_h) + line_gap
+
+                # Item names can wrap to multiple lines; pair rows remain compact.
+
+            # Extra feed so the receipt clears the cutter.
+            y += int(5 * dpi_y / 25.4)
+            dc.EndPage()
+        finally:
+            dc.EndDoc()
+    finally:
+        dc.DeleteDC()
+
     return port
 
 
@@ -195,9 +233,9 @@ def open_drawer():
 
 
 def print_receipt(payload):
-    port = require_printer()
-    raw = text_receipt_bytes(payload)
-    raw_print(raw, "NanaphanHub POS Receipt")
+    port = gdi_print_receipt(payload)
+    # Open only after the receipt has been handed to the Windows printer driver.
+    raw_print(ESC + b"@" + drawer_kick(), "NanaphanHub Cash Drawer Kick")
     return port
 
 
@@ -226,8 +264,8 @@ class Handler(BaseHTTPRequestHandler):
                 "printer": PRINTER_NAME,
                 "port": port,
                 "expectedPort": EXPECTED_PORT,
-                "mode": "ESC/POS TEXT",
-                "encoding": TEXT_ENCODING,
+                "mode": "Windows GDI Unicode + ESC/POS drawer",
+                "encoding": "Unicode via Windows driver",
                 "message": "พร้อมใช้งาน" if ready else "ไม่พบเครื่องพิมพ์/พอร์ตไม่ตรง"
             }, 200 if ready else 503)
             return
@@ -249,39 +287,48 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({
                     "ok": True,
                     "port": port,
-                    "message": "พิมพ์ข้อความและเปิดลิ้นชักแล้ว",
-                    "mode": "ESC/POS TEXT"
+                    "message": "พิมพ์ใบเสร็จภาษาไทยและเปิดลิ้นชักแล้ว",
+                    "mode": "Windows GDI Unicode + ESC/POS drawer"
                 })
+                return
+
+            if self.path == "/test-print":
+                port = gdi_print_receipt({
+                    "billNo": "TEST",
+                    "items": [{"name": "ทดสอบเครื่องพิมพ์ GA-E200", "qty": 1, "price": 123}],
+                    "subtotal": 123,
+                    "discount": 0,
+                    "tax": 0,
+                    "total": 123,
+                    "received": 200,
+                    "change": 77,
+                })
+                self._json({"ok": True, "port": port, "message": "ส่งใบพิมพ์ทดสอบแล้ว"})
                 return
 
             self._json({"ok": False, "message": "Not found"}, 404)
         except Exception as e:
             self._json({"ok": False, "message": str(e)}, 500)
 
-    def log_message(self, fmt, *args):
-        print("[PrinterBridge] " + fmt % args)
-
 
 if __name__ == "__main__":
-    ok, port, info = check_printer()
-    print("=" * 60)
-    print("NanaphanHub Printer Bridge - ESC/POS TEXT")
+    print("=" * 64)
+    print("NanaphanHub Printer Bridge - WINDOWS GDI + ESC/POS DRAWER")
     print(f"Printer : {PRINTER_NAME}")
-    print(f"Port    : {port or 'NOT FOUND'} (expected {EXPECTED_PORT})")
+    print(f"Port    : {EXPECTED_PORT}")
     print(f"Server  : http://{HOST}:{PORT}")
-    print(f"Encoding: {TEXT_ENCODING} / ESC t {THAI_CODEPAGE}")
-    print("=" * 60)
+    print("Receipt : Windows driver Unicode (Thai-safe)")
+    print("Drawer  : ESC/POS RAW kick after printing")
+    print("=" * 64)
+    ok, port, info = check_printer()
+    print(f"Printer check: {'OK' if ok else 'FAILED'} | Port={port or '-'}")
     if not ok:
-        print("WARNING: Windows ยังไม่พบ GA-E200")
-    elif port.upper() != EXPECTED_PORT.upper():
-        print("WARNING: พอร์ตไม่ตรงกับ USB002")
-    else:
-        print("พร้อมใช้งาน")
+        print("ERROR:", info.get("error", "unknown"))
 
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nปิด Printer Bridge")
+        print("\nStopping...")
     finally:
         server.server_close()
