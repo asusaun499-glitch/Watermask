@@ -13,7 +13,7 @@ import win32ui
 
 HOST = "127.0.0.1"
 PORT = 8765
-PRINTER_NAME = "GA-E200"
+PRINTER_NAME = "GA-E200 Series"
 EXPECTED_PORT = "USB002"
 
 ESC = b"\x1b"
