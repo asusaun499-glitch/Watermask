@@ -14,7 +14,7 @@ import win32ui
 HOST = "127.0.0.1"
 PORT = 8765
 EXPECTED_PORT = "USB002"
-CONFIGURED_PRINTER = "GA-E200 Series"  # fallback only
+CONFIGURED_PRINTER = "GA-E200"  # fallback only
 
 ESC = b"\x1b"
 
