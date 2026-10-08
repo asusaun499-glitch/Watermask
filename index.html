@@ -1789,9 +1789,8 @@
     };
 
     async function printPOSReceiptHardware(sale, items, pricing, payment) {
-        // Drawer and printer are separate jobs so the admin button never prints.
-        const drawerResult = await printerBridgeRequest('/open-drawer');
-        await new Promise(resolve => setTimeout(resolve, 250));
+        // The Bridge now prints real ESC/POS text and automatically kicks the drawer
+        // in the same print job. Do not call /open-drawer here or the drawer would open twice.
         const printResult = await printerBridgeRequest('/print-receipt', {
             billNo: sale?.billNo || ('B' + Date.now()),
             items: JSON.parse(JSON.stringify(items || [])),
@@ -1802,7 +1801,7 @@
             received: Number(payment.received || 0),
             change: Number(payment.change || 0)
         });
-        return { drawerResult, printResult };
+        return { printResult };
     }
 
     window.completePOSSale = function() {
